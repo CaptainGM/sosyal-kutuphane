@@ -2,6 +2,8 @@
 
 Film ve Kitap Sosyal Ağı Uygulaması
 
+![Giriş ekranı](screenshot.png)
+
 ## 🚀 Başlangıç
 
 ### Adım 0: Veritabanı ve ortam değişkenleri
