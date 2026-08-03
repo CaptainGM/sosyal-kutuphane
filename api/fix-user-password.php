@@ -1,9 +1,14 @@
 <?php
+// Kullanim: fix-user-password.php?email=kullanici@ornek.com
 require_once 'config.php';
+
+$email = $_GET['email'] ?? '';
+if (!$email) {
+    die("Kullanim: fix-user-password.php?email=kullanici@ornek.com");
+}
 
 $stmt = $conn->prepare("UPDATE users SET password = ? WHERE email = ?");
 $newPass = "123456";
-$email = "sahinberatbatuhan41@gmail.com";
 $stmt->bind_param("ss", $newPass, $email);
 $stmt->execute();
 
