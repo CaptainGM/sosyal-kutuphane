@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil - Sosyal Kütüphane</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 0 40px;
+            margin-bottom: 40px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .profile-info {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .avatar-container {
+            text-align: center;
+        }
+
+        .avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 5px solid white;
+            object-fit: cover;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .profile-details h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .profile-bio {
+            font-size: 16px;
+            line-height: 1.6;
+            opacity: 0.9;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .profile-stats {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            display: block;
+            color: white;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.8;
+            color: white;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .edit-profile-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .edit-profile-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .tab-navigation {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 12px 25px;
+            border: none;
+            background: none;
+            color: #666;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .library-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .content-item {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+
+        .content-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .content-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .content-item .info {
+            padding: 10px;
+        }
+
+        .content-item h4 {
+            font-size: 12px;
+            margin-bottom: 5px;
+            line-height: 1.3;
+            height: 32px;
+            overflow: hidden;
+        }
+
+        .activity-item {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+        }
+
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .activity-type {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .lists-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .list-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .list-card h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .list-stats {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #667eea;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px;
+            font-size: 16px;
+            color: #999;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .profile-info {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .profile-stats {
+                justify-content: center;
+            }
+
+            .tab-navigation {
+                flex-wrap: wrap;
+            }
+
+            .library-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
+            <div class="nav-links">
+                <a href="search.html" class="nav-link">🔍 Keşfet</a>
+                <a href="feed.html" class="nav-link">📰 Akış</a>
+                <a href="profile.html" class="nav-link">👤 Profilim</a>
+                <button id="logoutBtn" class="logout-btn" onclick="logout()">Çıkış Yap</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="profile-header">
+        <div class="container">
+            <div id="loadingProfile" class="loading">👤 Profil yükleniyor...</div>
+            <div id="profileContent" style="display: none;">
+                <div class="profile-info">
+                    <div class="avatar-container">
+                        <div class="avatar" id="profileAvatar">👤</div>
+                        <div class="profile-actions" id="profileActions">
+                            <button class="edit-profile-btn" onclick="editProfile()">Profili Düzenle</button>
+                        </div>
+                    </div>
+                    <div class="profile-details">
+                        <h1 id="profileUsername"></h1>
+                        <div id="profileBio" class="profile-bio"></div>
+                        <div class="profile-stats">
+                            <div class="stat">
+                                <span class="stat-number" id="ratingsCount">0</span>
+                                <span class="stat-label">Puan</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number" id="reviewsCount">0</span>
+                                <span class="stat-label">Yorum</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number" id="moviesCount">0</span>
+                                <span class="stat-label">Film</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number" id="booksCount">0</span>
+                                <span class="stat-label">Kitap</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="tab-navigation">
+            <button class="tab-btn active" onclick="switchTab('library')">📚 Kütüphanem</button>
+            <button class="tab-btn" onclick="switchTab('activity')">📊 Aktiviteler</button>
+            <button class="tab-btn" onclick="switchTab('lists')">📁 Listelerim</button>
+        </div>
+
+        <div id="libraryTab" class="tab-content active">
+            <div class="tab-inner">
+                <div class="tab-buttons" style="margin-bottom: 20px; display: flex; gap: 10px;">
+                    <button class="tab-btn small active" onclick="switchLibraryTab('movies', this)">🎬 Filmler</button>
+                    <button class="tab-btn small" onclick="switchLibraryTab('books', this)">📚 Kitaplar</button>
+                </div>
+
+                <div id="moviesLibrary">
+                    <h3 style="margin-bottom: 20px;">🎬 İzlediklerim</h3>
+                    <div id="watchedMovies" class="library-grid">
+                        <div class="loading">Filmler yükleniyor...</div>
+                    </div>
+
+                    <h3 style="margin-bottom: 20px; margin-top: 30px;">📋 İzlenecekler</h3>
+                    <div id="watchlistMovies" class="library-grid">
+                        <div class="loading">Filmler yükleniyor...</div>
+                    </div>
+                </div>
+
+                <div id="booksLibrary" style="display: none;">
+                    <h3 style="margin-bottom: 20px;">📖 Okuduklarım</h3>
+                    <div id="readBooks" class="library-grid">
+                        <div class="loading">Kitaplar yükleniyor...</div>
+                    </div>
+
+                    <h3 style="margin-bottom: 20px; margin-top: 30px;">📚 Okunacaklar</h3>
+                    <div id="readinglistBooks" class="library-grid">
+                        <div class="loading">Kitaplar yükleniyor...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="activityTab" class="tab-content">
+            <div id="activitiesList" class="activity-list">
+                <div class="loading">Aktiviteler yükleniyor...</div>
+            </div>
+        </div>
+
+        <div id="listsTab" class="tab-content">
+            <div style="margin-bottom: 20px;">
+                <button class="btn btn-primary" onclick="createNewList()">+ Yeni Liste Oluştur</button>
+            </div>
+            <div id="customLists" class="lists-grid">
+                <div class="loading">Listeler yükleniyor...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        let contentCache = {};
+        async function initPage() {
+            try {
+                if (typeof app !== 'undefined' && app.initPromise) {
+                    await app.initPromise;
+                }
+            } catch (error) {
+                console.error('❌ initPage error:', error);
+            } finally {
+                console.log('✅ App init done (or failed), loading profile...');
+                loadProfile();
+            }
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initPage);
+        } else {
+            initPage();
+        }
+        function loadProfile() {
+            console.log('📢 loadProfile çalıştı');
+            const user = (typeof app !== 'undefined' && app.currentUser) ? app.currentUser : { username: 'Ziyaretçi', id: null };
+
+            try {
+                displayProfile(user);
+
+                if (typeof app !== 'undefined' && app.currentUser) {
+                    console.log('✅ Login detected - loadLibrary çağrılıyor');
+                    if (typeof loadLibrary === 'function') loadLibrary().catch(e => console.error('❌ loadLibrary hata:', e));
+                    if (typeof loadActivities === 'function') loadActivities().catch(e => console.error('❌ loadActivities hata:', e));
+                    if (typeof loadCustomLists === 'function') loadCustomLists().catch(e => console.error('❌ loadCustomLists hata:', e));
+                } else {
+                    console.warn('⚠️ Login yok, library yüklenmeyecek');
+                }
+            } catch (error) {
+                console.error('❌ Profil yükleme hatası:', error);
+                const loadingDiv = document.getElementById('loadingProfile');
+                if (loadingDiv) loadingDiv.innerHTML = '<div style="color:red">Profil yüklenirken hata oluştu: ' + error.message + '</div>';
+            }
+        }
+
+        function displayProfile(user) {
+            const loadingDiv = document.getElementById('loadingProfile');
+            const contentDiv = document.getElementById('profileContent');
+
+            loadingDiv.style.display = 'none';
+            contentDiv.style.display = 'block';
+
+            document.getElementById('profileUsername').textContent = user.username;
+            document.getElementById('profileBio').textContent = user.bio || '📚 Film ve kitap tutkunu • 🎬 Favori tür: Bilim Kurgu • 📖 Son okuduğum: Harry Potter';
+
+            console.log('🎯 displayProfile sonrası - app.currentUser:', app?.currentUser);
+            const avatarEl = document.getElementById('profileAvatar');
+            const savedAvatar = user.avatar_url || user.avatar || '👨‍💼';
+            avatarEl.textContent = savedAvatar;
+            avatarEl.style.fontSize = '60px';
+            avatarEl.style.cursor = 'pointer';
+            avatarEl.title = 'Avatar değiştirmek için tıkla';
+            avatarEl.onclick = () => showAvatarPicker();
+
+            updateStats().catch(e => console.error('❌ updateStats hata:', e));
+        }
+        function showAvatarPicker() {
+            const avatars = ['👨‍🦱', '👩‍🦰', '👨‍🦲', '👩‍🦱', '👨‍💼', '👩‍💼', '👨‍🎓', '👩‍🎓', '🧔', '👩', '👨‍⚕️', '👩‍⚕️', '👨‍🍳', '👩‍🍳', '👨‍✈️', '👩‍✈️', '🧑‍💻', '👨‍🎨', '👩‍🎨', '👨‍🎭'];
+
+            let html = `
+        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 10000; max-width: 500px; width: 90%;">
+            <h2 style="margin-bottom: 20px; color: #333; text-align: center;">Avatar Seç</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px; max-height: 300px; overflow-y: auto;">
+    `;
+
+            avatars.forEach(avatar => {
+                html += `
+            <div style="font-size: 40px; cursor: pointer; padding: 10px; text-align: center; border-radius: 8px; transition: all 0.3s; border: 2px solid transparent;" 
+                 onmouseover="this.style.background='#f0f0f0'; this.style.border='2px solid #667eea';" 
+                 onmouseout="this.style.background='white'; this.style.border='2px solid transparent';"
+                 onclick="saveAvatar('${avatar}')">${avatar}</div>
+        `;
+            });
+
+            html += `
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button onclick="closeAvatarModal()" style="flex: 1; background: #ccc; color: #333; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600;">✕ İptal</button>
+            </div>
+        </div>
+        <div onclick="closeAvatarModal()" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999;"></div>
+    `;
+
+            document.body.insertAdjacentHTML('beforeend', html);
+        }
+        async function saveAvatar(selectedAvatar) {
+            if (typeof app === 'undefined' || !app.currentUser) return;
+
+            try {
+                const response = await fetch('/api/user-profile.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ avatar: selectedAvatar })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    app.currentUser.avatar = selectedAvatar;
+                    app.currentUser.avatar_url = selectedAvatar;
+                    const avatarEl = document.getElementById('profileAvatar');
+                    if (avatarEl) avatarEl.textContent = selectedAvatar;
+
+                    closeAvatarModal();
+                    alert('✅ Avatar değiştirildi!');
+                } else {
+                    alert('❌ ' + (data.message || 'Avatar değiştirilemedi'));
+                }
+            } catch (error) {
+                console.error('Avatar kayıt hatası:', error);
+                alert('Avatar değiştirilirken hata oluştu!');
+            }
+        }
+
+        function closeAvatarModal() {
+            const modal = document.querySelector('[style*="position: fixed"][style*="top: 50%"]');
+            const overlay = document.querySelector('[style*="position: fixed"][style*="top: 0"][style*="background: rgba"]');
+
+            if (modal) modal.remove();
+            if (overlay) overlay.remove();
+        }
+
+        async function updateStats() {
+            if (typeof app === 'undefined' || !app.currentUser) return;
+
+            let ratingsCount = 0;
+            let reviewsCount = 0;
+            let moviesCount = 0;
+            let booksCount = 0;
+            try {
+                const response = await fetch(`/api/get-user-content.php?type=movie&status=watched`, { credentials: 'include' });
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                const data = await response.json();
+                if (data.success) {
+                    moviesCount = data.content ? data.content.length : 0;
+                    ratingsCount += data.content ? data.content.filter(m => m.rating).length : 0;
+                }
+            } catch (error) {
+                console.error('❌ Film sayısı alınamadı:', error);
+            }
+            try {
+                const response = await fetch(`/api/get-user-content.php?type=book&status=read`, { credentials: 'include' });
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                const data = await response.json();
+                if (data.success) {
+                    booksCount = data.content ? data.content.length : 0;
+                    ratingsCount += data.content ? data.content.filter(b => b.rating).length : 0;
+                }
+            } catch (error) {
+                console.error('❌ Kitap sayısı alınamadı:', error);
+            }
+            try {
+                const response = await fetch(`/api/comments.php`, { credentials: 'include' });
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                const data = await response.json();
+                if (data.success) {
+                    reviewsCount = data.comments ? data.comments.length : 0;
+                }
+            } catch (error) {
+                console.error('❌ Yorum sayısı alınamadı:', error);
+            }
+
+            if (document.getElementById('ratingsCount')) document.getElementById('ratingsCount').textContent = ratingsCount;
+            if (document.getElementById('reviewsCount')) document.getElementById('reviewsCount').textContent = reviewsCount;
+            if (document.getElementById('moviesCount')) document.getElementById('moviesCount').textContent = moviesCount;
+            if (document.getElementById('booksCount')) document.getElementById('booksCount').textContent = booksCount;
+        }
+        async function getContentTitle(type, id) {
+            if (contentCache[`${type}_${id}`]) {
+                return contentCache[`${type}_${id}`];
+            }
+
+            try {
+                let title = '';
+                if (type === 'movie') {
+                    const movie = await app.getMovieDetail(id);
+                    title = movie?.title || `Film #${id}`;
+                } else {
+                    const book = await app.getBookDetail(id);
+                    title = book?.volumeInfo?.title || `Kitap #${id}`;
+                }
+
+                contentCache[`${type}_${id}`] = title;
+                return title;
+            } catch (error) {
+                console.error('İçerik başlığı çekme hatası:', error);
+                return type === 'movie' ? `Film #${id}` : `Kitap #${id}`;
+            }
+        }
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            document.querySelectorAll('.tab-navigation .tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+        function switchLibraryTab(type, element) {
+            const moviesDiv = document.getElementById('moviesLibrary');
+            const booksDiv = document.getElementById('booksLibrary');
+
+            document.querySelectorAll('.tab-btn.small').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            element.classList.add('active');
+
+            if (type === 'movies') {
+                moviesDiv.style.display = 'block';
+                booksDiv.style.display = 'none';
+            } else {
+                moviesDiv.style.display = 'none';
+                booksDiv.style.display = 'block';
+            }
+        }
+
+        async function loadLibrary() {
+            if (!app.currentUser) return;
+
+            try {
+                const watchedResponse = await fetch(`/api/get-user-content.php?type=movie&status=watched`, { credentials: 'include' });
+                if (!watchedResponse.ok) throw new Error('Film API hatası: ' + watchedResponse.status);
+                const watchedData = await watchedResponse.json();
+                console.log('✅ İzlenen filmler:', watchedData);
+                const moviesWatched = watchedData.success ? watchedData.content : [];
+                const watchlistResponse = await fetch(`/api/get-user-content.php?type=movie&status=watchlist`, { credentials: 'include' });
+                if (!watchlistResponse.ok) throw new Error('Watchlist API hatası: ' + watchlistResponse.status);
+                const watchlistData = await watchlistResponse.json();
+                console.log('✅ İzlenecekler:', watchlistData);
+                const moviesWatchlist = watchlistData.success ? watchlistData.content : [];
+                const readResponse = await fetch(`/api/get-user-content.php?type=book&status=read`, { credentials: 'include' });
+                if (!readResponse.ok) throw new Error('Kitap API hatası: ' + readResponse.status);
+                const readData = await readResponse.json();
+                console.log('✅ Okunan kitaplar:', readData);
+                const booksRead = readData.success ? readData.content : [];
+                const toReadResponse = await fetch(`/api/get-user-content.php?type=book&status=to_read`, { credentials: 'include' });
+                if (!toReadResponse.ok) throw new Error('Okunacaklar API hatası: ' + toReadResponse.status);
+                const toReadData = await toReadResponse.json();
+                console.log('✅ Okunacaklar:', toReadData);
+                const booksReadinglist = toReadData.success ? toReadData.content : [];
+
+                console.log('🎯 displayLibrary çağrılıyor:', {
+                    watched: moviesWatched.length,
+                    watchlist: moviesWatchlist.length,
+                    read: booksRead.length,
+                    toRead: booksReadinglist.length
+                });
+                displayLibrary(moviesWatched, moviesWatchlist, booksRead, booksReadinglist);
+            } catch (error) {
+                console.error('❌ Kütüphane yükleme hatası:', error);
+            }
+        }
+
+        function displayLibrary(moviesWatched, moviesWatchlist, booksRead, booksReadinglist) {
+            const tabInner = document.querySelector('.tab-inner');
+            if (!tabInner) return;
+
+            let html = `
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button class="tab-btn small active" onclick="switchLibraryTab('movies', this)">🎬 Filmler</button>
+            <button class="tab-btn small" onclick="switchLibraryTab('books', this)">📚 Kitaplar</button>
+        </div>
+
+        <div id="moviesLibrary">
+            <h3 style="margin-bottom: 20px;">🎬 İzlediklerim (${moviesWatched.length})</h3>
+            <div class="library-grid">
+                ${moviesWatched.length === 0 ? '<div class="no-results">Henüz film izlemedim</div>' : ''}
+                ${moviesWatched.map(m => {
+                const posterUrl = m.poster_path
+                    ? `https://image.tmdb.org/t/p/w300${m.poster_path}`
+                    : 'https://placehold.co/200x300?text=Poster+Yok';
+                return `
+                        <div class="content-item" onclick="goToDetail('movie', '${m.tmdb_id || m.id}')" style="cursor: pointer;">
+                            <img src="${posterUrl}" 
+                                 alt="${m.title}" 
+                                 style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;"
+                                 onerror="this.src='https://placehold.co/200x300?text=Poster+Yok'">
+                            <div class="info" style="padding: 10px;">
+                                <h4 style="font-size: 13px; text-align: center;">${m.title}</h4>
+                            </div>
+                        </div>
+                    `;
+            }).join('')}
+            </div>
+
+            <h3 style="margin-bottom: 20px; margin-top: 40px;">📋 İzlenecekler (${moviesWatchlist.length})</h3>
+            <div class="library-grid">
+                ${moviesWatchlist.length === 0 ? '<div class="no-results">Henüz film eklenemedim</div>' : ''}
+                ${moviesWatchlist.map(m => {
+                const posterUrl = m.poster_path
+                    ? `https://image.tmdb.org/t/p/w300${m.poster_path}`
+                    : 'https://placehold.co/200x300?text=Poster+Yok';
+                return `
+                        <div class="content-item" onclick="goToDetail('movie', '${m.tmdb_id || m.id}')" style="cursor: pointer;">
+                            <img src="${posterUrl}" 
+                                 alt="${m.title}" 
+                                 style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;"
+                                 onerror="this.src='https://placehold.co/200x300?text=Poster+Yok'">
+                            <div class="info" style="padding: 10px;">
+                                <h4 style="font-size: 13px; text-align: center;">${m.title}</h4>
+                            </div>
+                        </div>
+                    `;
+            }).join('')}
+            </div>
+        </div>
+
+        <div id="booksLibrary" style="display: none;">
+            <h3 style="margin-bottom: 20px;">📖 Okuduklarım (${booksRead.length})</h3>
+            <div class="library-grid">
+                ${booksRead.length === 0 ? '<div class="no-results">Henüz kitap okumadım</div>' : ''}
+                ${booksRead.map(b => {
+                const coverUrl = b.cover_url
+                    ? b.cover_url.replace('http://', 'https://')
+                    : 'https://placehold.co/200x300?text=Kapak+Yok';
+                return `
+                        <div class="content-item" onclick="goToDetail('book', '${b.google_books_id || b.id}')" style="cursor: pointer;">
+                            <img src="${coverUrl}" 
+                                 alt="${b.title}" 
+                                 style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;"
+                                 onerror="this.src='https://placehold.co/200x300?text=Kapak+Yok'">
+                            <div class="info" style="padding: 10px;">
+                                <h4 style="font-size: 13px; text-align: center;">${b.title}</h4>
+                            </div>
+                        </div>
+                    `;
+            }).join('')}
+            </div>
+
+            <h3 style="margin-bottom: 20px; margin-top: 40px;">📚 Okunacaklar (${booksReadinglist.length})</h3>
+            <div class="library-grid">
+                ${booksReadinglist.length === 0 ? '<div class="no-results">Henüz kitap eklenemedim</div>' : ''}
+                ${booksReadinglist.map(b => {
+                const coverUrl = b.cover_url
+                    ? b.cover_url.replace('http://', 'https://')
+                    : 'https://placehold.co/200x300?text=Kapak+Yok';
+                return `
+                        <div class="content-item" onclick="goToDetail('book', '${b.google_books_id || b.id}')" style="cursor: pointer;">
+                            <img src="${coverUrl}" 
+                                 alt="${b.title}" 
+                                 style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;"
+                                 onerror="this.src='https://placehold.co/200x300?text=Kapak+Yok'">
+                            <div class="info" style="padding: 10px;">
+                                <h4 style="font-size: 13px; text-align: center;">${b.title}</h4>
+                            </div>
+                        </div>
+                    `;
+            }).join('')}
+            </div>
+        </div>
+    `;
+
+            tabInner.innerHTML = html;
+        }
+
+        function goToDetail(type, id) {
+            window.location.href = `detail.html?type=${type}&id=${id}`;
+        }
+
+        async function loadActivities() {
+            const activities = [];
+
+            try {
+                const commentsResponse = await fetch('/api/comments.php');
+                if (commentsResponse.ok) {
+                    const commentsData = await commentsResponse.json();
+                    if (commentsData.success && commentsData.comments) {
+                        commentsData.comments.forEach(comment => {
+                            activities.push({
+                                type: 'comment',
+                                content: `💬 "${comment.comment_text.substring(0, 50)}${comment.comment_text.length > 50 ? '...' : ''}" yorumu`,
+                                date: new Date(comment.created_at)
+                            });
+                        });
+                    }
+                }
+                const moviesResponse = await fetch('/api/user-content.php?type=movie&status=watched');
+                if (moviesResponse.ok) {
+                    const moviesData = await moviesResponse.json();
+                    if (moviesData.success && moviesData.content) {
+                        moviesData.content.forEach(movie => {
+                            if (movie.rating) {
+                                activities.push({
+                                    type: 'rating',
+                                    content: `🎬 <strong>${movie.title || 'Film'}</strong> filmine <span style="color: #f39c12; font-weight: bold;">⭐ ${movie.rating}/10</span> puan verdi`,
+                                    date: new Date(movie.updated_at)
+                                });
+                            } else {
+                                activities.push({
+                                    type: 'watched',
+                                    content: `🎬 <strong>${movie.title || 'Film'}</strong> filmini izledi`,
+                                    date: new Date(movie.updated_at)
+                                });
+                            }
+                        });
+                    }
+                }
+                const booksResponse = await fetch('/api/user-content.php?type=book&status=read');
+                if (booksResponse.ok) {
+                    const booksData = await booksResponse.json();
+                    if (booksData.success && booksData.content) {
+                        booksData.content.forEach(book => {
+                            if (book.rating) {
+                                activities.push({
+                                    type: 'rating',
+                                    content: `📚 <strong>${book.title || 'Kitap'}</strong> kitabına <span style="color: #f39c12; font-weight: bold;">⭐ ${book.rating}/10</span> puan verdi`,
+                                    date: new Date(book.updated_at)
+                                });
+                            } else {
+                                activities.push({
+                                    type: 'read',
+                                    content: `📚 <strong>${book.title || 'Kitap'}</strong> kitabını okudu`,
+                                    date: new Date(book.updated_at)
+                                });
+                            }
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Aktivite yükleme hatası:', error);
+            }
+
+            activities.sort((a, b) => new Date(b.date) - new Date(a.date));
+            displayActivities(activities.slice(0, 15));
+        }
+        function getStatusText(status, type) {
+            const statusMap = {
+                'watched': 'İzlediklerim',
+                'watchlist': 'İzlenecekler',
+                'read': 'Okuduklarım',
+                'readinglist': 'Okunacaklar'
+            };
+
+            return statusMap[status] || status;
+        }
+        function displayActivities(activities) {
+            const container = document.getElementById('activitiesList');
+
+            if (activities.length === 0) {
+                container.innerHTML = `
+                    <div class="no-results">
+                        📝 Henüz aktiviteniz yok<br>
+                        <small style="color: #999;">Film izleyip kitap okuyarak aktivitelerinizi burada görebilirsiniz</small>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = activities.map(activity => `
+                <div class="activity-item">
+                    <div class="activity-header">
+                        <span class="activity-type">${getActivityTypeText(activity.type)}</span>
+                        <span style="color: #999; font-size: 14px;">${app.formatDate(activity.date)}</span>
+                    </div>
+                    <div style="line-height: 1.5;">${activity.content}</div>
+                </div>
+            `).join('');
+        }
+        function getActivityTypeText(type) {
+            const types = {
+                'rating': '⭐ Puanlama',
+                'comment': '💬 Yorum',
+                'watched': '🎬 İzleme',
+                'read': '📚 Okuma',
+                'review': '💬 Yorum',
+                'list_add': '📁 Liste Ekleme'
+            };
+            return types[type] || type;
+        }
+        async function loadCustomLists() {
+            try {
+                const response = await fetch(`/api/custom-lists.php`, { credentials: 'include' });
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                const data = await response.json();
+                if (data.success) {
+                    displayCustomLists(data.lists || []);
+                }
+            } catch (error) {
+                console.error('❌ Özel listeler yüklenirken hata:', error);
+                displayCustomLists([]);
+            }
+        }
+        function displayCustomLists(lists) {
+            const container = document.getElementById('customLists');
+
+            if (lists.length === 0) {
+                container.innerHTML = `
+                    <div class="no-results">
+                        📁 Henüz özel listeniz yok<br>
+                        <small style="color: #999;">"Yeni Liste Oluştur" butonuna tıklayarak özel listeler oluşturabilirsiniz</small>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = lists.map(list => `
+                <div class="list-card">
+                    <h3>${list.name}</h3>
+                    <div class="list-stats">${list.item_count || 0} içerik</div>
+                    <p style="color: #666; margin-bottom: 15px; line-height: 1.4;">${list.description || 'Açıklama bulunmuyor'}</p>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" onclick="viewList('${list.id}')">📋 Listeyi Görüntüle</button>
+                        <button class="btn" style="background: #6c757d; color: white;" onclick="editList('${list.id}')">✏️ Düzenle</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function editProfile() {
+            const user = app.currentUser;
+            const currentBio = document.getElementById('profileBio').textContent;
+
+            const editMenu = `
+        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 10000; min-width: 400px;">
+            <h2 style="margin-bottom: 20px; color: #333;">Profili Düzenle</h2>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Biyografi:</label>
+                <textarea id="editBio" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: inherit; min-height: 100px;">${currentBio}</textarea>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button onclick="saveProfile()" style="flex: 1; background: #667eea; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600;">💾 Kaydet</button>
+                <button onclick="closeEditModal()" style="flex: 1; background: #ccc; color: #333; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600;">✕ İptal</button>
+            </div>
+        </div>
+        <div onclick="closeEditModal()" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999;"></div>
+    `;
+
+            document.body.insertAdjacentHTML('beforeend', editMenu);
+        }
+
+        async function saveProfile() {
+            const newBio = document.getElementById('editBio').value.trim();
+
+            if (!newBio) {
+                alert('Biyografi boş olamaz!');
+                return;
+            }
+
+            const user = app.currentUser;
+            user.bio = newBio;
+            app.currentUser = user;
+            try {
+                document.getElementById('profileBio').textContent = newBio;
+                closeEditModal();
+                alert('✅ Profil güncellendi!');
+            } catch (error) {
+                console.error('Profil kayıt hatası:', error);
+                alert('Profil güncellenirken hata oluştu!');
+            }
+        }
+
+        function closeEditModal() {
+            const modal = document.querySelector('[style*="position: fixed"][style*="top: 50%"]');
+            const overlay = document.querySelector('[style*="position: fixed"][style*="top: 0"][style*="background: rgba"]');
+
+            if (modal) modal.remove();
+            if (overlay) overlay.remove();
+        }
+        async function createNewList() {
+            const listName = prompt('Liste adını girin:');
+            if (listName && listName.trim()) {
+                const listDescription = prompt('Liste açıklaması girin (isteğe bağlı):') || '';
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/custom-lists.php`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            action: 'create',
+                            name: listName.trim(),
+                            description: listDescription.trim()
+                        })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        alert(`✅ "${listName}" listesi oluşturuldu!`);
+                        loadCustomLists();
+                    } else {
+                        alert('❌ Hata: ' + (data.message || 'Liste oluşturulamadı'));
+                    }
+                } catch (error) {
+                    console.error('Liste oluşturma hatası:', error);
+                    alert('Liste oluşturulurken hata oluştu!');
+                }
+            } else if (listName !== null) {
+                alert('Liste adı boş olamaz!');
+            }
+        }
+        async function editList(listId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/custom-lists.php?id=${listId}`);
+                const data = await response.json();
+                if (data.success && data.list) {
+                    const list = data.list;
+                    const newName = prompt('Yeni liste adını girin:', list.name);
+                    if (newName && newName.trim()) {
+                        const newDescription = prompt('Yeni açıklamayı girin:', list.description) || '';
+
+                        const updateResponse = await fetch(`${API_BASE_URL}/custom-lists.php`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                id: listId,
+                                name: newName.trim(),
+                                description: newDescription.trim()
+                            })
+                        });
+                        const updateData = await updateResponse.json();
+                        if (updateData.success) {
+                            alert('Liste güncellendi!');
+                            loadCustomLists();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Liste düzenleme hatası:', error);
+                alert('Liste düzenlenmesi sırasında hata oluştu!');
+            }
+        }
+        function addItemToList(listId) {
+            const contentType = confirm('Film mi eklemek istiyorsunuz? (OK=Film, İptal=Kitap)') ? 'movie' : 'book';
+
+            const searchQuery = prompt(`${contentType === 'movie' ? '🎬 Film' : '📚 Kitap'} adını girin:`);
+            if (!searchQuery || !searchQuery.trim()) {
+                return;
+            }
+
+            searchAndSelectContent(listId, contentType, searchQuery.trim());
+        }
+        async function searchAndSelectContent(listId, contentType, query) {
+            try {
+                let results = [];
+
+                if (contentType === 'movie') {
+                    const movieData = await app.searchMovies(query);
+                    results = movieData.results || [];
+                } else {
+                    const bookData = await app.searchBooks(query);
+                    results = bookData.items || [];
+                }
+
+                if (results.length === 0) {
+                    alert('Sonuç bulunamadı!');
+                    return;
+                }
+                displaySearchResults(listId, results, contentType);
+
+            } catch (error) {
+                console.error('Arama hatası:', error);
+                alert('Arama sırasında hata oluştu!');
+            }
+        }
+        function displaySearchResults(listId, results, contentType) {
+            let html = `
+                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 10000;" id="searchResultsModal">
+                    <div style="background: white; padding: 30px; border-radius: 15px; max-width: 700px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2 style="margin: 0;">📌 ${contentType === 'movie' ? 'Film' : 'Kitap'} Seçin</h2>
+                            <button onclick="closeSearchModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">✕</button>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px;">
+            `;
+
+            results.slice(0, 12).forEach(item => {
+                if (contentType === 'movie') {
+                    const posterUrl = item.poster_path
+                        ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+                        : 'https://placehold.co/150x225?text=Poster+Yok';
+                    const title = item.title || 'Bilinmiyor';
+
+                    html += `
+                        <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer;" onclick="selectContentForList('${listId}', 'movie', '${item.id}', '${title.replace(/'/g, "\\'")}')">
+                            <img src="${posterUrl}" alt="${title}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 5px; margin-bottom: 8px;">
+                            <div style="font-size: 12px; font-weight: 600; word-break: break-word;">${title}</div>
+                            <div style="font-size: 11px; color: #999;">⭐ ${item.vote_average?.toFixed(1) || 'N/A'}</div>
+                        </div>
+                    `;
+                } else {
+                    const volumeInfo = item.volumeInfo || {};
+                    const coverUrl = volumeInfo.imageLinks?.thumbnail
+                        ? volumeInfo.imageLinks.thumbnail.replace('http://', 'https://')
+                        : 'https://placehold.co/150x225?text=Kapak+Yok';
+                    const title = volumeInfo.title || 'Bilinmiyor';
+
+                    html += `
+                        <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer;" onclick="selectContentForList('${listId}', 'book', '${item.id}', '${title.replace(/'/g, "\\'")}')">
+                            <img src="${coverUrl}" alt="${title}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 5px; margin-bottom: 8px;">
+                            <div style="font-size: 12px; font-weight: 600; word-break: break-word;">${title}</div>
+                            <div style="font-size: 11px; color: #999;">✍️ ${volumeInfo.authors ? volumeInfo.authors[0] : 'Bilinmiyor'}</div>
+                        </div>
+                    `;
+                }
+            });
+
+            html += `
+                        </div>
+                        <div style="margin-top: 20px; text-align: center;">
+                            <button onclick="closeSearchModal()" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;">Kapat</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', html);
+        }
+        function closeSearchModal() {
+            const modal = document.getElementById('searchResultsModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+        async function selectContentForList(listId, contentType, contentId, contentTitle) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/custom-lists.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'add_item',
+                        list_id: listId,
+                        content_type: contentType,
+                        content_id: contentId,
+                        content_title: decodeURIComponent(contentTitle)
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert(`"${contentTitle}" listeye eklendi!`);
+                    closeSearchModal();
+                    closeListModal();
+                    loadCustomLists();
+                    setTimeout(() => viewList(listId), 500);
+                } else {
+                    alert(data.message || 'Hata oluştu!');
+                }
+            } catch (error) {
+                console.error('İçerik ekleme hatası:', error);
+                alert('İçerik eklenirken hata oluştu!');
+            }
+        }
+        async function viewList(listId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/custom-lists.php?id=${listId}`);
+                const data = await response.json();
+
+                if (!data.success || !data.list) {
+                    alert('Liste bulunamadı!');
+                    return;
+                }
+
+                const list = data.list;
+                const items = list.items || [];
+
+                let html = `
+                    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 9999;" id="listModal">
+                        <div style="background: white; padding: 30px; border-radius: 15px; max-width: 800px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h2 style="margin: 0;">${list.name}</h2>
+                                <button onclick="closeListModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">✕</button>
+                            </div>
+                            
+                            <p style="color: #666; margin-bottom: 20px;">${list.description || 'Açıklama bulunmuyor'}</p>
+                            
+                            <h3 style="margin-bottom: 15px;">📚 Listedeki İçerikler (${items.length})</h3>
+                            
+                            <div id="listItems" style="margin-bottom: 20px; max-height: 400px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px;">
+                                ${items.length > 0 ? `
+                                    <div id="listItemsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px;">
+                                        ${items.map(item => `
+                                            <div id="item-${item.id}" style="background: #f8f9fa; padding: 10px; border-radius: 8px; text-align: center; display: flex; flex-direction: column; gap: 8px;">
+                                                <img src="https://placehold.co/140x200?text=Yükleniyor" alt="${item.content_title}" class="item-poster" data-item-id="${item.content_id}" data-item-type="${item.content_type}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 5px;">
+                                                <div style="font-size: 12px; font-weight: 600; word-break: break-word; line-height: 1.3;">${item.content_title}</div>
+                                                <button onclick="removeFromList('${listId}', '${item.id}')" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;">🗑️ Çıkar</button>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                ` : `
+                                    <div style="text-align: center; color: #999; padding: 20px;">
+                                        📭 Listeye henüz içerik eklenmemiş
+                                    </div>
+                                `}
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px;">
+                                <button onclick="addItemToList('${listId}')" style="flex: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600;">➕ İçerik Ekle</button>
+                                <button onclick="closeListModal()" style="flex: 1; background: #6c757d; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600;">Kapat</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.body.insertAdjacentHTML('beforeend', html);
+                loadListItemPosters(items);
+            } catch (error) {
+                console.error('Liste yüklenirken hata:', error);
+                alert('Liste yüklenirken hata oluştu!');
+            }
+        }
+        async function loadListItemPosters(items) {
+            for (const item of items) {
+                try {
+                    let posterUrl = 'https://placehold.co/140x200?text=Resim+Yok';
+
+                    if (item.content_type === 'movie') {
+                        const movie = await app.getMovieDetail(item.content_id);
+                        if (movie?.poster_path) {
+                            posterUrl = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+                        }
+                    } else {
+                        const book = await app.getBookDetail(item.content_id);
+                        if (book?.volumeInfo?.imageLinks?.thumbnail) {
+                            posterUrl = book.volumeInfo.imageLinks.thumbnail.replace('http://', 'https://');
+                        }
+                    }
+
+                    const img = document.querySelector(`img[data-item-id="${item.content_id}"]`);
+                    if (img) {
+                        img.src = posterUrl;
+                    }
+                } catch (error) {
+                    console.error('Poster yükleme hatası:', error);
+                }
+            }
+        }
+        function closeListModal() {
+            const modal = document.getElementById('listModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+        async function removeFromList(listId, contentId) {
+            if (confirm('Bu içeriği listeden çıkarmak istediğinize emin misiniz?')) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/custom-lists.php`, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            list_id: listId,
+                            item_id: contentId
+                        })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        alert('İçerik listeden çıkarıldı!');
+                        closeListModal();
+                        setTimeout(() => viewList(listId), 500);
+                    }
+                } catch (error) {
+                    console.error('İçerik çıkarma hatası:', error);
+                    alert('İçerik çıkarılırken hata oluştu!');
+                }
+            }
+        }
+
+        function logout() {
+            if (app) {
+                app.logout();
+            }
+            window.location.href = 'login.html';
+        }
+
+    </script>
+</body>
+
+</html>
+

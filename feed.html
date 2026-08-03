@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sosyal Akış - Sosyal Kütüphane</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 30px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+            font-size: 28px;
+        }
+
+        /* Aktivite Kartı */
+        .activity-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 25px;
+            transition: transform 0.3s;
+        }
+
+        .activity-card:hover {
+            transform: translateY(-3px);
+        }
+
+        /* Üst Bilgi (Header) */
+        .activity-header {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .header-info {
+            flex: 1;
+        }
+
+        .username-link {
+            font-weight: bold;
+            color: #667eea;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .username-link:hover {
+            text-decoration: underline;
+        }
+
+        .action-text {
+            color: #555;
+            font-size: 14px;
+            margin-top: 3px;
+        }
+
+        .activity-date {
+            color: #999;
+            font-size: 12px;
+            margin-top: 3px;
+        }
+
+        /* Ana İçerik (Body) */
+        .activity-body {
+            padding: 20px;
+            background: #fafafa;
+            display: flex;
+            gap: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .activity-body:hover {
+            background: #f0f0f0;
+        }
+
+        .content-poster {
+            width: 100px;
+            height: 150px;
+            border-radius: 10px;
+            object-fit: cover;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .content-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .content-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .content-type-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            width: fit-content;
+        }
+
+        .badge-movie {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-book {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .rating-display {
+            color: #f39c12;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .comment-preview {
+            color: #666;
+            font-style: italic;
+            line-height: 1.5;
+            border-left: 3px solid #667eea;
+            padding-left: 12px;
+            margin-top: 10px;
+        }
+
+        /* Alt Bilgi (Footer) */
+        .activity-footer {
+            padding: 12px 20px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            gap: 15px;
+        }
+
+        .footer-btn {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 15px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .footer-btn:hover {
+            background: #f5f5f5;
+            color: #667eea;
+        }
+
+        .footer-btn.liked {
+            color: #e74c3c;
+        }
+
+        /* Boş Durum */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #999;
+        }
+
+        .empty-state h2 {
+            margin-bottom: 15px;
+            color: #666;
+        }
+
+        .empty-state p {
+            margin-bottom: 25px;
+        }
+
+        .empty-state a {
+            display: inline-block;
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        .load-more-container {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .load-more-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .load-more-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .load-more-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .no-more-activities {
+            color: #999;
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .activity-body {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .content-poster {
+                width: 150px;
+                height: 225px;
+            }
+
+            .comment-preview {
+                border-left: none;
+                border-top: 3px solid #667eea;
+                padding-left: 0;
+                padding-top: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    
+    <nav class="navbar">
+        <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
+        <div class="nav-links">
+            <a href="search.html" class="nav-link">🔍 Keşfet</a>
+            <a href="feed.html" class="nav-link active">📰 Akış</a>
+            <a href="profile.html" class="nav-link">👤 Profilim</a>
+            <button class="logout-btn" onclick="logout()">Çıkış</button>
+        </div>
+    </nav>
+
+    
+    <div class="container">
+        <h1 class="page-title">📰 Sosyal Akış</h1>
+        <div id="feedContainer">
+            <div class="loading">⏳ Aktiviteler yükleniyor...</div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        let allActivities = [];
+        let currentPage = 1;
+        const ITEMS_PER_PAGE = 10;
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            if (typeof app !== 'undefined' && app.initPromise) {
+                await app.initPromise;
+            }
+
+            if (!app?.currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            loadFeed();
+        });
+
+        async function loadFeed() {
+            const container = document.getElementById('feedContainer');
+
+            try {
+                const followingRes = await fetch('/api/get-following.php', { credentials: 'include' });
+                const followingData = await followingRes.json();
+
+                if (!followingData.success || !followingData.following || followingData.following.length === 0) {
+                    showEmptyState('Henüz kimseyi takip etmiyorsunuz', 'Kullanıcıları takip ederek aktivitelerini burada görebilirsiniz.');
+                    return;
+                }
+
+                const followingUsers = followingData.following;
+                const userMap = {};
+                followingUsers.forEach(u => {
+                    userMap[u.id] = u;
+                    userMap[u.username] = u;
+                });
+                let activities = [];
+                for (const user of followingUsers) {
+                    try {
+                        const contentRes = await fetch(`/api/get-user-content.php?user_id=${user.id}`, { credentials: 'include' });
+                        const contentData = await contentRes.json();
+
+                        if (contentData.success && contentData.watched) {
+                            contentData.watched.forEach(movie => {
+                                activities.push({
+                                    type: 'movie_watched',
+                                    userId: user.id,
+                                    username: user.username,
+                                    avatar: user.avatar_url || user.avatar,
+                                    contentType: 'movie',
+                                    contentId: movie.tmdb_id || movie.movie_id,
+                                    contentTitle: movie.title || 'Film',
+                                    poster: movie.poster_path,
+                                    rating: movie.rating,
+                                    likes: 0,
+                                    date: movie.updated_at || new Date().toISOString()
+                                });
+                            });
+                        }
+
+                        if (contentData.success && contentData.read) {
+                            contentData.read.forEach(book => {
+                                activities.push({
+                                    type: 'book_read',
+                                    userId: user.id,
+                                    username: user.username,
+                                    avatar: user.avatar_url || user.avatar,
+                                    contentType: 'book',
+                                    contentId: book.google_books_id || book.book_id,
+                                    contentTitle: book.title || 'Kitap',
+                                    poster: book.cover_url,
+                                    rating: book.rating,
+                                    likes: 0,
+                                    date: book.updated_at || new Date().toISOString()
+                                });
+                            });
+                        }
+                    } catch (e) {
+                        console.error('İçerik yüklenemedi:', e);
+                    }
+                    try {
+                        const commentsRes = await fetch(`/api/comments.php?user_id=${user.id}`, { credentials: 'include' });
+                        const commentsData = await commentsRes.json();
+
+                        if (commentsData.success && commentsData.comments) {
+                            for (const comment of commentsData.comments) {
+                                let contentTitle = 'İçerik';
+                                let poster = null;
+
+                                try {
+                                    if (comment.content_type === 'movie') {
+                                        const movieData = await app.getMovieDetail(comment.content_id);
+                                        if (movieData) {
+                                            contentTitle = movieData.title;
+                                            poster = movieData.poster_path;
+                                        }
+                                    } else if (comment.content_type === 'book') {
+                                        const bookData = await app.getBookDetail(comment.content_id);
+                                        if (bookData?.volumeInfo) {
+                                            contentTitle = bookData.volumeInfo.title;
+                                            poster = bookData.volumeInfo.imageLinks?.thumbnail;
+                                        }
+                                    }
+                                } catch (e) {
+                                    console.error('İçerik bilgisi alınamadı:', e);
+                                }
+
+                                activities.push({
+                                    type: 'comment',
+                                    userId: user.id,
+                                    username: user.username,
+                                    avatar: user.avatar_url || user.avatar,
+                                    contentType: comment.content_type,
+                                    contentId: comment.content_id,
+                                    contentTitle: contentTitle,
+                                    poster: poster,
+                                    commentText: comment.comment_text,
+                                    likes: 0,
+                                    date: comment.created_at
+                                });
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Yorumlar yüklenemedi:', e);
+                    }
+                }
+                activities.sort((a, b) => new Date(b.date) - new Date(a.date));
+                allActivities = activities;
+                currentPage = 1;
+                const ITEMS_PER_PAGE = 10;
+
+                if (activities.length === 0) {
+                    showEmptyState('Takip ettiklerinizin aktivitesi yok', 'Takip ettiğiniz kullanıcılar film izleyip kitap okudukça burada görünecek.');
+                    return;
+                }
+                const initialActivities = activities.slice(0, ITEMS_PER_PAGE);
+                displayActivities(initialActivities, activities.length > ITEMS_PER_PAGE);
+
+            } catch (error) {
+                console.error('Feed yükleme hatası:', error);
+                container.innerHTML = '<div class="empty-state"><h2>❌ Bir hata oluştu</h2><p>Lütfen sayfayı yenileyin.</p></div>';
+            }
+        }
+
+        function showEmptyState(title, message) {
+            const container = document.getElementById('feedContainer');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h2>📭 ${title}</h2>
+                    <p>${message}</p>
+                    <a href="social.html">👥 Kullanıcıları Keşfet</a>
+                </div>
+            `;
+        }
+
+        function displayActivities(activities, hasMore = false) {
+            const container = document.getElementById('feedContainer');
+            let html = '';
+
+            activities.forEach((activity, idx) => {
+                const avatarContent = getAvatarContent(activity.avatar, activity.username);
+                const timeAgo = getTimeAgo(activity.date);
+                const actionText = getActionText(activity);
+                const typeBadge = activity.contentType === 'movie'
+                    ? '<span class="content-type-badge badge-movie">🎬 Film</span>'
+                    : '<span class="content-type-badge badge-book">📚 Kitap</span>';
+                let posterUrl = 'https://placehold.co/100x150?text=Yükleniyor';
+                if (activity.contentType === 'movie' && activity.poster) {
+                    posterUrl = `https://image.tmdb.org/t/p/w200${activity.poster}`;
+                } else if (activity.contentType === 'book' && activity.poster) {
+                    posterUrl = activity.poster.replace('http://', 'https://');
+                }
+
+                html += `
+                    <div class="activity-card">
+                        
+                        <div class="activity-header">
+                            <div class="user-avatar" onclick="goToUserProfile(${activity.userId})">
+                                ${avatarContent}
+                            </div>
+                            <div class="header-info">
+                                <span class="username-link" onclick="goToUserProfile(${activity.userId})">${activity.username}</span>
+                                <div class="action-text">${actionText}</div>
+                                <div class="activity-date">${timeAgo}</div>
+                            </div>
+                        </div>
+                        
+                        
+                        <div class="activity-body" onclick="goToDetail('${activity.contentType}', '${activity.contentId}')">
+                            <img class="content-poster" src="${posterUrl}" alt="${activity.contentTitle}" onerror="this.src='https://placehold.co/100x150?text=Resim+Yok'">
+                            <div class="content-info">
+                                ${typeBadge}
+                                <div class="content-title">${activity.contentTitle}</div>
+                                ${activity.rating ? `<div class="rating-display">⭐ ${activity.rating}/10 puan verdi</div>` : ''}
+                                ${activity.commentText ? `<div class="comment-preview">"${activity.commentText.substring(0, 150)}${activity.commentText.length > 150 ? '...' : ''}"<br><a href="detail.html?type=${activity.contentType}&id=${activity.contentId}" style="color:#667eea;">daha fazlasını oku</a></div>` : ''}
+                            </div>
+                        </div>
+                        
+                        
+                        <div class="activity-footer">
+                            <button class="footer-btn" data-likes="${activity.likes || 0}" onclick="likeActivity(this)">
+                                ❤️ Beğen (${activity.likes || 0})
+                            </button>
+                            <button class="footer-btn" onclick="goToDetail('${activity.contentType}', '${activity.contentId}')">
+                                💬 Yorum Yap
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            if (hasMore) {
+                html += `
+                    <div class="load-more-container">
+                        <button class="load-more-btn" onclick="loadMoreActivities()">
+                            📥 Daha Fazla Yükle
+                        </button>
+                    </div>
+                `;
+            } else if (allActivities.length > ITEMS_PER_PAGE) {
+                html += `
+                    <div class="load-more-container">
+                        <p class="no-more-activities">✅ Tüm aktiviteler yüklendi</p>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+        function loadMoreActivities() {
+            currentPage++;
+            const startIdx = 0;
+            const endIdx = currentPage * ITEMS_PER_PAGE;
+            const activitiesToShow = allActivities.slice(startIdx, endIdx);
+            const hasMore = endIdx < allActivities.length;
+            displayActivities(activitiesToShow, hasMore);
+            window.scrollTo({
+                top: document.body.scrollHeight - 800,
+                behavior: 'smooth'
+            });
+        }
+
+        function getAvatarContent(avatar, username) {
+            if (avatar && avatar.startsWith('http')) {
+                return `<img src="${avatar}" alt="${username}">`;
+            } else if (avatar && avatar.trim() !== '') {
+                return `<span style="font-size: 28px;">${avatar}</span>`;
+            } else {
+                return username.charAt(0).toUpperCase();
+            }
+        }
+
+        function getActionText(activity) {
+            switch (activity.type) {
+                case 'movie_watched':
+                    return activity.rating
+                        ? `🎬 <strong>${activity.contentTitle}</strong> filmini oyladı`
+                        : `🎬 <strong>${activity.contentTitle}</strong> filmini izledi`;
+                case 'book_read':
+                    return activity.rating
+                        ? `📚 <strong>${activity.contentTitle}</strong> kitabını oyladı`
+                        : `📚 <strong>${activity.contentTitle}</strong> kitabını okudu`;
+                case 'comment':
+                    return `💬 <strong>${activity.contentTitle}</strong> hakkında yorum yaptı`;
+                default:
+                    return 'bir aktivite gerçekleştirdi';
+            }
+        }
+
+        function getTimeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'az önce';
+            if (diffMins < 60) return `${diffMins} dakika önce`;
+            if (diffHours < 24) return `${diffHours} saat önce`;
+            if (diffDays < 7) return `${diffDays} gün önce`;
+            if (diffDays < 30) return `${Math.floor(diffDays / 7)} hafta önce`;
+
+            return date.toLocaleDateString('tr-TR');
+        }
+
+        function goToUserProfile(userId) {
+            window.location.href = `user-profile.html?id=${userId}`;
+        }
+
+        function goToDetail(type, id) {
+            window.location.href = `detail.html?type=${type}&id=${id}`;
+        }
+
+        function likeActivity(btn) {
+            btn.classList.toggle('liked');
+            let currentLikes = parseInt(btn.dataset.likes) || 0;
+
+            if (btn.classList.contains('liked')) {
+                currentLikes++;
+                btn.dataset.likes = currentLikes;
+                btn.innerHTML = `❤️ Beğenildi (${currentLikes})`;
+            } else {
+                currentLikes = Math.max(0, currentLikes - 1);
+                btn.dataset.likes = currentLikes;
+                btn.innerHTML = `❤️ Beğen (${currentLikes})`;
+            }
+        }
+
+        function logout() {
+            if (app) {
+                app.logout();
+            }
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+
+</html>
+

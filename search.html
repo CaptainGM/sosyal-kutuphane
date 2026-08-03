@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arama & Keşfet - Sosyal Kütüphane</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        nav {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 30px;
+            color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav h1 {
+            font-size: 24px;
+        }
+
+        .user-info {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .user-welcome {
+            color: white;
+        }
+
+        .logout-btn {
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .search-box {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .search-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 10px 25px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        input[type="text"],
+        select {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button.search-btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button.search-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* ✅ DÜZELTME 4: Filtreleme alanları */
+        .filter-section {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .filter-section.active {
+            display: block;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .filter-group select {
+            width: 100%;
+        }
+
+        .sort-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .sort-btn {
+            padding: 8px 15px;
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .sort-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        /* ✅ Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .pagination button,
+        .pagination span {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .pagination button:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .pagination .active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .pagination .disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .content-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .content-card img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .content-card .info {
+            padding: 12px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-card h3 {
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: #333;
+            line-height: 1.3;
+            height: 32px;
+            overflow: hidden;
+        }
+
+        .content-card .meta {
+            font-size: 11px;
+            color: #666;
+            margin-top: auto;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #667eea;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px;
+            color: #999;
+        }
+
+        .section-title {
+            font-size: 24px;
+            margin: 40px 0 20px 0;
+            color: #333;
+        }
+
+        .showcase-section {
+            margin: 50px 0;
+        }
+
+        .showcase-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .showcase-title {
+            font-size: 28px;
+            color: #333;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .results-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 12px;
+            }
+
+            .content-card img {
+                height: 200px;
+            }
+
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <h1>🎬 Sosyal Kütüphane - Arama & Keşfet</h1>
+        <div class="user-info">
+            <span class="user-welcome" id="userWelcome">Hoş geldiniz!</span>
+            <a href="social.html"
+                style="color: white; text-decoration: none; padding: 8px 15px; background: rgba(255,255,255,0.2); border-radius: 5px; margin-right: 10px;">
+                👥 Sosyal
+            </a>
+            <a href="profile.html"
+                style="color: white; text-decoration: none; padding: 8px 15px; background: rgba(255,255,255,0.2); border-radius: 5px; margin-right: 10px;">
+                👤 Profilim
+            </a>
+            <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="search-box">
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="switchTab('movie')">🎬 Filmler</button>
+                <button class="tab-btn" onclick="switchTab('book')">📚 Kitaplar</button>
+            </div>
+
+            <div class="search-controls">
+                <input type="text" id="searchInput" placeholder="Film ara..." onkeypress="handleKeyPress(event)">
+                <button class="search-btn" onclick="performSearch()">🔍 Ara</button>
+            </div>
+
+
+            <div class="filter-section" id="filterSection">
+                <h3 style="margin-bottom: 15px;">🎛️ Filtreler</h3>
+
+                <div class="sort-controls">
+                    <button class="sort-btn active" onclick="setSortBy('relevance', event)">⭐ Alakalılık</button>
+                    <button class="sort-btn" onclick="setSortBy('rating', event)">📊 En Yüksek Puan</button>
+                    <button class="sort-btn" onclick="setSortBy('year', event)">📅 En Yeni</button>
+                    <button class="sort-btn" onclick="setSortBy('popularity', event)">🔥 Popülarite</button>
+                </div>
+
+                <div class="filter-grid" id="filterGrid">
+
+                </div>
+
+                <button class="search-btn" onclick="applyFilters()">✅ Filtreyi Uygula</button>
+            </div>
+        </div>
+
+        <div id="resultsContainer">
+            <div class="no-results">
+                👆 Yukarıdan arama yaparak film veya kitap bulabilirsiniz
+            </div>
+        </div>
+
+
+        <div class="pagination" id="pagination" style="display: none;"></div>
+
+        <div class="showcase-section" id="topRatedSection">
+            <div class="showcase-header">
+                <h2 class="showcase-title">🎯 En Yüksek Puanlı Filmler</h2>
+            </div>
+            <div id="topRatedMovies" class="results-grid">
+                <div class="loading">En iyi filmler yükleniyor...</div>
+            </div>
+        </div>
+
+        <div class="showcase-section" id="popularSection">
+            <div class="showcase-header">
+                <h2 class="showcase-title">🔥 En Popüler Filmler</h2>
+            </div>
+            <div id="popularMovies" class="results-grid">
+                <div class="loading">Popüler filmler yükleniyor...</div>
+            </div>
+        </div>
+
+        <!-- Platform İçi Popüler İçerikler -->
+        <div class="showcase-section" id="mostCommentedSection">
+            <div class="showcase-header">
+                <h2 class="showcase-title">💬 En Çok Yorum Alan</h2>
+            </div>
+            <div id="mostCommentedContent" class="results-grid">
+                <div class="loading">Yükleniyor...</div>
+            </div>
+        </div>
+
+        <div class="showcase-section" id="mostAddedSection">
+            <div class="showcase-header">
+                <h2 class="showcase-title">📚 En Çok Listeye Eklenen</h2>
+            </div>
+            <div id="mostAddedContent" class="results-grid">
+                <div class="loading">Yükleniyor...</div>
+            </div>
+        </div>
+
+        <div class="showcase-section" id="topUserRatedSection">
+            <div class="showcase-header">
+                <h2 class="showcase-title">⭐ Kullanıcıların En Beğendiği</h2>
+            </div>
+            <div id="topUserRatedContent" class="results-grid">
+                <div class="loading">Yükleniyor...</div>
+            </div>
+        </div>
+
+        <div class="showcase-section" id="allMoviesSection">
+            <div class="showcase-header">
+                <h2 class="showcase-title">🎬 Tüm Filmler</h2>
+            </div>
+            <div id="allMoviesContainer" class="results-grid">
+                <div class="loading">Filmler yükleniyor...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        let currentTab = 'movie';
+        let currentPage = 1;
+        let totalPages = 1;
+        let currentSortBy = 'relevance';
+        let currentFilters = {};
+        let allResults = [];
+        let isFiltering = false;
+        const MOVIE_GENRES = [
+            { id: 28, name: 'Action' },
+            { id: 12, name: 'Adventure' },
+            { id: 16, name: 'Animation' },
+            { id: 35, name: 'Comedy' },
+            { id: 80, name: 'Crime' },
+            { id: 99, name: 'Documentary' },
+            { id: 18, name: 'Drama' },
+            { id: 10751, name: 'Family' },
+            { id: 14, name: 'Fantasy' },
+            { id: 27, name: 'Horror' },
+            { id: 10749, name: 'Romance' },
+            { id: 878, name: 'Science Fiction' },
+            { id: 53, name: 'Thriller' }
+        ];
+        function applyMovieFilters(movies) {
+            return movies.filter(movie => {
+                if (currentFilters.year) {
+                    const movieYear = movie.release_date?.split('-')[0];
+                    if (movieYear !== currentFilters.year) return false;
+                }
+                if (currentFilters.rating) {
+                    if (movie.vote_average < parseFloat(currentFilters.rating)) return false;
+                }
+                if (currentFilters.genre) {
+                    if (!movie.genre_ids?.includes(parseInt(currentFilters.genre))) return false;
+                }
+
+                return true;
+            });
+        }
+        function updateFilters() {
+            currentFilters = {
+                genre: document.getElementById('genreFilter')?.value || '',
+                year: document.getElementById('yearFilter')?.value || '',
+                rating: document.getElementById('ratingFilter')?.value || ''
+            };
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        }
+        function switchTab(tab) {
+            currentTab = tab;
+            currentPage = 1;
+            allResults = [];
+            isFiltering = false;
+            currentSortBy = 'relevance';
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            const input = document.getElementById('searchInput');
+            input.placeholder = tab === 'movie' ? 'Film ara...' : 'Kitap ara...';
+            input.value = '';
+
+            document.getElementById('resultsContainer').innerHTML = '<div class="no-results">👆 Yukarıdan arama yapın</div>';
+            document.getElementById('pagination').style.display = 'none';
+            const filterSection = document.getElementById('filterSection');
+            const filterGrid = document.getElementById('filterGrid');
+            const topRatedSection = document.getElementById('topRatedSection');
+            const popularSection = document.getElementById('popularSection');
+            const allMoviesSection = document.getElementById('allMoviesSection');
+
+            if (tab === 'movie') {
+                filterSection.classList.add('active');
+                filterGrid.innerHTML = `
+                    <div class="filter-group">
+                        <label>🎬 Tür</label>
+                        <select id="genreFilter" onchange="updateFilters()">
+                            <option value="">Tümü</option>
+                            ${MOVIE_GENRES.map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>📅 Yıl</label>
+                        <select id="yearFilter" onchange="updateFilters()">
+                            <option value="">Tümü</option>
+                            ${Array.from({ length: 30 }, (_, i) => 2024 - i).map(y => `<option value="${y}">${y}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>⭐ Minimum Puan</label>
+                        <select id="ratingFilter" onchange="updateFilters()">
+                            <option value="">Tümü</option>
+                            <option value="9">9+ ⭐⭐⭐⭐⭐</option>
+                            <option value="8">8+ ⭐⭐⭐⭐</option>
+                            <option value="7">7+ ⭐⭐⭐</option>
+                            <option value="6">6+ ⭐⭐</option>
+                        </select>
+                    </div>
+                `;
+                topRatedSection.style.display = 'block';
+                popularSection.style.display = 'block';
+                allMoviesSection.style.display = 'block';
+                loadShowcaseMovies();
+            } else {
+                filterSection.classList.remove('active');
+                topRatedSection.style.display = 'none';
+                popularSection.style.display = 'none';
+                allMoviesSection.style.display = 'none';
+                document.getElementById('topRatedSection').querySelector('h2').textContent = '📚 En İyi Kitaplar';
+                document.getElementById('allMoviesSection').querySelector('h2').textContent = '📖 Tüm Kitaplar';
+                document.getElementById('topRatedSection').style.display = 'block';
+                document.getElementById('allMoviesSection').style.display = 'block';
+                document.getElementById('popularSection').style.display = 'none';
+                loadShowcaseBooks();
+            }
+        }
+        async function performSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            const resultsContainer = document.getElementById('resultsContainer');
+            const topRatedSection = document.getElementById('topRatedSection');
+            const popularSection = document.getElementById('popularSection');
+            const allMoviesSection = document.getElementById('allMoviesSection');
+
+            if (!query) {
+                resultsContainer.innerHTML = '<div class="no-results">👆 Yukarıdan arama yapın</div>';
+                topRatedSection.style.display = currentTab === 'movie' ? 'block' : 'none';
+                popularSection.style.display = currentTab === 'movie' ? 'block' : 'none';
+                allMoviesSection.style.display = currentTab === 'movie' ? 'block' : 'none';
+                return;
+            }
+
+            topRatedSection.style.display = 'none';
+            popularSection.style.display = 'none';
+            allMoviesSection.style.display = 'none';
+            resultsContainer.innerHTML = '<div class="loading">🔍 Aranıyor...</div>';
+            currentPage = 1;
+
+            try {
+                let results = [];
+
+                if (currentTab === 'movie') {
+                    const data = await app.searchMovies(query);
+                    results = data.results || [];
+                    results = applyMovieFilters(results);
+                    results = sortResults(results, currentSortBy);
+                    allResults = results;
+                    totalPages = Math.ceil(results.length / 12);
+                    displayPaginatedResults(results, currentTab, 1);
+                } else {
+                    try {
+                        const response = await fetch(
+                            `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(query)}&maxResults=40&orderBy=relevance`
+                        );
+                        const data = await response.json();
+                        let items = data.items || [];
+                        const queryLower = query.toLowerCase();
+                        items.sort((a, b) => {
+                            const titleA = (a.volumeInfo?.title || '').toLowerCase();
+                            const titleB = (b.volumeInfo?.title || '').toLowerCase();
+                            const exactA = titleA === queryLower ? 0 : 1;
+                            const exactB = titleB === queryLower ? 0 : 1;
+                            if (exactA !== exactB) return exactA - exactB;
+                            const startsA = titleA.startsWith(queryLower) ? 0 : 1;
+                            const startsB = titleB.startsWith(queryLower) ? 0 : 1;
+                            if (startsA !== startsB) return startsA - startsB;
+                            const containsWordA = titleA.includes(queryLower) ? 0 : 1;
+                            const containsWordB = titleB.includes(queryLower) ? 0 : 1;
+                            return containsWordA - containsWordB;
+                        });
+
+                        results = items;
+                        console.log('Kitap arama sonucu:', results.length, 'kitap bulundu');
+                    } catch (err) {
+                        console.error('Google Books API hatası:', err);
+                        results = [];
+                    }
+
+                    allResults = results;
+                    totalPages = Math.ceil(results.length / 12);
+                    displayPaginatedResults(results, currentTab, 1);
+                } if (allResults.length === 0) {
+                    resultsContainer.innerHTML = `
+                <div class="no-results">
+                    😕 "${query}" için sonuç bulunamadı
+                </div>
+            `;
+                    document.getElementById('pagination').style.display = 'none';
+                }
+
+            } catch (error) {
+                console.error('Arama hatası:', error);
+                showError(resultsContainer, 'Arama sırasında hata oluştu!');
+            }
+        }
+        function setSortBy(sortType, event) {
+            currentSortBy = sortType;
+            currentPage = 1;
+
+            document.querySelectorAll('.sort-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            if (isFiltering) {
+                filterShowcaseMovies();
+            }
+        }
+        async function applyFilters() {
+            updateFilters();
+            const query = document.getElementById('searchInput').value.trim();
+
+            if (!query) {
+                isFiltering = true;
+                filterShowcaseMovies();
+            } else {
+                performSearch();
+            }
+        }
+        async function filterShowcaseMovies() {
+            const resultsContainer = document.getElementById('resultsContainer');
+            const topRatedSection = document.getElementById('topRatedSection');
+            const popularSection = document.getElementById('popularSection');
+            const allMoviesSection = document.getElementById('allMoviesSection');
+            if (isFiltering) {
+                topRatedSection.style.display = 'none';
+                popularSection.style.display = 'none';
+                allMoviesSection.style.display = 'none';
+            } else {
+                topRatedSection.style.display = 'block';
+                popularSection.style.display = 'block';
+                allMoviesSection.style.display = 'block';
+            }
+
+            resultsContainer.innerHTML = '<div class="loading">🔍 Filtreler uygulanıyor...</div>';
+            currentPage = 1;
+
+            try {
+                let topRated = [];
+                let popular = [];
+
+                try {
+                    topRated = await app.getTopRatedMovies();
+                } catch (e) {
+                    console.warn('Top rated yüklemesi başarısız');
+                    topRated = [];
+                }
+
+                try {
+                    popular = await app.getPopularMovies();
+                } catch (e) {
+                    console.warn('Popular yüklemesi başarısız');
+                    popular = [];
+                }
+
+                let allMovies = [...topRated, ...popular];
+                allMovies = allMovies.filter((movie, index, self) =>
+                    index === self.findIndex(m => m.id === movie.id)
+                );
+                allMovies = applyMovieFilters(allMovies);
+                allMovies = sortResults(allMovies, currentSortBy);
+
+                allResults = allMovies;
+                totalPages = Math.ceil(allResults.length / 12);
+
+                if (allResults.length === 0) {
+                    resultsContainer.innerHTML = `
+                        <div class="no-results">
+                            😕 Seçilen filtrelere uygun film bulunamadı
+                        </div>
+                    `;
+                    document.getElementById('pagination').style.display = 'none';
+                } else {
+                    displayPaginatedResults(allResults, 'movie', 1);
+                }
+
+            } catch (error) {
+                console.error('Filtreleme hatası:', error);
+                resultsContainer.innerHTML = '<div class="error-message">❌ Filtreleme sırasında hata oluştu!</div>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            document.getElementById('userWelcome').textContent = `Hoş geldin!`;
+            const firstTabBtn = document.querySelector('.tab-btn');
+            if (firstTabBtn) {
+                firstTabBtn.click();
+            }
+
+            loadShowcaseMovies();
+        });
+        function sortResults(results, sortType) {
+            const sorted = [...results];
+
+            switch (sortType) {
+                case 'rating':
+                    return sorted.sort((a, b) => {
+                        const ratingA = a.vote_average || 0;
+                        const ratingB = b.vote_average || 0;
+                        return ratingB - ratingA;
+                    });
+
+                case 'year':
+                    return sorted.sort((a, b) => {
+                        const yearA = parseInt(a.release_date?.split('-')[0] || '0');
+                        const yearB = parseInt(b.release_date?.split('-')[0] || '0');
+                        return yearB - yearA;
+                    });
+
+                case 'popularity':
+                    return sorted.sort((a, b) => {
+                        const popA = a.popularity || 0;
+                        const popB = b.popularity || 0;
+                        return popB - popA;
+                    });
+
+                case 'relevance':
+                default:
+                    return sorted;
+            }
+        }
+        function displayPaginatedResults(results, type, page) {
+            const resultsContainer = document.getElementById('resultsContainer');
+            const paginationContainer = document.getElementById('pagination');
+
+            const itemsPerPage = 12;
+            const startIdx = (page - 1) * itemsPerPage;
+            const paginatedResults = results.slice(startIdx, startIdx + itemsPerPage);
+
+            displayResults(paginatedResults, type);
+            updatePagination(results.length, page);
+            resultsContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+        function updatePagination(totalItems, currentPage) {
+            const paginationContainer = document.getElementById('pagination');
+            const itemsPerPage = 12;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+            if (totalPages <= 1) {
+                paginationContainer.style.display = 'none';
+                return;
+            }
+
+            let html = '';
+            if (currentPage > 1) {
+                html += `<button onclick="goToPage(${currentPage - 1})">← Önceki</button>`;
+            } else {
+                html += `<button disabled class="disabled">← Önceki</button>`;
+            }
+            for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+                if (i === currentPage) {
+                    html += `<span class="active">${i}</span>`;
+                } else {
+                    html += `<button onclick="goToPage(${i})">${i}</button>`;
+                }
+            }
+            if (currentPage < totalPages) {
+                html += `<button onclick="goToPage(${currentPage + 1})">Sonraki →</button>`;
+            } else {
+                html += `<button disabled class="disabled">Sonraki →</button>`;
+            }
+
+            paginationContainer.innerHTML = html;
+            paginationContainer.style.display = 'flex';
+        }
+        function goToPage(page) {
+            currentPage = page;
+            displayPaginatedResults(allResults, currentTab, page);
+        }
+
+        function displayResults(results, type) {
+            const resultsContainer = document.getElementById('resultsContainer');
+
+            if (!results || results.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="no-results">
+                        😕 Sonuç bulunamadı
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="results-grid">';
+
+            results.forEach(item => {
+                if (type === 'movie') {
+                    const posterUrl = item.poster_path
+                        ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+                        : 'https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok';
+
+                    const year = item.release_date ? item.release_date.split('-')[0] : 'Bilinmiyor';
+
+                    html += `
+                        <div class="content-card" onclick="goToDetail('movie', '${item.id}')">
+                            <img src="${posterUrl}" alt="${item.title}" 
+                                 onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok'">
+                            <div class="info">
+                                <h3>${item.title}</h3>
+                                <div class="meta">📅 ${year} | ⭐ ${item.vote_average?.toFixed(1) || 'N/A'}</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const volumeInfo = item.volumeInfo || {};
+                    const coverUrl = volumeInfo.imageLinks?.thumbnail
+                        ? volumeInfo.imageLinks.thumbnail.replace('http://', 'https://')
+                        : 'https://placehold.co/150x225/764ba2/ffffff?text=Kapak+Yok';
+
+                    const authors = volumeInfo.authors ? volumeInfo.authors.join(', ') : 'Bilinmiyor';
+                    const year = volumeInfo.publishedDate ? volumeInfo.publishedDate.split('-')[0] : 'Bilinmiyor';
+
+                    html += `
+                        <div class="content-card" onclick="goToDetail('book', '${item.id}')">
+                            <img src="${coverUrl}" alt="${volumeInfo.title}"
+                                 onerror="this.src='https://placehold.co/150x225/764ba2/ffffff?text=Kapak+Yok'">
+                            <div class="info">
+                                <h3>${volumeInfo.title}</h3>
+                                <div class="meta">✍️ ${authors}<br>📅 ${year}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            html += '</div>';
+            resultsContainer.innerHTML = html;
+        }
+
+        async function loadShowcaseBooks() {
+            try {
+                const GOOGLE_BOOKS_BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
+                document.getElementById('topRatedSection').querySelector('h2').textContent = '📚 En İyi Kitaplar';
+                document.getElementById('allMoviesSection').querySelector('h2').textContent = '📖 Tüm Kitaplar';
+                document.getElementById('topRatedSection').style.display = 'block';
+                document.getElementById('allMoviesSection').style.display = 'block';
+                document.getElementById('popularSection').style.display = 'none';
+
+                loadPlatformPopularContent('book');
+
+                const topRatedBooks = await fetch(
+                    `${GOOGLE_BOOKS_BASE_URL}?q=subject:fiction&orderBy=relevance&maxResults=12&langRestrict=tr`
+                ).then(r => r.json());
+
+                displayShowcaseBooks(topRatedBooks.items || [], 'topRatedMovies');
+                let allBooks = [];
+
+                for (let i = 0; i < 2; i++) {
+                    const startIndex = i * 20;
+                    const response = await fetch(
+                        `${GOOGLE_BOOKS_BASE_URL}?q=subject:literature&orderBy=newest&startIndex=${startIndex}&maxResults=20`
+                    ).then(r => r.json());
+                    allBooks = [...allBooks, ...(response.items || [])];
+                }
+                allBooks = allBooks.filter((book, index, self) =>
+                    index === self.findIndex(b => b.id === book.id)
+                );
+
+                displayShowcaseBooks(allBooks, 'allMoviesContainer');
+            } catch (error) {
+                console.error('Kitap vitrin yükleme hatası:', error);
+            }
+        }
+
+        function displayShowcaseBooks(results, containerId) {
+            const container = document.getElementById(containerId);
+
+            if (!results || results.length === 0) {
+                container.innerHTML = '<div class="no-results">Kitap bulunamadı</div>';
+                return;
+            }
+
+            let html = '';
+
+            results.forEach(item => {
+                const volumeInfo = item.volumeInfo || {};
+                const coverUrl = volumeInfo.imageLinks?.thumbnail
+                    ? volumeInfo.imageLinks.thumbnail.replace('http://', 'https://')
+                    : 'https://placehold.co/150x225/764ba2/ffffff?text=Kapak+Yok';
+
+                const authors = volumeInfo.authors ? volumeInfo.authors.join(', ') : 'Bilinmiyor';
+                const year = volumeInfo.publishedDate ? volumeInfo.publishedDate.split('-')[0] : 'Bilinmiyor';
+
+                html += `
+                    <div class="content-card" onclick="goToDetail('book', '${item.id}')">
+                        <img src="${coverUrl}" alt="${volumeInfo.title || 'Kitap'}"
+                             onerror="this.onerror=null; this.src='https://placehold.co/150x225/764ba2/ffffff?text=Kapak';">
+                        <div class="info">
+                            <h3>${volumeInfo.title}</h3>
+                            <div class="meta">✍️ ${authors}<br>📅 ${year}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        let allMoviesLoaded = false;
+        let allMoviesCache = [];
+        async function loadMoreMovies() {
+            if (allMoviesLoaded) return;
+
+            const container = document.getElementById('allMoviesContainer');
+            container.innerHTML = '<div class="loading">Daha fazla film yükleniyor...</div>';
+
+            try {
+                let allMovies = [];
+
+                for (let page = 1; page <= 100; page++) {
+                    const response = await fetch(
+                        `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}&language=tr-TR&page=${page}`
+                    );
+                    const data = await response.json();
+                    allMovies = [...allMovies, ...(data.results || [])];
+                }
+
+                allMovies = allMovies.filter((movie, index, self) =>
+                    index === self.findIndex(m => m.id === movie.id)
+                );
+
+                allMoviesCache = allMovies;
+                allMoviesLoaded = true;
+
+                if (allMovies.length === 0) {
+                    container.innerHTML = '<div class="no-results">Film bulunamadı</div>';
+                } else {
+                    displayShowcaseResults(allMovies, 'allMoviesContainer');
+                }
+
+            } catch (error) {
+                console.error('Film yükleme hatası:', error);
+                container.innerHTML = '<div class="error-message">❌ Filmler yüklenirken hata oluştu</div>';
+            }
+        }
+        async function filterShowcaseMovies() {
+            const resultsContainer = document.getElementById('resultsContainer');
+            const topRatedSection = document.getElementById('topRatedSection');
+            const popularSection = document.getElementById('popularSection');
+            const allMoviesSection = document.getElementById('allMoviesSection');
+
+            if (isFiltering) {
+                topRatedSection.style.display = 'none';
+                popularSection.style.display = 'none';
+                allMoviesSection.style.display = 'none';
+            }
+
+            resultsContainer.innerHTML = '<div class="loading">🔍 Filtreler uygulanıyor...</div>';
+            currentPage = 1;
+
+            try {
+                let allMovies = allMoviesCache.length > 0 ? [...allMoviesCache] : [];
+                if (allMovies.length === 0) {
+                    for (let page = 1; page <= 100; page++) {
+                        const response = await fetch(
+                            `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}&language=tr-TR&page=${page}`
+                        );
+                        const data = await response.json();
+                        allMovies = [...allMovies, ...(data.results || [])];
+                    }
+
+                    allMovies = allMovies.filter((movie, index, self) =>
+                        index === self.findIndex(m => m.id === movie.id)
+                    );
+                }
+                if (currentSortBy === 'rating') {
+                    allMovies = allMovies.sort((a, b) => {
+                        const ratingA = a.vote_average || 0;
+                        const ratingB = b.vote_average || 0;
+                        return ratingB - ratingA;
+                    });
+                }
+                if (currentSortBy === 'year') {
+                    allMovies = allMovies.sort((a, b) => {
+                        const yearA = parseInt(a.release_date?.split('-')[0] || '0');
+                        const yearB = parseInt(b.release_date?.split('-')[0] || '0');
+                        return yearB - yearA;
+                    });
+                }
+                if (currentSortBy === 'popularity') {
+                    allMovies = allMovies.sort((a, b) => {
+                        const popA = a.popularity || 0;
+                        const popB = b.popularity || 0;
+                        return popB - popA;
+                    });
+                }
+                allMovies = allMovies.filter(movie => {
+                    if (currentFilters.genre) {
+                        if (!movie.genre_ids?.includes(parseInt(currentFilters.genre))) return false;
+                    }
+
+                    if (currentFilters.year) {
+                        const movieYear = movie.release_date?.split('-')[0];
+                        if (movieYear !== currentFilters.year) return false;
+                    }
+
+                    if (currentFilters.rating) {
+                        if (movie.vote_average < parseFloat(currentFilters.rating)) return false;
+                    }
+
+                    return true;
+                });
+
+                allResults = allMovies;
+                totalPages = Math.ceil(allResults.length / 12);
+
+                if (allResults.length === 0) {
+                    resultsContainer.innerHTML = `
+                <div class="no-results">
+                    😕 Seçilen filtrelere uygun film bulunamadı
+                </div>
+            `;
+                    document.getElementById('pagination').style.display = 'none';
+                } else {
+                    displayPaginatedResults(allResults, 'movie', 1);
+                }
+
+            } catch (error) {
+                console.error('Filtreleme hatası:', error);
+                resultsContainer.innerHTML = '<div class="error-message">❌ Filtreleme sırasında hata oluştu!</div>';
+            }
+        }
+        window.addEventListener('scroll', function () {
+            const container = document.getElementById('allMoviesSection');
+            if (!container) return;
+
+            const rect = container.getBoundingClientRect();
+            if (rect.top < window.innerHeight && !allMoviesLoaded) {
+                loadMoreMovies();
+            }
+        });
+
+        async function loadShowcaseMovies() {
+            try {
+                const topRated = await app.getTopRatedMovies();
+                displayShowcaseResults(topRated, 'topRatedMovies');
+
+                const popular = await app.getPopularMovies();
+                displayShowcaseResults(popular, 'popularMovies');
+
+                loadPlatformPopularContent('movie');
+
+                loadMoreMovies();
+            } catch (error) {
+                console.error('Vitrin yükleme hatası:', error);
+                displayMockShowcase();
+            }
+        }
+
+        async function loadPlatformPopularContent(type) {
+            try {
+                const commentsRes = await fetch(`/api/popular-content.php?type=${type}&sort=comments&limit=10`, { credentials: 'include' });
+                const commentsData = await commentsRes.json();
+                if (commentsData.success && commentsData.data && commentsData.data.length > 0) {
+                    displayPlatformResults(commentsData.data, 'mostCommentedContent', type, 'comment_count', '💬');
+                    document.getElementById('mostCommentedSection').style.display = 'block';
+                } else {
+                    document.getElementById('mostCommentedSection').style.display = 'none';
+                }
+
+                const listsRes = await fetch(`/api/popular-content.php?type=${type}&sort=lists&limit=10`, { credentials: 'include' });
+                const listsData = await listsRes.json();
+                if (listsData.success && listsData.data && listsData.data.length > 0) {
+                    displayPlatformResults(listsData.data, 'mostAddedContent', type, 'list_count', '📋');
+                    document.getElementById('mostAddedSection').style.display = 'block';
+                } else {
+                    document.getElementById('mostAddedSection').style.display = 'none';
+                }
+
+                const ratingsRes = await fetch(`/api/popular-content.php?type=${type}&sort=ratings&limit=10`, { credentials: 'include' });
+                const ratingsData = await ratingsRes.json();
+                if (ratingsData.success && ratingsData.data && ratingsData.data.length > 0) {
+                    displayPlatformResults(ratingsData.data, 'topUserRatedContent', type, 'avg_rating', '⭐');
+                    document.getElementById('topUserRatedSection').style.display = 'block';
+                } else {
+                    document.getElementById('topUserRatedSection').style.display = 'none';
+                }
+            } catch (error) {
+                document.getElementById('mostCommentedSection').style.display = 'none';
+                document.getElementById('mostAddedSection').style.display = 'none';
+                document.getElementById('topUserRatedSection').style.display = 'none';
+            }
+        }
+
+        function displayPlatformResults(results, containerId, type, statKey, statIcon) {
+            const container = document.getElementById(containerId);
+
+            if (!results || results.length === 0) {
+                container.innerHTML = '<div class="no-results">Henüz veri yok</div>';
+                return;
+            }
+
+            let html = '';
+            results.forEach(item => {
+                let posterUrl, statValue;
+
+                if (type === 'movie') {
+                    posterUrl = item.poster_path
+                        ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+                        : 'https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok';
+                } else {
+                    posterUrl = item.cover_url
+                        ? item.cover_url.replace('http://', 'https://')
+                        : 'https://placehold.co/150x225/667eea/ffffff?text=Kapak+Yok';
+                }
+
+                if (statKey === 'comment_count') {
+                    statValue = `${statIcon} ${item[statKey]} yorum`;
+                } else if (statKey === 'list_count') {
+                    statValue = `${statIcon} ${item[statKey]} kez eklendi`;
+                } else if (statKey === 'avg_rating') {
+                    statValue = `${statIcon} ${item[statKey]}/10 (${item.vote_count} oy)`;
+                }
+
+                html += `
+                    <div class="content-card" onclick="goToDetail('${type}', '${item.id}')">
+                        <img src="${posterUrl}" alt="${item.title}" 
+                             onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Resim+Yok'">
+                        <div class="info">
+                            <h3>${item.title}</h3>
+                            <div class="meta" style="color: #667eea; font-weight: 600;">${statValue}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function displayShowcaseResults(results, containerId) {
+            const container = document.getElementById(containerId);
+
+            if (!results || results.length === 0) {
+                container.innerHTML = '<div class="no-results">Film bulunamadı</div>';
+                return;
+            }
+
+            let html = '';
+
+            results.forEach(movie => {
+                const posterUrl = movie.poster_path
+                    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+                    : 'https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok';
+
+                const year = movie.release_date ? movie.release_date.split('-')[0] : 'Bilinmiyor';
+
+                html += `
+                    <div class="content-card" onclick="goToDetail('movie', '${movie.id}')">
+                        <img src="${posterUrl}" alt="${movie.title}" 
+                             onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok'">
+                        <div class="info">
+                            <h3>${movie.title}</h3>
+                            <div class="meta">📅 ${year} | ⭐ ${movie.vote_average?.toFixed(1) || 'N/A'}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function displayMockShowcase() {
+            const mockMovies = [
+                {
+                    id: 278,
+                    title: 'Esaretin Bedeli',
+                    poster_path: '/tQ91wWQJ2WRNDXwxuOlfGCJzDMt.jpg',
+                    release_date: '1994-09-23',
+                    vote_average: 9.3
+                },
+                {
+                    id: 238,
+                    title: 'Baba',
+                    poster_path: '/3J2eWYj3j26MZPcJM0x6L2cU6G0.jpg',
+                    release_date: '1972-03-14',
+                    vote_average: 8.7
+                }
+            ];
+
+            displayShowcaseResults(mockMovies, 'topRatedMovies');
+            displayShowcaseResults(mockMovies, 'popularMovies');
+        }
+
+        function goToDetail(type, id) {
+            window.location.href = `detail.html?type=${type}&id=${id}`;
+        }
+
+        function showError(container, message) {
+            container.innerHTML = `<div class="error-message">❌ ${message}</div>`;
+        }
+
+        function logout() {
+            if (app) {
+                app.logout();
+            }
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+
+</html>

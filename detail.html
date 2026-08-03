@@ -1,0 +1,1633 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İçerik Detay - Sosyal Kütüphane</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 30px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .detail-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 0 40px;
+            margin-bottom: 40px;
+        }
+
+        .detail-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .poster-container {
+            text-align: center;
+        }
+
+        .poster {
+            width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .content-info {
+            padding: 20px 0;
+        }
+
+        .content-title {
+            font-size: 32px;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .content-meta {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .content-description {
+            line-height: 1.8;
+            margin-bottom: 30px;
+            font-size: 16px;
+            color: white;
+        }
+
+        .platform-rating {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .rating-score {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .rating-count {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .rating-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .rating-section h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .user-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .action-btn {
+            padding: 12px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .action-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .rating-input {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .star-rating {
+            display: flex;
+            gap: 5px;
+        }
+
+        .star {
+            font-size: 24px;
+            cursor: pointer;
+            color: #ddd;
+            transition: color 0.2s;
+        }
+
+        .star:hover,
+        .star.active {
+            color: #ffc107;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .comments-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        .comments-section h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .comment-form {
+            margin-bottom: 30px;
+        }
+
+        .comment-form textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            resize: vertical;
+            min-height: 100px;
+            margin-bottom: 15px;
+            font-family: inherit;
+        }
+
+        .comment-form button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .comment-form button:hover {
+            background: #764ba2;
+        }
+
+        .comment-item {
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .comment-user {
+            font-weight: 600;
+            color: #667eea;
+            cursor: pointer;
+        }
+
+        .comment-user:hover {
+            text-decoration: underline;
+        }
+
+        .comment-date {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .comment-text {
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: #555;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .action-btn-comment {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .action-btn-comment:hover {
+            color: #667eea;
+        }
+
+        .reply-form {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .reply-form textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            font-family: inherit;
+            min-height: 80px;
+            margin-bottom: 10px;
+        }
+
+        .reply-form button {
+            padding: 8px 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            margin-right: 5px;
+        }
+
+        .reply-form button:hover {
+            background: #764ba2;
+        }
+
+        .reply-form button.cancel {
+            background: #ccc;
+        }
+
+        .reply-form button.cancel:hover {
+            background: #999;
+        }
+
+        .replies-container {
+            margin-top: 15px;
+            padding-left: 20px;
+            border-left: 2px solid #667eea;
+        }
+
+        .reply-item {
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .reply-header {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .reply-text {
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #667eea;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px;
+            color: #999;
+        }
+
+        @media (max-width: 768px) {
+            .detail-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .poster-container {
+                max-width: 300px;
+                margin: 0 auto;
+            }
+
+            .user-actions {
+                grid-template-columns: 1fr;
+            }
+
+            .content-title {
+                font-size: 24px;
+            }
+        }
+
+        /* Özel Liste Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 450px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            font-size: 20px;
+            color: #333;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .custom-lists-container {
+            margin-bottom: 20px;
+        }
+
+        .custom-list-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .custom-list-item:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .custom-list-item.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .custom-list-item input[type="checkbox"] {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+        }
+
+        .custom-list-name {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .custom-list-count {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .custom-list-item.selected .custom-list-count {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .no-lists-message {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+        }
+
+        .create-list-link {
+            color: #667eea;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .modal-btn {
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .modal-btn-cancel {
+            background: #f5f5f5;
+            border: none;
+            color: #666;
+        }
+
+        .modal-btn-cancel:hover {
+            background: #e0e0e0;
+        }
+
+        .modal-btn-save {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+        }
+
+        .modal-btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
+        <div class="nav-links">
+            <a href="search.html" class="nav-link">🔍 Keşfet</a>
+            <a href="feed.html" class="nav-link">📰 Akış</a>
+            <a href="profile.html" class="nav-link">👤 Profilim</a>
+            <button class="logout-btn" onclick="logout()">Çıkış</button>
+        </div>
+    </nav>
+
+
+    <div class="detail-header">
+        <div class="container">
+            <div id="loadingDetail" class="loading">📖 İçerik yükleniyor...</div>
+            <div id="detailContent" style="display: none;">
+                <div class="detail-content">
+                    <div class="poster-container">
+                        <img id="contentPoster" class="poster" src="" alt="Poster">
+                        <div class="platform-rating" id="platformRating">
+                            <div class="rating-score" id="ratingScore">-/-</div>
+                            <div class="rating-count" id="ratingCount">API Puanı</div>
+                        </div>
+                        <div class="platform-rating" id="userPlatformRating"
+                            style="margin-top: 10px; background: rgba(102, 126, 234, 0.3);">
+                            <div class="rating-score" id="userRatingScore">-/-</div>
+                            <div class="rating-count" id="userRatingCount">👥 Kullanıcı Puanı</div>
+                        </div>
+                    </div>
+                    <div class="content-info">
+                        <h1 id="contentTitle" class="content-title"></h1>
+                        <div id="contentMeta" class="content-meta"></div>
+                        <div id="contentDescription" class="content-description"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="container">
+        <div style="margin-bottom: 20px;">
+            <button id="followCreatorBtn" class="btn btn-primary" style="display: none;">
+                👥 Yazarı Takip Et
+            </button>
+        </div>
+
+        <div class="rating-section">
+            <h3>🎯 İşlemleriniz</h3>
+
+            <div class="user-actions">
+                <button id="rateBtn" class="action-btn" onclick="showRatingSection()">⭐ Puan Ver</button>
+                <button id="watchBtn" class="action-btn" onclick="toggleList('watched')">
+                    <span id="watchBtnText">🎬 İzledim</span>
+                </button>
+                <button id="watchlistBtn" class="action-btn" onclick="toggleList('watchlist')">
+                    <span id="watchlistBtnText">📋 İzlenecekler</span>
+                </button>
+                <button id="readBtn" class="action-btn" onclick="toggleList('read')" style="display: none;">
+                    <span id="readBtnText">📖 Okudum</span>
+                </button>
+                <button id="readinglistBtn" class="action-btn" onclick="toggleList('readinglist')"
+                    style="display: none;">
+                    <span id="readinglistBtnText">📚 Okunacaklar</span>
+                </button>
+                <button id="customListBtn" class="action-btn" onclick="showCustomListModal()">
+                    <span>📁 Özel Listeye Ekle</span>
+                </button>
+            </div>
+
+            <div id="ratingSection" style="display: none;">
+                <div class="rating-input">
+                    <span>Puanınız:</span>
+                    <div class="star-rating" id="starRating">
+                        <span class="star" data-rating="1">☆</span>
+                        <span class="star" data-rating="2">☆</span>
+                        <span class="star" data-rating="3">☆</span>
+                        <span class="star" data-rating="4">☆</span>
+                        <span class="star" data-rating="5">☆</span>
+                        <span class="star" data-rating="6">☆</span>
+                        <span class="star" data-rating="7">☆</span>
+                        <span class="star" data-rating="8">☆</span>
+                        <span class="star" data-rating="9">☆</span>
+                        <span class="star" data-rating="10">☆</span>
+                    </div>
+                    <span id="currentRating">0/10</span>
+                </div>
+                <button class="btn btn-primary" onclick="submitRating()">Puanı Gönder</button>
+            </div>
+
+            <div id="userRatingSection"
+                style="display: none; margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                <h4>⭐ Sizin Puanınız</h4>
+                <div id="userRatingDisplay"></div>
+                <button class="btn btn-primary" onclick="showRatingSection()" style="margin-top: 10px;">Puanı
+                    Değiştir</button>
+            </div>
+        </div>
+
+        <div class="comments-section">
+            <h3>💬 Yorumlar</h3>
+
+            <div class="comment-form">
+                <textarea id="commentText" placeholder="Yorumunuzu yazın..."></textarea>
+                <button onclick="submitComment()">✍️ Yorum Gönder</button>
+            </div>
+
+            <div id="comments-section">
+                <p style="text-align: center; color: #999;">Henüz yorum yapılmamış...</p>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="customListModal" class="modal-overlay" onclick="closeCustomListModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>📁 Özel Listeye Ekle</h3>
+                <button class="modal-close" onclick="closeCustomListModal()">&times;</button>
+            </div>
+            <div id="customListsContainer" class="custom-lists-container">
+                <div class="loading">Listeler yükleniyor...</div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-cancel" onclick="closeCustomListModal()">İptal</button>
+                <button class="modal-btn modal-btn-save" onclick="saveToCustomLists()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        let currentContent = null;
+        let currentRating = 0;
+        let currentContentType = '';
+        let currentContentId = '';
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            if (typeof app !== 'undefined' && app.initPromise) {
+                try {
+                    await app.initPromise;
+                } catch (e) {
+                    console.error('App init error:', e);
+                }
+            }
+            loadContentDetail();
+            setupStarRating();
+        });
+
+        function getUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return {
+                type: urlParams.get('type'),
+                id: urlParams.get('id')
+            };
+        }
+
+        async function loadContentDetail() {
+            const { type, id } = getUrlParams();
+
+            console.log('Loading content:', type, id);
+
+            if (!type || !id) {
+                showError('Geçersiz içerik!');
+                return;
+            }
+
+            currentContentType = type;
+            currentContentId = id;
+
+            try {
+                if (typeof app === 'undefined') {
+                    showError('Uygulama başlatılamadı!');
+                    return;
+                }
+
+                let content;
+                if (type === 'movie') {
+                    content = await app.getMovieDetail(id);
+                } else {
+                    console.log('Fetching book detail for ID:', id);
+                    content = await app.getBookDetail(id);
+                    console.log('Book API response:', content);
+                }
+
+                if (content) {
+                    currentContent = content;
+                    displayContentDetail(content, type);
+                    loadUserInteractions();
+                    loadComments();
+                    loadPlatformUserRating();
+                } else {
+                    console.error('Content is null for:', type, id);
+                    showError('İçerik bulunamadı!');
+                }
+            } catch (error) {
+                console.error('İçerik yükleme hatası:', error);
+                showError('İçerik yüklenirken hata oluştu!');
+            }
+        }
+
+
+        function displayContentDetail(content, type) {
+            const loadingDiv = document.getElementById('loadingDetail');
+            const contentDiv = document.getElementById('detailContent');
+
+            loadingDiv.style.display = 'none';
+            contentDiv.style.display = 'block';
+
+            if (type === 'movie') {
+                displayMovieDetail(content);
+            } else {
+                displayBookDetail(content);
+            }
+
+            setupActionButtons(type);
+        }
+
+        function displayMovieDetail(movie) {
+            currentContent = {
+                id: movie.id,
+                title: movie.title,
+                poster_path: movie.poster_path,
+                overview: movie.overview,
+                release_date: movie.release_date,
+                runtime: movie.runtime,
+                genres: movie.genres,
+                vote_average: movie.vote_average,
+                vote_count: movie.vote_count,
+                credits: movie.credits
+            };
+
+            document.getElementById('contentTitle').textContent = movie.title;
+
+            const posterUrl = movie.poster_path
+                ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+                : 'https://placehold.co/300x450?text=Poster+Yok';
+            document.getElementById('contentPoster').src = posterUrl;
+
+            const year = movie.release_date ? movie.release_date.split('-')[0] : 'Bilinmiyor';
+            const runtime = movie.runtime ? `${movie.runtime} dakika` : 'Bilinmiyor';
+            const genres = movie.genres ? movie.genres.map(g => g.name).join(', ') : 'Bilinmiyor';
+
+            document.getElementById('contentMeta').innerHTML = `
+        <div>📅 ${year} | ⏱️ ${runtime}</div>
+        <div>🎭 ${genres}</div>
+    `;
+
+            document.getElementById('contentDescription').textContent = movie.overview || 'Açıklama bulunamadı.';
+
+            document.getElementById('ratingScore').textContent = movie.vote_average
+                ? `${movie.vote_average.toFixed(1)}/10`
+                : '-/-';
+            document.getElementById('ratingCount').textContent = movie.vote_count
+                ? `🎬 TMDb: ${movie.vote_count.toLocaleString()} oy`
+                : '🎬 TMDb Puanı';
+
+            const followBtn = document.getElementById('followCreatorBtn');
+            if (followBtn && movie.credits && movie.credits.crew) {
+                const director = movie.credits.crew.find(person => person.job === 'Director');
+                if (director) {
+                    followBtn.textContent = `👥 ${director.name}'i Takip Et`;
+                    followBtn.dataset.creatorId = director.id;
+                    followBtn.style.display = 'block';
+                }
+            }
+        }
+
+        async function followCreator(creatorName, creatorId) {
+            if (typeof app === 'undefined' || !app.currentUser) {
+                alert('Takip etmek için giriş yapmalısınız!');
+                return;
+            }
+
+            try {
+                const targetUserId = creatorId;
+
+                const response = await fetch('/api/follow.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ target_user_id: targetUserId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(`✅ ${creatorName} takip edildi!`);
+                } else {
+                    alert('⚠️ ' + data.message);
+                }
+            } catch (error) {
+                console.error('Takip hatası:', error);
+                alert('Takip işlemi başarısız oldu!');
+            }
+        }
+
+        function displayBookDetail(book) {
+            const volumeInfo = book.volumeInfo || {};
+            currentContent = {
+                id: book.id,
+                volumeInfo: volumeInfo,
+                title: volumeInfo.title,
+                imageLinks: volumeInfo.imageLinks
+            };
+
+            document.getElementById('contentTitle').textContent = volumeInfo.title || 'Bilinmiyor';
+
+            const coverUrl = volumeInfo.imageLinks?.thumbnail
+                ? volumeInfo.imageLinks.thumbnail.replace('http://', 'https://')
+                : 'https://placehold.co/300x450?text=Kapak+Yok';
+            document.getElementById('contentPoster').src = coverUrl;
+
+            const authors = volumeInfo.authors ? volumeInfo.authors.join(', ') : 'Bilinmiyor';
+            const pageCount = volumeInfo.pageCount ? `${volumeInfo.pageCount} sayfa` : 'Bilinmiyor';
+            const publishedDate = volumeInfo.publishedDate ? volumeInfo.publishedDate.split('-')[0] : 'Bilinmiyor';
+            const categories = volumeInfo.categories ? volumeInfo.categories.join(', ') : 'Bilinmiyor';
+
+            document.getElementById('contentMeta').innerHTML = `
+        <div>✍️ ${authors}</div>
+        <div>📅 ${publishedDate} | 📖 ${pageCount}</div>
+        <div>📚 ${categories}</div>
+    `;
+
+            document.getElementById('contentDescription').textContent =
+                volumeInfo.description || 'Açıklama bulunamadı.';
+
+            document.getElementById('ratingScore').textContent = volumeInfo.averageRating
+                ? `${volumeInfo.averageRating}/5`
+                : '-/-';
+            document.getElementById('ratingCount').textContent = '📚 Google Books Puanı';
+        }
+
+        
+        async function loadPlatformUserRating() {
+            try {
+                const response = await fetch(
+                    `/api/content-rating.php?content_type=${currentContentType}&content_id=${currentContentId}`
+                );
+                const data = await response.json();
+
+                if (data.success && data.data) {
+                    const { average_rating, total_votes } = data.data;
+
+                    if (average_rating && total_votes > 0) {
+                        document.getElementById('userRatingScore').textContent = `${average_rating}/10`;
+                        document.getElementById('userRatingCount').textContent = `👥 ${total_votes} kullanıcı oyladı`;
+                    } else {
+                        document.getElementById('userRatingScore').textContent = '-/-';
+                        document.getElementById('userRatingCount').textContent = '👥 Henüz oy yok';
+                    }
+                }
+            } catch (error) {
+                console.error('Platform puanı yükleme hatası:', error);
+                document.getElementById('userRatingScore').textContent = '-/-';
+                document.getElementById('userRatingCount').textContent = '👥 Kullanıcı Puanı';
+            }
+        }
+        function setupActionButtons(type) {
+            const watchBtn = document.getElementById('watchBtn');
+            const watchlistBtn = document.getElementById('watchlistBtn');
+            const readBtn = document.getElementById('readBtn');
+            const readinglistBtn = document.getElementById('readinglistBtn');
+
+            if (type === 'movie') {
+                watchBtn.style.display = 'block';
+                watchlistBtn.style.display = 'block';
+                readBtn.style.display = 'none';
+                readinglistBtn.style.display = 'none';
+            } else {
+                watchBtn.style.display = 'none';
+                watchlistBtn.style.display = 'none';
+                readBtn.style.display = 'block';
+                readinglistBtn.style.display = 'block';
+            }
+        }
+
+        function setupStarRating() {
+            const stars = document.querySelectorAll('.star');
+            stars.forEach(star => {
+                star.addEventListener('click', function () {
+                    const rating = parseInt(this.getAttribute('data-rating'));
+                    currentRating = rating;
+                    updateStarDisplay();
+                });
+            });
+        }
+
+        function updateStarDisplay() {
+            const stars = document.querySelectorAll('.star');
+            stars.forEach(star => {
+                const starRating = parseInt(star.getAttribute('data-rating'));
+                if (starRating <= currentRating) {
+                    star.textContent = '★';
+                    star.classList.add('active');
+                } else {
+                    star.textContent = '☆';
+                    star.classList.remove('active');
+                }
+            });
+            document.getElementById('currentRating').textContent = `${currentRating}/10`;
+        }
+
+        function showRatingSection() {
+            if (typeof app === 'undefined' || !app.currentUser) {
+                alert('Puan vermek için giriş yapmalısınız!');
+                return;
+            }
+
+            const section = document.getElementById('ratingSection');
+            const userRatingSection = document.getElementById('userRatingSection');
+
+            section.style.display = 'block';
+            userRatingSection.style.display = 'none';
+
+            const userRating = app.getRating(currentContentType, currentContentId);
+            if (userRating) {
+                currentRating = userRating.rating;
+                updateStarDisplay();
+            } else {
+                currentRating = 0;
+                updateStarDisplay();
+            }
+        }
+        async function submitRating() {
+            if (typeof app === 'undefined' || !app.currentUser) {
+                alert('Puan vermek için giriş yapmalısınız!');
+                return;
+            }
+
+            if (currentRating === 0) {
+                alert('Lütfen puan seçin!');
+                return;
+            }
+
+            try {
+                let contentData = {
+                    title: currentContent?.title,
+                    poster_path: currentContentType === 'movie' ? currentContent?.poster_path : null,
+                    cover_url: currentContentType === 'book' ? (currentContent?.volumeInfo?.imageLinks?.thumbnail || null) : null
+                };
+
+                const response = await fetch('/api/user-status.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        content_type: currentContentType,
+                        content_id: currentContentId,
+                        status: currentContentType === 'movie' ? 'watched' : 'read',
+                        rating: currentRating,
+                        content_data: contentData
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert(`⭐ ${currentRating}/10 puanınız kaydedildi!`);
+                    document.getElementById('ratingSection').style.display = 'none';
+                    loadUserInteractions();
+                    loadPlatformUserRating(); 
+                } else {
+                    alert('❌ Puan gönderilemedi: ' + (data.message || 'Hata oluştu'));
+                }
+            } catch (error) {
+                console.error('Puan gönderme hatası:', error);
+                alert('❌ Bağlantı hatası!');
+            }
+        }
+        async function toggleList(listType) {
+            if (typeof app === 'undefined' || !app.currentUser) {
+                alert('Bu işlem için giriş yapmalısınız!');
+                return;
+            }
+
+            try {
+                const apiStatus = listType === 'readinglist' ? 'to_read' : listType;
+                let contentData = {
+                    title: currentContent?.title || currentContent?.volumeInfo?.title,
+                    poster_path: currentContentType === 'movie' ? currentContent?.poster_path : null,
+                    cover_url: currentContentType === 'book' ? (currentContent?.volumeInfo?.imageLinks?.thumbnail || null) : null
+                };
+
+                const response = await fetch('/api/user-status.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        content_type: currentContentType,
+                        content_id: currentContentId,
+                        status: apiStatus,
+                        rating: 0,
+                        content_data: contentData
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    const statusTexts = {
+                        'watched': 'İzledim',
+                        'watchlist': 'İzlenecekler',
+                        'read': 'Okudum',
+                        'readinglist': 'Okunacaklar',
+                        'to_read': 'Okunacaklar'
+                    };
+                    alert(`✅ ${statusTexts[listType] || listType} listesine eklendi!`);
+                    loadUserInteractions();
+                } else {
+                    alert('❌ Hata: ' + (data.message || 'Bilinmeyen hata'));
+                }
+            } catch (error) {
+                console.error('Liste ekleme hatası:', error);
+                alert('❌ Bağlantı hatası!');
+            }
+        }
+
+        function updateListButtons(status) {
+            if (status === 'to_read') status = 'readinglist';
+
+            const buttons = {
+                'watched': { btn: document.getElementById('watchBtn'), text: '🎬 İzledim' },
+                'watchlist': { btn: document.getElementById('watchlistBtn'), text: '📋 İzlenecekler' },
+                'read': { btn: document.getElementById('readBtn'), text: '📖 Okudum' },
+                'readinglist': { btn: document.getElementById('readinglistBtn'), text: '📚 Okunacaklar' }
+            };
+            Object.entries(buttons).forEach(([key, { btn, text }]) => {
+                if (btn && btn.style.display !== 'none') {
+                    btn.classList.remove('active');
+                    btn.style.background = 'white';
+                    btn.style.color = '#667eea';
+                    const span = btn.querySelector('span');
+                    if (span) span.textContent = text;
+                }
+            });
+            if (status && buttons[status] && buttons[status].btn && buttons[status].btn.style.display !== 'none') {
+                const activeBtn = buttons[status].btn;
+                activeBtn.classList.add('active');
+                activeBtn.style.background = '#667eea';
+                activeBtn.style.color = 'white';
+                const span = activeBtn.querySelector('span');
+                if (span) span.textContent = '✓ ' + buttons[status].text;
+            }
+        }
+        async function loadUserInteractions() {
+            if (typeof app === 'undefined' || !app.currentUser) return;
+
+            try {
+                const statusResponse = await fetch(
+                    `/api/user-status.php?content_type=${currentContentType}&content_id=${currentContentId}`,
+                    { method: 'GET', credentials: 'include' }
+                );
+                const statusData = await statusResponse.json();
+
+                if (statusData.success && statusData.data) {
+                    const listStatus = statusData.data.status;
+                    const userRating = statusData.data.rating;
+
+                    updateListButtons(listStatus);
+
+                    const userRatingSection = document.getElementById('userRatingSection');
+                    const userRatingDisplay = document.getElementById('userRatingDisplay');
+
+                    if (userRating) {
+                        userRatingSection.style.display = 'block';
+                        userRatingDisplay.innerHTML = `
+                    <div style="font-size: 24px; font-weight: bold;">${app.ratingToStars(userRating)}</div>
+                    <div style="color: #666;">${userRating}/10</div>
+                `;
+                    } else {
+                        userRatingSection.style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                console.error('User interactions yükleme hatası:', error);
+            }
+        }
+
+        async function submitComment() {
+            if (typeof app === 'undefined' || !app.currentUser) {
+                alert('Yorum yapmak için giriş yapmalısınız!');
+                return;
+            }
+
+            const commentText = document.getElementById('commentText').value.trim();
+            if (!commentText) {
+                alert('Lütfen yorumunuzu yazın!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/comments.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        content_type: currentContentType,
+                        content_id: currentContentId,
+                        comment_text: commentText,
+                        parent_comment_id: null
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('commentText').value = '';
+                    loadComments();
+                    alert('✅ Yorumunuz gönderildi!');
+                } else {
+                    alert('❌ Yorum gönderilemedi: ' + (data.message || 'Hata oluştu'));
+                }
+            } catch (error) {
+                console.error('Yorum gönderme hatası:', error);
+                alert('❌ Bağlantı hatası!');
+            }
+        }
+
+        async function loadComments() {
+            try {
+                const response = await fetch(
+                    `/api/comments.php?content_type=${currentContentType}&content_id=${currentContentId}`,
+                    { credentials: 'include' }
+                );
+                const data = await response.json();
+                const commentsList = data.comments || [];
+
+                let html = '<div style="display: flex; flex-direction: column; gap: 20px;">';
+
+                if (commentsList.length === 0) {
+                    html += '<p style="text-align: center; color: #999; padding: 20px;">Henüz yorum yapılmamış...</p>';
+                } else {
+                    commentsList.forEach((comment) => {
+                        const isOwnComment = (typeof app !== 'undefined' && app.currentUser) ? (comment.user_id === app.currentUser.id) : false;
+                        const timeAgo = (typeof app !== 'undefined') ? app.getTimeAgo(comment.created_at) : comment.created_at;
+                        const safeCommentText = comment.comment_text.replace(/`/g, '&#96;').replace(/\\/g, '&#92;');
+
+                        html += `
+                    <div class="comment-item" id="comment-${comment.id}" style="background: white; padding: 20px; border-radius: 10px; border-left: 4px solid #667eea;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <div>
+                                <strong style="color: #667eea;">${comment.username}</strong>
+                                <span style="color: #999; font-size: 12px; margin-left: 10px;">${timeAgo}</span>
+                            </div>
+                        </div>
+                        
+                        <div id="comment-text-${comment.id}" style="margin: 10px 0; color: #555;">
+                            ${comment.comment_text.length > 200 ? `
+                                <span id="short-${comment.id}">${comment.comment_text.substring(0, 200)}...</span>
+                                <span id="full-${comment.id}" style="display: none;">${comment.comment_text}</span>
+                                <button onclick="toggleCommentText(${comment.id})" style="background: none; border: none; color: #667eea; cursor: pointer; padding: 0; margin-left: 5px;">Daha Fazla</button>
+                            ` : `${comment.comment_text}`}
+                        </div>
+                        
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px;">
+                            <button id="like-btn-${comment.id}" onclick="likeComment(${comment.id})" style="background: none; border: none; color: ${comment.liked_by_me ? '#dc3545' : '#667eea'}; cursor: pointer;">
+                                ${comment.liked_by_me ? '❤️' : '🤍'} <span id="like-count-${comment.id}">${comment.likes_count || 0}</span>
+                            </button>
+                            <button onclick="showReplyForm(${comment.id}, '${comment.username}')" style="background: none; border: none; color: #667eea; cursor: pointer;">
+                                💬 Yanıtla
+                            </button>
+                            ${isOwnComment ? `
+                                <button onclick="showEditModal(${comment.id}, '${safeCommentText}')" style="background: none; border: none; color: #667eea; cursor: pointer;">
+                                    ✏️ Düzenle
+                                </button>
+                                <button onclick="deleteComment(${comment.id})" style="background: none; border: none; color: #dc3545; cursor: pointer;">
+                                    🗑️ Sil
+                                </button>
+                            ` : ''}
+                        </div>
+                        
+                        
+                        <div id="reply-form-${comment.id}" style="display: none; margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                            <textarea id="reply-text-${comment.id}" placeholder="@${comment.username} kullanıcısına yanıt yazın..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; min-height: 80px; font-family: inherit;"></textarea>
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <button onclick="submitReply(${comment.id})" style="background: #667eea; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">Yanıtla</button>
+                                <button onclick="hideReplyForm(${comment.id})" style="background: #ccc; color: #333; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">İptal</button>
+                            </div>
+                        </div>
+                        
+                        
+                        ${comment.replies && comment.replies.length > 0 ? `
+                            <div style="margin-top: 15px; margin-left: 20px; border-left: 2px solid #e0e0e0; padding-left: 15px;">
+                                ${comment.replies.map(reply => {
+                            const isOwnReply = (typeof app !== 'undefined' && app.currentUser) ? (reply.user_id === app.currentUser.id) : false;
+                            const replyTimeAgo = (typeof app !== 'undefined') ? app.getTimeAgo(reply.created_at) : reply.created_at;
+                            return `
+                                        <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 10px;">
+                                            <div style="margin-bottom: 8px;">
+                                                <strong style="color: #667eea; font-size: 14px;">${reply.username}</strong>
+                                                <span style="color: #999; font-size: 11px; margin-left: 8px;">${replyTimeAgo}</span>
+                                            </div>
+                                            <p style="margin: 0; color: #555; font-size: 14px;">${reply.comment_text}</p>
+                                            <div style="display: flex; gap: 10px; margin-top: 8px;">
+                                                <button onclick="likeComment(${reply.id})" style="background: none; border: none; color: ${reply.liked_by_me ? '#dc3545' : '#667eea'}; cursor: pointer; font-size: 12px;">
+                                                    ${reply.liked_by_me ? '❤️' : '🤍'} ${reply.likes_count || 0}
+                                                </button>
+                                                ${isOwnReply ? `
+                                                    <button onclick="deleteComment(${reply.id})" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 12px;">🗑️ Sil</button>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                    `;
+                        }).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                    });
+                }
+                html += '</div>';
+                document.getElementById('comments-section').innerHTML = html;
+            } catch (error) {
+                console.error('Yorum yükleme hatası:', error);
+                document.getElementById('comments-section').innerHTML = '<p style="color: red;">❌ Yorumlar yüklenemedi</p>';
+            }
+        }
+        function showReplyForm(commentId, username) {
+            if (typeof app === 'undefined' || !app.currentUser) {
+                alert('Yanıt yazmak için giriş yapmalısınız!');
+                return;
+            }
+            document.getElementById(`reply-form-${commentId}`).style.display = 'block';
+            document.getElementById(`reply-text-${commentId}`).focus();
+        }
+        function hideReplyForm(commentId) {
+            document.getElementById(`reply-form-${commentId}`).style.display = 'none';
+            document.getElementById(`reply-text-${commentId}`).value = '';
+        }
+        async function submitReply(parentCommentId) {
+            const replyText = document.getElementById(`reply-text-${parentCommentId}`).value.trim();
+            if (!replyText) {
+                alert('Yanıt boş olamaz!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/comments.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        content_type: currentContentType,
+                        content_id: currentContentId,
+                        comment_text: replyText,
+                        parent_comment_id: parentCommentId
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    hideReplyForm(parentCommentId);
+                    loadComments();
+                    alert('✅ Yanıtınız gönderildi!');
+                } else {
+                    alert('❌ Yanıt gönderilemedi: ' + (data.message || 'Hata oluştu'));
+                }
+            } catch (error) {
+                console.error('Yanıt gönderme hatası:', error);
+                alert('❌ Bağlantı hatası!');
+            }
+        }
+
+        async function deleteComment(commentId) {
+            if (!confirm('Yorumu silmek istediğinize emin misiniz?')) return;
+
+            try {
+                const response = await fetch('/api/comments.php', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ comment_id: commentId })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    loadComments();
+                    alert('✅ Yorum silindi!');
+                } else {
+                    alert('❌ ' + (data.message || 'Yorum silinemedi'));
+                }
+            } catch (error) {
+                console.error('Yorum silme hatası:', error);
+                alert('❌ Hata oluştu');
+            }
+        }
+
+        function toggleCommentText(commentId) {
+            const shortSpan = document.getElementById(`short-${commentId}`);
+            const fullSpan = document.getElementById(`full-${commentId}`);
+            const btn = event.target;
+
+            if (fullSpan.style.display === 'none') {
+                shortSpan.style.display = 'none';
+                fullSpan.style.display = 'inline';
+                btn.textContent = 'Az Göster';
+            } else {
+                shortSpan.style.display = 'inline';
+                fullSpan.style.display = 'none';
+                btn.textContent = 'Daha Fazla';
+            }
+        }
+
+        function showEditModal(commentId, oldText) {
+            const decodedText = oldText.replace(/&#96;/g, '`').replace(/&#92;/g, '\\').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+
+            const modal = document.createElement('div');
+            modal.id = 'editModal';
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;';
+
+            const modalContent = document.createElement('div');
+            modalContent.style.cssText = 'background: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 500px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);';
+
+            const title = document.createElement('h3');
+            title.style.cssText = 'margin-top: 0; margin-bottom: 15px; color: #333;';
+            title.textContent = 'Yorumu Düzenle';
+
+            const textarea = document.createElement('textarea');
+            textarea.id = 'editText';
+            textarea.style.cssText = 'width: 100%; min-height: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit; font-size: 14px;';
+            textarea.value = decodedText;
+
+            const buttonDiv = document.createElement('div');
+            buttonDiv.style.cssText = 'display: flex; gap: 10px; margin-top: 15px; justify-content: flex-end;';
+
+            const cancelBtn = document.createElement('button');
+            cancelBtn.style.cssText = 'background: #ccc; color: #333; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer;';
+            cancelBtn.textContent = 'İptal';
+            cancelBtn.onclick = () => modal.remove();
+
+            const saveBtn = document.createElement('button');
+            saveBtn.style.cssText = 'background: #667eea; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer;';
+            saveBtn.textContent = 'Kaydet';
+            saveBtn.onclick = () => submitEditComment(commentId);
+
+            buttonDiv.appendChild(cancelBtn);
+            buttonDiv.appendChild(saveBtn);
+            modalContent.appendChild(title);
+            modalContent.appendChild(textarea);
+            modalContent.appendChild(buttonDiv);
+            modal.appendChild(modalContent);
+            modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+
+            document.body.appendChild(modal);
+            textarea.focus();
+        }
+
+        async function submitEditComment(commentId) {
+            const newText = document.getElementById('editText').value.trim();
+            if (!newText) {
+                alert('Yorum boş olamaz!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/comments.php', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        comment_id: commentId,
+                        comment_text: newText
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('editModal').remove();
+                    loadComments();
+                    alert('✅ Yorum düzenlendi!');
+                } else {
+                    alert('❌ ' + (data.message || 'Yorum düzenlenemedi'));
+                }
+            } catch (error) {
+                console.error('Yorum düzenleme hatası:', error);
+                alert('❌ Hata oluştu');
+            }
+        }
+
+        async function editCommentPrompt(commentId, oldText) {
+            showEditModal(commentId, oldText);
+        }
+
+        async function likeComment(commentId) {
+            if (typeof app === 'undefined' || !app.currentUser) {
+                alert('Beğenmek için giriş yapmalısınız!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/like-comment.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ comment_id: commentId })
+                });
+
+                const data = await response.json();
+                console.log('Like response:', data);
+
+                if (data.success) {
+                    const likeCountSpan = document.getElementById(`like-count-${commentId}`);
+                    const likeBtn = document.getElementById(`like-btn-${commentId}`);
+
+                    if (likeCountSpan) {
+                        likeCountSpan.textContent = data.likes_count;
+                    }
+                    if (likeBtn) {
+                        if (data.liked) {
+                            likeBtn.innerHTML = `❤️ <span id="like-count-${commentId}">${data.likes_count}</span>`;
+                            likeBtn.style.color = '#dc3545';
+                        } else {
+                            likeBtn.innerHTML = `🤍 <span id="like-count-${commentId}">${data.likes_count}</span>`;
+                            likeBtn.style.color = '#667eea';
+                        }
+                    }
+                } else {
+                    console.error('Like error:', data.message);
+                    alert('❌ Beğeni eklenemedi: ' + (data.message || 'Bilinmeyen hata'));
+                }
+            } catch (error) {
+                console.error('Like hatası:', error);
+                alert('❌ Hata oluştu: ' + error.message);
+            }
+        }
+
+        function showError(message) {
+            const loadingDiv = document.getElementById('loadingDetail');
+            loadingDiv.innerHTML = `<div class="no-results">❌ ${message}</div>`;
+        }
+        let selectedCustomLists = [];
+
+        async function showCustomListModal() {
+            if (!app?.currentUser) {
+                alert('Bu özellik için giriş yapmalısınız!');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const modal = document.getElementById('customListModal');
+            const container = document.getElementById('customListsContainer');
+            modal.classList.add('active');
+            try {
+                const response = await fetch('/api/custom-lists.php', { credentials: 'include' });
+                const data = await response.json();
+
+                if (data.success && data.lists && data.lists.length > 0) {
+                    let html = '';
+                    data.lists.forEach(list => {
+                        const isInList = list.items?.some(item =>
+                            item.content_type === currentContentType &&
+                            String(item.content_id) === String(currentContentId)
+                        );
+
+                        html += `
+                            <div class="custom-list-item ${isInList ? 'selected' : ''}" 
+                                 onclick="toggleCustomListSelection(this, ${list.id})"
+                                 data-list-id="${list.id}">
+                                <input type="checkbox" ${isInList ? 'checked' : ''} onclick="event.stopPropagation()">
+                                <span class="custom-list-name">${list.name}</span>
+                                <span class="custom-list-count">${list.item_count || 0} içerik</span>
+                            </div>
+                        `;
+                    });
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = `
+                        <div class="no-lists-message">
+                            <p>Henüz özel listeniz yok.</p>
+                            <p><a class="create-list-link" href="profile.html">Profil sayfasından yeni liste oluşturun →</a></p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Liste yükleme hatası:', error);
+                container.innerHTML = '<div class="no-lists-message">Listeler yüklenirken hata oluştu.</div>';
+            }
+        }
+
+        function closeCustomListModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('customListModal').classList.remove('active');
+        }
+
+        function toggleCustomListSelection(element, listId) {
+            element.classList.toggle('selected');
+            const checkbox = element.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+        }
+
+        async function saveToCustomLists() {
+            const selectedItems = document.querySelectorAll('.custom-list-item.selected');
+            const listIds = Array.from(selectedItems).map(item => parseInt(item.dataset.listId));
+
+            if (listIds.length === 0) {
+                alert('En az bir liste seçmelisiniz!');
+                return;
+            }
+            const contentTitle = currentContent?.title || currentContent?.volumeInfo?.title || 'İçerik';
+
+            try {
+                let successCount = 0;
+                for (const listId of listIds) {
+                    const response = await fetch('/api/custom-lists.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            action: 'add_item',
+                            list_id: listId,
+                            content_type: currentContentType,
+                            content_id: currentContentId,
+                            content_title: contentTitle
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        successCount++;
+                    } else if (!data.message?.includes('zaten')) {
+                        console.error('Liste ekleme hatası:', data.message);
+                    } else {
+                        successCount++;
+                    }
+                }
+
+                if (successCount > 0) {
+                    alert('✅ İçerik seçili listelere eklendi!');
+                }
+                closeCustomListModal();
+            } catch (error) {
+                console.error('Kaydetme hatası:', error);
+                alert('❌ Bir hata oluştu!');
+            }
+        }
+
+        function logout() {
+            if (app) {
+                app.logout();
+            }
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+
+</html>

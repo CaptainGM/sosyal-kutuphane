@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sosyal Kütüphane - Giriş & Kayıt</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            min-height: 550px;
+        }
+
+        .form-container {
+            flex: 1;
+            padding: 50px 40px;
+            display: none;
+        }
+
+        .form-container.active {
+            display: block;
+        }
+
+        .side-panel {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 50px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .side-panel h2 {
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .switch-btn {
+            background: white;
+            color: #667eea;
+            margin-top: 20px;
+            padding: 12px 30px;
+            width: auto;
+        }
+
+        .switch-btn:hover {
+            background: #f8f8f8;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+            font-size: 14px;
+        }
+
+        .success-message {
+            background: #efe;
+            color: #3c3;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+            font-size: 14px;
+        }
+
+        .forgot-password {
+            text-align: right;
+            margin-top: 10px;
+        }
+
+        .forgot-password a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+        .side-panel p {
+            margin: 20px 0;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .side-panel {
+                order: -1;
+                padding: 30px 20px;
+            }
+
+            .form-container {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        
+        <div class="form-container active" id="loginForm">
+            <h2>🎬 Hoş Geldiniz!</h2>
+
+            <div class="error-message" id="loginError"></div>
+
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="loginEmail">E-posta</label>
+                    <input type="email" id="loginEmail" placeholder="ornek@email.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="loginPassword">Şifre</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+
+                <div class="forgot-password">
+                    <a href="#" onclick="showForgotPassword(); return false;">Şifremi Unuttum</a>
+                </div>
+
+                <button type="submit">Giriş Yap</button>
+            </form>
+        </div>
+
+        
+        <div class="form-container" id="registerForm">
+            <h2>📚 Aramıza Katılın!</h2>
+
+            <div class="error-message" id="registerError"></div>
+            <div class="success-message" id="registerSuccess"></div>
+
+            <form onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label for="registerUsername">Kullanıcı Adı</label>
+                    <input type="text" id="registerUsername" placeholder="kullanici_adi" required minlength="3">
+                </div>
+
+                <div class="form-group">
+                    <label for="registerEmail">E-posta</label>
+                    <input type="email" id="registerEmail" placeholder="ornek@email.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="registerPassword">Şifre</label>
+                    <input type="password" id="registerPassword" placeholder="En az 6 karakter" required minlength="6">
+                </div>
+
+                <div class="form-group">
+                    <label for="registerPasswordConfirm">Şifre Tekrar</label>
+                    <input type="password" id="registerPasswordConfirm" placeholder="Şifrenizi tekrar girin" required>
+                </div>
+
+                <button type="submit">Kayıt Ol</button>
+            </form>
+        </div>
+
+        
+        <div class="form-container" id="forgotPasswordForm">
+            <h2>🔑 Şifre Sıfırlama</h2>
+
+            <div class="error-message" id="forgotError"></div>
+            <div class="success-message" id="forgotSuccess"></div>
+
+            <p style="color: #666; margin-bottom: 20px;">
+                E-posta adresinizi girin, size şifre sıfırlama bağlantısı gönderelim.
+            </p>
+
+            <form onsubmit="handleForgotPassword(event)">
+                <div class="form-group">
+                    <label for="forgotEmail">E-posta</label>
+                    <input type="email" id="forgotEmail" placeholder="ornek@email.com" required>
+                </div>
+
+                <button type="submit">Sıfırlama Linki Gönder</button>
+                <button type="button" class="switch-btn" style="width: 100%; margin-top: 15px;"
+                    onclick="showLogin()">Giriş Sayfasına Dön</button>
+            </form>
+        </div>
+
+        
+        <div class="side-panel">
+            <div id="loginPanel">
+                <h2>Hesabınız Yok mu?</h2>
+                <p>Hemen üye olun ve kitap & film tutkunlarıyla tanışın!</p>
+                <button class="switch-btn" onclick="showRegister()">Kayıt Ol</button>
+            </div>
+
+            <div id="registerPanel" style="display: none;">
+                <h2>Zaten Üye misiniz?</h2>
+                <p>Giriş yapın ve kütüphanenize devam edin!</p>
+                <button class="switch-btn" onclick="showLogin()">Giriş Yap</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showRegister() {
+            document.getElementById('loginForm').classList.remove('active');
+            document.getElementById('registerForm').classList.add('active');
+            document.getElementById('forgotPasswordForm').classList.remove('active');
+            document.getElementById('loginPanel').style.display = 'none';
+            document.getElementById('registerPanel').style.display = 'block';
+        }
+
+        function showLogin() {
+            document.getElementById('loginForm').classList.add('active');
+            document.getElementById('registerForm').classList.remove('active');
+            document.getElementById('forgotPasswordForm').classList.remove('active');
+            document.getElementById('loginPanel').style.display = 'block';
+            document.getElementById('registerPanel').style.display = 'none';
+        }
+
+        function showForgotPassword() {
+            document.getElementById('loginForm').classList.remove('active');
+            document.getElementById('registerForm').classList.remove('active');
+            document.getElementById('forgotPasswordForm').classList.add('active');
+            document.getElementById('loginPanel').style.display = 'none';
+            document.getElementById('registerPanel').style.display = 'none';
+        }
+
+        function showError(elementId, message) {
+            const errorDiv = document.getElementById(elementId);
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(elementId, message) {
+            const successDiv = document.getElementById(elementId);
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 5000);
+        }
+        async function handleRegister(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('registerUsername').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+
+            if (password !== passwordConfirm) {
+                showError('registerError', 'Şifreler eşleşmiyor!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/register.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccess('registerSuccess', 'Kayıt başarılı! Yönlendiriliyorsunuz...');
+                    setTimeout(() => {
+                        window.location.href = 'search.html';
+                    }, 1500);
+                } else {
+                    showError('registerError', data.message || 'Kayıt başarısız!');
+                }
+            } catch (error) {
+                showError('registerError', 'Bağlantı hatası: ' + error.message);
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch('/api/login.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccess('loginError', 'Giriş başarılı! Yönlendiriliyorsunuz...');
+                    setTimeout(() => {
+                        window.location.href = 'search.html';
+                    }, 1000);
+                } else {
+                    showError('loginError', data.message || 'Giriş başarısız!');
+                }
+            } catch (error) {
+                showError('loginError', 'Bağlantı hatası: ' + error.message);
+            }
+        }
+        async function handleForgotPassword(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('forgotEmail').value;
+
+            try {
+                const response = await fetch('api/forgot-password.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccess('forgotSuccess', 'Şifre sıfırlama linki e-postanıza gönderildi!');
+                } else {
+                    showSuccess('forgotSuccess', data.message || 'İşlem başarısız!');
+                }
+                document.getElementById('forgotEmail').value = '';
+            } catch (error) {
+                showError('forgotError', 'Bağlantı hatası: ' + error.message);
+            }
+        }
+    </script>
+</body>
+
+</html>
+

@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kullanıcı Profili - Sosyal Kütüphane</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 30px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 0;
+            margin-bottom: 40px;
+        }
+
+        .profile-header .container {
+            text-align: center;
+        }
+
+        .profile-header h1 {
+            font-size: 32px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .profile-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .profile-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            height: fit-content;
+        }
+
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            color: white;
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .profile-email {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+            padding: 20px 0;
+            border-top: 1px solid #e0e0e0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .follow-btn {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+
+        .follow-btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .follow-btn.following {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .follow-btn.following:hover {
+            background: #f5f5f5;
+        }
+
+        .profile-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 30px;
+        }
+
+        .tab-btn {
+            padding: 12px 0;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #999;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .tab-btn:hover {
+            color: #667eea;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .content-item {
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .content-item:hover {
+            transform: scale(1.05);
+        }
+
+        .content-poster {
+            width: 100%;
+            height: 200px;
+            background: #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            object-fit: cover;
+        }
+
+        .content-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .content-rating {
+            color: #ffc107;
+            font-size: 12px;
+        }
+
+        .review-item {
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: #f9f9f9;
+        }
+
+        .review-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .review-rating {
+            color: #ffc107;
+            margin: 5px 0;
+            font-weight: 600;
+        }
+
+        .review-text {
+            color: #666;
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+
+        .review-date {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .no-content {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .profile-container {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .content-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
+        <div class="nav-links">
+            <a href="search.html" class="nav-link">🔍 Keşfet</a>
+            <a href="feed.html" class="nav-link">📰 Akış</a>
+            <a href="profile.html" class="nav-link">👤 Profilim</a>
+            <button class="logout-btn" onclick="logout()">Çıkış</button>
+        </div>
+    </nav>
+
+
+    <div class="profile-header">
+        <div class="container">
+            <h1 id="pageTitle">Profil Yükleniyor...</h1>
+        </div>
+    </div>
+
+
+    <div class="container">
+        <div class="profile-container">
+
+            <div class="profile-card">
+                <div class="profile-avatar" id="userAvatar">👤</div>
+                <div class="profile-name" id="userName">Kullanıcı Adı</div>
+
+
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="followersCount">0</div>
+                        <div class="stat-label">Takipçi</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="followingCount">0</div>
+                        <div class="stat-label">Takip Edilen</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="moviesCount">0</div>
+                        <div class="stat-label">Film</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="booksCount">0</div>
+                        <div class="stat-label">Kitap</div>
+                    </div>
+                </div>
+
+
+                <button id="followBtn" class="follow-btn" onclick="toggleFollow()" style="display: none;">
+                    + Takip Et
+                </button>
+            </div>
+
+
+            <div class="profile-content">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('watched')">📽️ İzledikleri</button>
+                    <button class="tab-btn" onclick="switchTab('read')">📚 Okuduğu Kitaplar</button>
+                    <button class="tab-btn" onclick="switchTab('reviews')">✍️ Yazılan Yorumlar</button>
+                </div>
+
+
+                <div id="watched" class="tab-content active">
+                    <div id="watchedContent" class="content-grid">
+                        <div class="no-content">Film bulunamadı</div>
+                    </div>
+                </div>
+
+
+                <div id="read" class="tab-content">
+                    <div id="readContent" class="content-grid">
+                        <div class="no-content">Kitap bulunamadı</div>
+                    </div>
+                </div>
+
+
+                <div id="reviews" class="tab-content">
+                    <div id="reviewsContent">
+                        <div class="no-content">Yorum bulunamadı</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        let profileUserId = null;
+        let isOwnProfile = false;
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            if (typeof app !== 'undefined' && app.initPromise) {
+                await app.initPromise;
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            profileUserId = urlParams.get('id');
+
+            console.log('URL profile ID:', profileUserId);
+            console.log('Current user:', app?.currentUser);
+            if (!profileUserId) {
+                profileUserId = app?.currentUser?.id || 1;
+                isOwnProfile = true;
+            } else {
+                isOwnProfile = (parseInt(profileUserId) === app?.currentUser?.id);
+            }
+
+            console.log('Loading profile for user ID:', profileUserId);
+            await loadUserProfile();
+        });
+
+        async function loadUserContent() {
+            const userId = profileUserId;
+
+            if (!userId) {
+                console.error('Kullanıcı ID bulunamadı');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/get-user-content.php?user_id=${userId}`, { credentials: 'include' });
+                const data = await response.json();
+                console.log('User content data:', data);
+
+                let userMovies = data.watched || [];
+                let userBooks = data.read || [];
+                const watchedContainer = document.getElementById('watchedContent');
+                if (watchedContainer) {
+                    if (userMovies.length === 0) {
+                        watchedContainer.innerHTML = '<div class="no-content">Bu kullanıcı henüz film izlememiş</div>';
+                    } else {
+                        let moviesHtml = '';
+                        userMovies.forEach(m => {
+                            const movieId = m.tmdb_id || m.movie_id;
+                            const posterUrl = m.poster_path
+                                ? `https://image.tmdb.org/t/p/w300${m.poster_path}`
+                                : 'https://placehold.co/150x200?text=Poster+Yok';
+                            const title = m.title || 'Film';
+
+                            moviesHtml += `
+                                <div class="content-item" onclick="goToDetail('movie', '${movieId}')" style="cursor: pointer;">
+                                    <img class="content-poster" src="${posterUrl}" alt="${title}" onerror="this.src='https://placehold.co/150x200?text=Poster+Yok'">
+                                    <div class="content-title">${title}</div>
+                                    ${m.rating ? `<div class="content-rating">⭐ ${m.rating}/10</div>` : ''}
+                                </div>
+                            `;
+                        });
+                        watchedContainer.innerHTML = moviesHtml;
+                    }
+                }
+                const readContainer = document.getElementById('readContent');
+                if (readContainer) {
+                    if (userBooks.length === 0) {
+                        readContainer.innerHTML = '<div class="no-content">Bu kullanıcı henüz kitap okumamış</div>';
+                    } else {
+                        let booksHtml = '';
+                        userBooks.forEach(b => {
+                            const bookId = b.google_books_id || b.book_id;
+                            const coverUrl = b.cover_url
+                                ? b.cover_url.replace('http://', 'https://')
+                                : 'https://placehold.co/150x200?text=Kapak+Yok';
+                            const title = b.title || 'Kitap';
+
+                            booksHtml += `
+                                <div class="content-item" onclick="goToDetail('book', '${bookId}')" style="cursor: pointer;">
+                                    <img class="content-poster" src="${coverUrl}" alt="${title}" onerror="this.src='https://placehold.co/150x200?text=Kapak+Yok'">
+                                    <div class="content-title">${title}</div>
+                                    ${b.rating ? `<div class="content-rating">⭐ ${b.rating}/10</div>` : ''}
+                                </div>
+                            `;
+                        });
+                        readContainer.innerHTML = booksHtml;
+                    }
+                }
+                await loadUserReviews(userId);
+
+            } catch (error) {
+                console.error('İçerik yükleme hatası:', error);
+            }
+        }
+
+        async function loadUserReviews(userId) {
+            const reviewsContainer = document.getElementById('reviewsContent');
+            if (!reviewsContainer) return;
+
+            try {
+                const response = await fetch(`/api/comments.php?user_id=${userId}`, { credentials: 'include' });
+                const data = await response.json();
+
+                if (!data.success || !data.comments || data.comments.length === 0) {
+                    reviewsContainer.innerHTML = '<div class="no-content">Bu kullanıcı henüz yorum yapmamış</div>';
+                    return;
+                }
+
+                let reviewsHtml = '';
+                data.comments.forEach(comment => {
+                    const text = comment.comment_text || comment.text || '';
+                    reviewsHtml += `
+                        <div class="review-item">
+                            <div class="review-text">"${text}"</div>
+                            <div class="review-date">${new Date(comment.created_at).toLocaleDateString('tr-TR')}</div>
+                        </div>
+                    `;
+                });
+                reviewsContainer.innerHTML = reviewsHtml;
+            } catch (error) {
+                console.error('Yorumlar yüklenirken hata:', error);
+                reviewsContainer.innerHTML = '<div class="no-content">Yorumlar yüklenirken hata oluştu</div>';
+            }
+        }
+
+        function goToDetail(type, id) {
+            window.location.href = `detail.html?type=${type}&id=${id}`;
+        }
+
+        async function loadUserProfile() {
+            const userId = profileUserId;
+            console.log('loadUserProfile called with userId:', userId);
+
+            if (!userId) {
+                document.querySelector('.container').innerHTML = '<div class="no-content">Kullanıcı ID bulunamadı</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/user-profile.php?id=${userId}`, { credentials: 'include' });
+                const data = await response.json();
+                console.log('API response:', data);
+
+                if (!data.success) {
+                    document.querySelector('.container').innerHTML = '<div class="no-content">Kullanıcı bulunamadı</div>';
+                    return;
+                }
+
+                const user = data.user;
+                const stats = data.stats;
+                console.log('User:', user);
+                console.log('Stats:', stats);
+                const pageTitle = document.getElementById('pageTitle');
+                const userAvatar = document.getElementById('userAvatar');
+                const userName = document.getElementById('userName');
+                const userEmail = document.getElementById('userEmail');
+                const followersCount = document.getElementById('followersCount');
+                const followingCount = document.getElementById('followingCount');
+                const moviesCount = document.getElementById('moviesCount');
+                const booksCount = document.getElementById('booksCount');
+
+                console.log('DOM elements found:', {
+                    pageTitle: !!pageTitle,
+                    userAvatar: !!userAvatar,
+                    userName: !!userName,
+                    userEmail: !!userEmail,
+                    followersCount: !!followersCount,
+                    followingCount: !!followingCount,
+                    moviesCount: !!moviesCount,
+                    booksCount: !!booksCount
+                });
+
+                if (pageTitle) pageTitle.textContent = `${user.username} - Profil`;
+                if (userAvatar) {
+                    const avatar = user.avatar_url || user.avatar;
+                    console.log('Avatar:', avatar);
+
+                    if (avatar && avatar.startsWith('http')) {
+                        userAvatar.innerHTML = `<img src="${avatar}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                    } else if (avatar && avatar.trim() !== '') {
+                        userAvatar.innerHTML = `<span style="font-size: 60px;">${avatar}</span>`;
+                    } else {
+                        userAvatar.textContent = user.username.charAt(0).toUpperCase();
+                    }
+                }
+
+                if (userName) userName.textContent = user.username;
+                if (followersCount) followersCount.textContent = stats.followers || 0;
+                if (followingCount) followingCount.textContent = stats.following || 0;
+                if (moviesCount) moviesCount.textContent = stats.movies_watched || 0;
+                if (booksCount) booksCount.textContent = stats.books_read || 0;
+
+                console.log('DOM updated successfully');
+                const followBtn = document.getElementById('followBtn');
+                if (followBtn && !isOwnProfile) {
+                    followBtn.style.display = 'block';
+                    checkFollowStatus(userId);
+                }
+
+                loadUserContent();
+            } catch (error) {
+                console.error('Profil yükleme hatası:', error);
+                document.querySelector('.container').innerHTML = '<div class="no-content">Profil yüklenirken hata oluştu</div>';
+            }
+        }
+
+        async function loadUserContentOld(type, user) {
+            let content = [];
+
+            try {
+                const contentType = (type === 'watched') ? 'movie' : 'book';
+                const status = (type === 'watched') ? 'watched' : 'read';
+                const response = await fetch(`/api/user-content.php?user_id=${user.id}&type=${contentType}&status=${status}`, { credentials: 'include' });
+                const data = await response.json();
+
+                if (data.success && data.content) {
+                    content = data.content.map(item => ({
+                        id: item.id,
+                        title: item.title,
+                        poster: item.poster_path || item.cover_url || 'https://placehold.co/150x200?text=No+Image',
+                        rating: item.rating || 0
+                    }));
+                }
+            } catch (error) {
+                console.error('İçerik yükleme hatası:', error);
+            }
+
+            displayContent(type, content);
+        }
+
+        function displayContent(type, content) {
+            let containerId = type === 'watched' ? 'watchedContent' :
+                type === 'read' ? 'readContent' : 'reviewsContent';
+
+            let container = document.getElementById(containerId);
+
+            if (!content || content.length === 0) {
+                container.innerHTML = '<div class="no-content">İçerik bulunamadı</div>';
+                return;
+            }
+
+            if (type === 'reviews') {
+                container.innerHTML = content.map(review => `
+                    <div class="review-item">
+                        <div class="review-title">${review.title}</div>
+                        <div class="review-rating">⭐ ${review.rating}/10</div>
+                        <div class="review-text">"${review.text}"</div>
+                        <div class="review-date">${new Date(review.date).toLocaleDateString('tr-TR')}</div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = content.map(item => `
+                    <div class="content-item" onclick="goToDetail('${type}', '${item.id}')">
+                        <img src="${item.poster}" alt="${item.title}" class="content-poster" onerror="this.src='https://placehold.co/150x200?text=No+Image'">
+                        <div class="content-title">${item.title}</div>
+                        <div class="content-rating">⭐ ${item.rating || 0}/10</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        async function checkFollowStatus(userId) {
+            const btn = document.getElementById('followBtn');
+
+            if (!app.currentUser) {
+                btn.style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/follow-status.php?user_id=${userId}`, { credentials: 'include' });
+                const data = await response.json();
+
+                if (data.success && data.is_following) {
+                    btn.textContent = '✓ Takip Ediliyor';
+                    btn.classList.add('following');
+                } else {
+                    btn.textContent = '+ Takip Et';
+                    btn.classList.remove('following');
+                }
+            } catch (error) {
+                console.error('Takip durumu kontrol hatası:', error);
+            }
+        }
+
+        async function toggleFollow() {
+            if (!app.currentUser) {
+                alert('Takip etmek için giriş yapmalısınız!');
+                return;
+            }
+
+            try {
+                const targetUserId = profileUserId;
+                const btn = document.getElementById('followBtn');
+
+                if (btn.classList.contains('following')) {
+                    const response = await fetch('/api/follow.php', {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ target_user_id: targetUserId })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        btn.textContent = '+ Takip Et';
+                        btn.classList.remove('following');
+                    }
+                } else {
+                    const response = await fetch('/api/follow.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ target_user_id: targetUserId })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        btn.textContent = '✓ Takip Ediliyor';
+                        btn.classList.add('following');
+                    }
+                }
+            } catch (error) {
+                console.error('Takip değişikliği hatası:', error);
+                alert('İşlem başarısız oldu!');
+            }
+        }
+
+        function logout() {
+            if (app) {
+                app.logout();
+            }
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+
+</html>
