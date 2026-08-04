@@ -13,7 +13,15 @@ flowchart LR
     API --> MAIL["PHPMailer / SMTP"]
 ```
 
-## 🚀 Başlangıç
+## 🐳 Hızlı Başlangıç (Docker)
+
+```bash
+docker compose up
+```
+
+`http://localhost:8000/index.html` adresinde açılır, veritabanı ve demo hesaplar otomatik oluşturulur (aşağıdaki demo hesaplarla giriş yapabilirsiniz).
+
+## 🚀 Manuel Kurulum
 
 ### Adım 0: Veritabanı ve ortam değişkenleri
 
