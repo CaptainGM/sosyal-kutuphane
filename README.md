@@ -4,6 +4,15 @@ Film ve Kitap Sosyal Ağı Uygulaması
 
 ![Giriş ekranı](screenshot.png)
 
+## Mimari
+
+```mermaid
+flowchart LR
+    B[Tarayıcı] --> API[PHP API]
+    API --> DB[(MySQL)]
+    API --> MAIL["PHPMailer / SMTP"]
+```
+
 ## 🚀 Başlangıç
 
 ### Adım 0: Veritabanı ve ortam değişkenleri
