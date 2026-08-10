@@ -292,6 +292,50 @@
                 padding-top: 12px;
             }
         }
+
+        .reco-section {
+            margin-bottom: 25px;
+        }
+
+        .reco-title {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: var(--color-text);
+        }
+
+        .reco-scroll {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+        }
+
+        .reco-card {
+            flex: 0 0 auto;
+            width: 110px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .reco-card img {
+            width: 110px;
+            height: 160px;
+            object-fit: cover;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 6px;
+            background: var(--color-surface-2);
+        }
+
+        .reco-card .reco-card-title {
+            font-size: 12px;
+            color: var(--color-text-muted);
+            line-height: 1.3;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
     </style>
 </head>
 
@@ -321,6 +365,11 @@
 
     
     <div class="container">
+        <div class="reco-section" id="recoSection" style="display:none;">
+            <h2 class="reco-title">✨ Sana Özel Öneriler</h2>
+            <div class="reco-scroll" id="recoScroll"></div>
+        </div>
+
         <h1 class="page-title">📰 Sosyal Akış</h1>
         <div id="feedContainer">
             <div class="loading">⏳ Aktiviteler yükleniyor...</div>
@@ -345,7 +394,33 @@
             }
 
             loadFeed();
+            loadRecommendations();
         });
+
+        async function loadRecommendations() {
+            try {
+                const response = await fetch('/api/recommendations.php', { credentials: 'include' });
+                const data = await response.json();
+                if (!data.success) return;
+
+                const items = [
+                    ...(data.movies || []).map(m => ({ ...m, type: 'movie', poster: m.poster_path ? `https://image.tmdb.org/t/p/w200${m.poster_path}` : 'https://placehold.co/110x160?text=Film' })),
+                    ...(data.books || []).map(b => ({ ...b, type: 'book', poster: b.cover_url || 'https://placehold.co/110x160?text=Kitap' }))
+                ];
+
+                if (items.length === 0) return;
+
+                document.getElementById('recoSection').style.display = 'block';
+                document.getElementById('recoScroll').innerHTML = items.map(item => `
+                    <div class="reco-card" onclick="goToDetail('${item.type}', '${item.id}')">
+                        <img src="${item.poster}" alt="${app.escapeHtml(item.title)}" onerror="this.src='https://placehold.co/110x160?text=Yok'">
+                        <div class="reco-card-title">${app.escapeHtml(item.title)}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Öneri yükleme hatası:', error);
+            }
+        }
 
         async function loadFeed() {
             const container = document.getElementById('feedContainer');
@@ -526,7 +601,7 @@
                                 ${typeBadge}
                                 <div class="content-title">${safeContentTitle}</div>
                                 ${activity.rating ? `<div class="rating-display">⭐ ${activity.rating}/10 puan verdi</div>` : ''}
-                                ${activity.commentText ? `<div class="comment-preview">"${safeCommentText.substring(0, 150)}${safeCommentText.length > 150 ? '...' : ''}"<br><a href="detail.html?type=${activity.contentType}&id=${activity.contentId}" style="color:var(--color-accent);">daha fazlasını oku</a></div>` : ''}
+                                ${activity.commentText ? `<div class="comment-preview">"${safeCommentText.substring(0, 150)}${safeCommentText.length > 150 ? '...' : ''}"<br><a href="detail.php?type=${activity.contentType}&id=${activity.contentId}" style="color:var(--color-accent);">daha fazlasını oku</a></div>` : ''}
                             </div>
                         </div>
                         
@@ -626,7 +701,7 @@
         }
 
         function goToDetail(type, id) {
-            window.location.href = `detail.html?type=${type}&id=${id}`;
+            window.location.href = `detail.php?type=${type}&id=${id}`;
         }
 
         function likeActivity(btn) {

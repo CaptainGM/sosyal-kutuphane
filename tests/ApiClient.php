@@ -45,7 +45,14 @@ class ApiClient
         $statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        return ['status' => $statusCode, 'data' => json_decode($response, true) ?? []];
+        $data = json_decode($response, true) ?? [];
+        // Login/register/verify-2fa-login gibi çeşitli uçlar taze bir csrf_token döndürür —
+        // hangi çağrıdan geldiğini bilmeye gerek kalmadan otomatik yakala.
+        if (isset($data['csrf_token'])) {
+            $this->csrfToken = $data['csrf_token'];
+        }
+
+        return ['status' => $statusCode, 'data' => $data];
     }
 
     public function get(string $path): array
@@ -70,19 +77,14 @@ class ApiClient
 
     public function register(string $username, string $email, string $password): array
     {
-        $res = $this->post('/api/register.php', ['username' => $username, 'email' => $email, 'password' => $password]);
-        if ($res['data']['success'] ?? false) {
-            $this->csrfToken = $res['data']['csrf_token'] ?? null;
-        }
-        return $res;
+        // csrf_token, request() içinde otomatik yakalanır.
+        return $this->post('/api/register.php', ['username' => $username, 'email' => $email, 'password' => $password]);
     }
 
     public function login(string $email, string $password): array
     {
-        $res = $this->post('/api/login.php', ['email' => $email, 'password' => $password]);
-        if ($res['data']['success'] ?? false) {
-            $this->csrfToken = $res['data']['csrf_token'] ?? null;
-        }
-        return $res;
+        // csrf_token, request() içinde otomatik yakalanır (2FA gerekiyorsa henüz gelmez,
+        // o durumda verify-2fa-login.php'nin döndürdüğü token bir sonraki çağrıda yakalanır).
+        return $this->post('/api/login.php', ['email' => $email, 'password' => $password]);
     }
 }

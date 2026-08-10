@@ -210,6 +210,23 @@
             </form>
         </div>
 
+        <div class="form-container" id="twoFactorForm">
+            <h2>🔐 Doğrulama Kodu</h2>
+            <p style="text-align:center;color:var(--color-text-muted);margin-bottom:20px;font-size:14px;">
+                Authenticator uygulamandaki 6 haneli kodu (ya da bir yedek kodu) gir.
+            </p>
+
+            <div class="error-message" id="twoFactorError"></div>
+
+            <form onsubmit="handleVerify2fa(event)">
+                <div class="form-group">
+                    <label for="twoFactorCode">Kod</label>
+                    <input type="text" id="twoFactorCode" placeholder="000000" autocomplete="one-time-code" required>
+                </div>
+                <button type="submit">Doğrula</button>
+            </form>
+        </div>
+
         
         <div class="form-container" id="registerForm">
             <h2>📚 Aramıza Katılın!</h2>
@@ -306,6 +323,16 @@
             document.getElementById('registerPanel').style.display = 'none';
         }
 
+        function showTwoFactor() {
+            document.getElementById('loginForm').classList.remove('active');
+            document.getElementById('registerForm').classList.remove('active');
+            document.getElementById('forgotPasswordForm').classList.remove('active');
+            document.getElementById('twoFactorForm').classList.add('active');
+            document.getElementById('loginPanel').style.display = 'none';
+            document.getElementById('registerPanel').style.display = 'none';
+            document.getElementById('twoFactorCode').focus();
+        }
+
         function showError(elementId, message) {
             const errorDiv = document.getElementById(elementId);
             errorDiv.textContent = message;
@@ -375,7 +402,9 @@
 
                 const data = await response.json();
 
-                if (data.success) {
+                if (data.success && data.requires_2fa) {
+                    showTwoFactor();
+                } else if (data.success) {
                     showSuccess('loginError', 'Giriş başarılı! Yönlendiriliyorsunuz...');
                     setTimeout(() => {
                         window.location.href = 'search.html';
@@ -385,6 +414,33 @@
                 }
             } catch (error) {
                 showError('loginError', 'Bağlantı hatası: ' + error.message);
+            }
+        }
+
+        async function handleVerify2fa(e) {
+            e.preventDefault();
+            const code = document.getElementById('twoFactorCode').value.trim();
+
+            try {
+                const response = await fetch('/api/verify-2fa-login.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ code })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccess('twoFactorError', 'Giriş başarılı! Yönlendiriliyorsunuz...');
+                    setTimeout(() => {
+                        window.location.href = 'search.html';
+                    }, 1000);
+                } else {
+                    showError('twoFactorError', data.message || 'Kod hatalı!');
+                }
+            } catch (error) {
+                showError('twoFactorError', 'Bağlantı hatası: ' + error.message);
             }
         }
         async function handleForgotPassword(e) {

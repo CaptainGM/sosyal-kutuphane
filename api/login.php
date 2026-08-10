@@ -27,18 +27,27 @@ if (!$user || !password_verify($password, $user->password)) {
 
 clearLoginAttempts($db, $email);
 
+if ($user->totp_enabled ?? false) {
+    $_SESSION['pending_2fa_user_id'] = $user->_id;
+    jsonResponse([
+        'success' => true,
+        'requires_2fa' => true,
+        'message' => 'Şifre doğru. Devam etmek için doğrulama kodunu girin.'
+    ], 200);
+}
+
 $_SESSION['user_id'] = $user->_id;
 $_SESSION['username'] = $user->username;
 $_SESSION['email'] = $user->email;
 
 jsonResponse([
     'success' => true,
-    'message' => 'Giriş başarılı!',
     'user' => [
         'id' => $user->_id,
         'username' => $user->username,
         'email' => $user->email
     ],
+    'message' => 'Giriş başarılı!',
     'csrf_token' => csrfToken()
 ], 200);
 ?>

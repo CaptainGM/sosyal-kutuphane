@@ -1,10 +1,83 @@
+<?php
+// Bu blok sadece <head>'deki Open Graph/Twitter meta etiketlerini ve <title>'ı
+// sunucu tarafında doldurmak için var — sayfanın geri kalanı (JS ile TMDB/Google
+// Books'tan veri çeken kısım) tamamen değişmeden aynı kalıyor. api/config.php
+// KASITLI OLARAK kullanılmıyor: o dosya JSON Content-Type/CORS/session başlıkları
+// set ediyor, bu da bu HTML sayfasını bozardı.
+$ogTitle = 'Sosyal Kütüphane';
+$ogDescription = 'Film ve kitap sosyal ağı — izlediklerini, okuduklarını paylaş, keşfet.';
+$ogImage = null;
+$pageTitle = 'İçerik Detay - Sosyal Kütüphane';
+
+$envPath = __DIR__ . '/.env';
+if (file_exists($envPath)) {
+    foreach (file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+        $line = trim($line);
+        if ($line === '' || str_starts_with($line, '#')) {
+            continue;
+        }
+        [$key, $value] = array_pad(explode('=', $line, 2), 2, '');
+        $key = trim($key);
+        $value = trim($value);
+        if ($key !== '' && getenv($key) === false) {
+            putenv("$key=$value");
+        }
+    }
+}
+
+$type = $_GET['type'] ?? null;
+$id = $_GET['id'] ?? null;
+
+if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
+    try {
+        require_once __DIR__ . '/vendor/autoload.php';
+        $mongoClient = new MongoDB\Client(getenv('MONGO_URI') ?: 'mongodb://localhost:27017');
+        $ogDb = $mongoClient->selectDatabase(getenv('MONGO_DB') ?: 'social_library');
+
+        $cached = null;
+        if ($type === 'movie') {
+            $cached = $ogDb->movies->findOne(['tmdb_id' => (int) $id]);
+            if ($cached && ($cached->poster_path ?? null)) {
+                $ogImage = 'https://image.tmdb.org/t/p/w500' . $cached->poster_path;
+            }
+        } elseif ($type === 'book') {
+            $cached = $ogDb->books->findOne(['google_books_id' => (string) $id]);
+            if ($cached && ($cached->cover_url ?? null)) {
+                $ogImage = $cached->cover_url;
+            }
+        }
+
+        if ($cached && ($cached->title ?? null)) {
+            $ogTitle = $cached->title;
+            $pageTitle = $cached->title . ' - Sosyal Kütüphane';
+            $overview = $cached->overview ?? $cached->description ?? null;
+            if ($overview) {
+                $ogDescription = mb_strlen($overview) > 200 ? mb_substr($overview, 0, 200) . '...' : $overview;
+            }
+        }
+    } catch (Throwable $e) {
+        // Mongo'ya ulaşılamıyorsa sayfa yine de jenerik önizlemeyle çalışmaya devam eder.
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="tr">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İçerik Detay - Sosyal Kütüphane</title>
+    <title><?= htmlspecialchars($pageTitle) ?></title>
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="<?= htmlspecialchars($ogTitle) ?>">
+    <meta property="og:description" content="<?= htmlspecialchars($ogDescription) ?>">
+    <?php if ($ogImage): ?>
+    <meta property="og:image" content="<?= htmlspecialchars($ogImage) ?>">
+    <meta name="twitter:card" content="summary_large_image">
+    <?php else: ?>
+    <meta name="twitter:card" content="summary">
+    <?php endif; ?>
+
     <link rel="stylesheet" href="css/style.css">
     <style>
         * {
@@ -993,7 +1066,10 @@
                 let contentData = {
                     title: currentContent?.title,
                     poster_path: currentContentType === 'movie' ? currentContent?.poster_path : null,
-                    cover_url: currentContentType === 'book' ? (currentContent?.volumeInfo?.imageLinks?.thumbnail || null) : null
+                    cover_url: currentContentType === 'book' ? (currentContent?.volumeInfo?.imageLinks?.thumbnail || null) : null,
+                    overview: currentContentType === 'movie' ? (currentContent?.overview || null) : (currentContent?.volumeInfo?.description || null),
+                    genres: currentContentType === 'movie' ? (currentContent?.genres?.map(g => g.id) || null) : null,
+                    categories: currentContentType === 'book' ? (currentContent?.volumeInfo?.categories || null) : null
                 };
 
                 const response = await fetch('/api/user-status.php', {
@@ -1034,7 +1110,10 @@
                 let contentData = {
                     title: currentContent?.title || currentContent?.volumeInfo?.title,
                     poster_path: currentContentType === 'movie' ? currentContent?.poster_path : null,
-                    cover_url: currentContentType === 'book' ? (currentContent?.volumeInfo?.imageLinks?.thumbnail || null) : null
+                    cover_url: currentContentType === 'book' ? (currentContent?.volumeInfo?.imageLinks?.thumbnail || null) : null,
+                    overview: currentContentType === 'movie' ? (currentContent?.overview || null) : (currentContent?.volumeInfo?.description || null),
+                    genres: currentContentType === 'movie' ? (currentContent?.genres?.map(g => g.id) || null) : null,
+                    categories: currentContentType === 'book' ? (currentContent?.volumeInfo?.categories || null) : null
                 };
 
                 const response = await fetch('/api/user-status.php', {

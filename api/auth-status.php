@@ -5,7 +5,7 @@ if (isLoggedIn()) {
     $userId = $_SESSION['user_id'];
     $user = $db->users->findOne(
         ['_id' => $userId],
-        ['projection' => ['username' => 1, 'email' => 1, 'bio' => 1, 'avatar_url' => 1]]
+        ['projection' => ['username' => 1, 'email' => 1, 'bio' => 1, 'avatar_url' => 1, 'totp_enabled' => 1]]
     );
 
     if ($user) {
@@ -17,6 +17,7 @@ if (isLoggedIn()) {
                 'email' => $user->email,
                 'bio' => $user->bio ?? null,
                 'avatar_url' => $user->avatar_url ?? null,
+                'totp_enabled' => $user->totp_enabled ?? false,
             ],
             'csrf_token' => csrfToken()
         ]);

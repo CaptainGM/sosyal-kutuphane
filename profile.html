@@ -473,7 +473,41 @@
                 </form>
             </div>
 
-            <div class="card" style="padding:25px;">
+            <div class="card" style="padding:25px; margin-bottom:20px;" id="twoFactorCard">
+                <h3 style="margin-bottom:10px;">🔐 İki Adımlı Doğrulama</h3>
+                <p style="color:var(--color-text-muted);font-size:14px;margin-bottom:20px;" id="twoFactorStatusText">Durum kontrol ediliyor...</p>
+
+                <div id="twoFactorDisabledView" style="display:none;">
+                    <button type="button" class="btn btn-outline" onclick="startTwoFactorSetup()">Etkinleştir</button>
+                </div>
+
+                <div id="twoFactorSetupView" style="display:none;">
+                    <p style="margin-bottom:10px;font-size:14px;">Authenticator uygulamana (Google Authenticator, Authy, Microsoft Authenticator...) "elle giriş" seçeneğiyle aşağıdaki anahtarı ekle:</p>
+                    <div style="background:var(--color-surface-2);padding:14px;border-radius:8px;font-family:monospace;font-size:16px;letter-spacing:1px;text-align:center;margin-bottom:15px;user-select:all;" id="twoFactorSecretDisplay"></div>
+                    <div class="form-group">
+                        <label class="form-label">Uygulamanın gösterdiği 6 haneli kod</label>
+                        <input type="text" id="twoFactorConfirmCode" class="form-control" placeholder="000000">
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="confirmTwoFactorSetup()">Onayla ve Etkinleştir</button>
+                </div>
+
+                <div id="twoFactorBackupCodesView" style="display:none;">
+                    <p style="color:var(--color-danger);font-weight:600;margin-bottom:10px;">⚠️ Bu yedek kodları güvenli bir yere kaydet — bir daha gösterilmeyecek!</p>
+                    <div id="backupCodesList" style="background:var(--color-surface-2);padding:14px;border-radius:8px;font-family:monospace;font-size:14px;line-height:1.8;margin-bottom:15px;"></div>
+                    <button type="button" class="btn btn-primary" onclick="finishTwoFactorSetup()">Anladım, Bitir</button>
+                </div>
+
+                <div id="twoFactorEnabledView" style="display:none;">
+                    <p style="color:var(--color-success);font-weight:600;margin-bottom:15px;">✅ İki adımlı doğrulama etkin</p>
+                    <div class="form-group">
+                        <label class="form-label">Devre dışı bırakmak için şifreni gir</label>
+                        <input type="password" id="disableTwoFactorPassword" class="form-control">
+                    </div>
+                    <button type="button" class="btn btn-danger" onclick="disableTwoFactor()">Devre Dışı Bırak</button>
+                </div>
+            </div>
+
+            <div class="card" style="padding:25px; margin-bottom:20px;">
                 <h3 style="margin-bottom:10px;">📧 E-posta Değiştir</h3>
                 <p style="color:var(--color-text-muted);font-size:14px;margin-bottom:20px;">Mevcut e-postan: <strong id="currentEmailDisplay"></strong></p>
 
@@ -504,6 +538,12 @@
                     </div>
                     <button type="button" class="btn btn-primary" onclick="verifyNewEmailCode()">Onayla ve E-postayı Değiştir</button>
                 </div>
+            </div>
+
+            <div class="card" style="padding:25px;">
+                <h3 style="margin-bottom:10px;">📤 Kütüphaneni Dışa Aktar</h3>
+                <p style="color:var(--color-text-muted);font-size:14px;margin-bottom:20px;">İzlediklerin, okuduklarım, listelerin ve yorumların tek bir JSON dosyası olarak indirilir.</p>
+                <a href="/api/export-library.php" class="btn btn-outline">İndir (.json)</a>
             </div>
         </div>
     </div>
@@ -730,6 +770,98 @@
 
             document.getElementById('currentEmailDisplay').textContent = app.currentUser.email;
             renderAvatarPreview(app.currentUser.avatar_url, app.currentUser.username);
+            renderTwoFactorStatus(app.currentUser.totp_enabled);
+        }
+
+        function renderTwoFactorStatus(enabled) {
+            const views = ['twoFactorDisabledView', 'twoFactorSetupView', 'twoFactorBackupCodesView', 'twoFactorEnabledView'];
+            views.forEach(id => document.getElementById(id).style.display = 'none');
+
+            if (enabled) {
+                document.getElementById('twoFactorStatusText').textContent = 'Hesabın authenticator uygulamasıyla ek olarak korunuyor.';
+                document.getElementById('twoFactorEnabledView').style.display = 'block';
+            } else {
+                document.getElementById('twoFactorStatusText').textContent = 'Şu an kapalı. Hesabına ekstra bir güvenlik katmanı ekle.';
+                document.getElementById('twoFactorDisabledView').style.display = 'block';
+            }
+        }
+
+        async function startTwoFactorSetup() {
+            try {
+                const response = await fetch('/api/two-factor.php', {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ action: 'start' })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('twoFactorSecretDisplay').textContent = data.secret;
+                    document.getElementById('twoFactorDisabledView').style.display = 'none';
+                    document.getElementById('twoFactorSetupView').style.display = 'block';
+                } else {
+                    app.toast(data.message || 'Kurulum başlatılamadı', 'error');
+                }
+            } catch (error) {
+                console.error('2FA başlatma hatası:', error);
+                app.toast('Bağlantı hatası', 'error');
+            }
+        }
+
+        async function confirmTwoFactorSetup() {
+            const code = document.getElementById('twoFactorConfirmCode').value.trim();
+            try {
+                const response = await fetch('/api/two-factor.php', {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ action: 'confirm', code })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    app.currentUser.totp_enabled = true;
+                    document.getElementById('backupCodesList').innerHTML = data.backup_codes.map(c => app.escapeHtml(c)).join('<br>');
+                    document.getElementById('twoFactorSetupView').style.display = 'none';
+                    document.getElementById('twoFactorBackupCodesView').style.display = 'block';
+                } else {
+                    app.toast(data.message || 'Kod hatalı', 'error');
+                }
+            } catch (error) {
+                console.error('2FA onaylama hatası:', error);
+                app.toast('Bağlantı hatası', 'error');
+            }
+        }
+
+        function finishTwoFactorSetup() {
+            document.getElementById('twoFactorBackupCodesView').style.display = 'none';
+            renderTwoFactorStatus(true);
+            app.toast('İki adımlı doğrulama etkinleştirildi', 'success');
+        }
+
+        async function disableTwoFactor() {
+            const password = document.getElementById('disableTwoFactorPassword').value;
+            if (!(await app.confirmDialog('İki adımlı doğrulamayı devre dışı bırakmak istediğine emin misin?'))) return;
+
+            try {
+                const response = await fetch('/api/two-factor.php', {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ action: 'disable', current_password: password })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    app.currentUser.totp_enabled = false;
+                    document.getElementById('disableTwoFactorPassword').value = '';
+                    renderTwoFactorStatus(false);
+                    app.toast('İki adımlı doğrulama devre dışı bırakıldı', 'success');
+                } else {
+                    app.toast(data.message || 'İşlem başarısız', 'error');
+                }
+            } catch (error) {
+                console.error('2FA devre dışı bırakma hatası:', error);
+                app.toast('Bağlantı hatası', 'error');
+            }
         }
 
         function renderAvatarPreview(avatarUrl, username) {
@@ -1026,7 +1158,7 @@
         }
 
         function goToDetail(type, id) {
-            window.location.href = `detail.html?type=${type}&id=${id}`;
+            window.location.href = `detail.php?type=${type}&id=${id}`;
         }
 
         async function loadActivities() {
