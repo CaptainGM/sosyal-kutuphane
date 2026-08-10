@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Giriş Yap - Sosyal Kütüphane</title>
+    <link rel="stylesheet" href="css/style.css">
     <style>
         * {
             margin: 0;
@@ -14,7 +15,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--color-accent-gradient);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -23,7 +24,7 @@
         }
 
         .login-container {
-            background: white;
+            background: var(--color-surface);
             padding: 40px;
             border-radius: 15px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
@@ -33,7 +34,7 @@
 
         .login-container h1 {
             text-align: center;
-            color: #333;
+            color: var(--color-text);
             margin-bottom: 30px;
             font-size: 28px;
         }
@@ -45,28 +46,30 @@
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            color: #333;
+            color: var(--color-text);
             font-weight: 600;
         }
 
         .form-group input {
             width: 100%;
             padding: 12px;
-            border: 2px solid #e0e0e0;
+            border: 2px solid var(--color-border);
             border-radius: 8px;
             font-size: 16px;
+            background: var(--color-surface);
+            color: var(--color-text);
             transition: border-color 0.3s;
         }
 
         .form-group input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--color-accent);
         }
 
         .btn-login {
             width: 100%;
             padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--color-accent-gradient);
             color: white;
             border: none;
             border-radius: 8px;
@@ -83,17 +86,17 @@
         .login-footer {
             text-align: center;
             margin-top: 20px;
-            color: #666;
+            color: var(--color-text-muted);
         }
 
         .login-footer a {
-            color: #667eea;
+            color: var(--color-accent);
             text-decoration: none;
             font-weight: 600;
         }
 
         .error-message {
-            background: #ff6b6b;
+            background: var(--color-danger);
             color: white;
             padding: 10px;
             border-radius: 8px;
@@ -105,7 +108,7 @@
         .loading {
             display: none;
             text-align: center;
-            color: #667eea;
+            color: var(--color-accent);
             font-weight: 600;
         }
     </style>
@@ -137,6 +140,7 @@
         </div>
     </div>
 
+    <script src="js/escape-html.js"></script>
     <script src="js/app.js"></script>
     <script>
         async function handleLogin(event) {

@@ -7,6 +7,15 @@ const fetchOptions = {
     credentials: 'include'
 };
 
+// Tema, sayfa çizilmeden önce (henüz DOMContentLoaded olmadan) uygulanır ki
+// koyu modda kısa süreliğine beyaz bir "flash" görünmesin.
+(function applyStoredTheme() {
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark' || saved === 'light') {
+        document.documentElement.setAttribute('data-theme', saved);
+    }
+})();
+
 class SocialLibraryApp {
     constructor() {
         this.currentUser = null;
@@ -42,14 +51,210 @@ class SocialLibraryApp {
     }
 
     // Kullanıcıdan gelen metni innerHTML'e basmadan önce kaçış yapmak için kullan.
+    // Gerçek mantık js/escape-html.js'te (tarayıcı + Node testlerinde ortak kullanılsın diye).
     escapeHtml(str) {
-        if (str === null || str === undefined) return '';
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
+        return escapeHtml(str);
+    }
+
+    // --- Tema (koyu/açık mod) ---
+    toggleTheme() {
+        const current = document.documentElement.getAttribute('data-theme')
+            || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
+            btn.textContent = next === 'dark' ? '☀️' : '🌙';
+        });
+    }
+
+    isDarkMode() {
+        const attr = document.documentElement.getAttribute('data-theme');
+        if (attr === 'dark') return true;
+        if (attr === 'light') return false;
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    // --- Toast bildirimleri (alert() yerine) ---
+    toast(message, type = 'info', duration = 3500) {
+        let container = document.getElementById('toastContainer');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toastContainer';
+            document.body.appendChild(container);
+        }
+        const el = document.createElement('div');
+        el.className = `toast toast-${type}`;
+        el.textContent = message;
+        container.appendChild(el);
+        setTimeout(() => {
+            el.classList.add('toast-leaving');
+            setTimeout(() => el.remove(), 200);
+        }, duration);
+    }
+
+    // --- Onay modalı (confirm() yerine), Promise<boolean> döner ---
+    confirmDialog(message, { confirmText = 'Onayla', cancelText = 'İptal' } = {}) {
+        return new Promise(resolve => {
+            const overlay = document.createElement('div');
+            overlay.className = 'confirm-overlay';
+
+            const box = document.createElement('div');
+            box.className = 'confirm-box';
+
+            const p = document.createElement('p');
+            p.textContent = message;
+
+            const actions = document.createElement('div');
+            actions.className = 'confirm-actions';
+
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'btn btn-secondary';
+            cancelBtn.textContent = cancelText;
+
+            const confirmBtn = document.createElement('button');
+            confirmBtn.className = 'btn btn-danger';
+            confirmBtn.textContent = confirmText;
+
+            const finish = (result) => {
+                overlay.remove();
+                resolve(result);
+            };
+            cancelBtn.onclick = () => finish(false);
+            confirmBtn.onclick = () => finish(true);
+            overlay.onclick = (e) => { if (e.target === overlay) finish(false); };
+
+            actions.appendChild(cancelBtn);
+            actions.appendChild(confirmBtn);
+            box.appendChild(p);
+            box.appendChild(actions);
+            overlay.appendChild(box);
+            document.body.appendChild(overlay);
+            confirmBtn.focus();
+        });
+    }
+
+    // --- Şifre göster/gizle ---
+    wirePasswordToggle(input) {
+        if (!input || input.dataset.toggleWired) return;
+        input.dataset.toggleWired = '1';
+
+        const wrap = document.createElement('div');
+        wrap.className = 'password-field-wrap';
+        input.parentNode.insertBefore(wrap, input);
+        wrap.appendChild(input);
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'password-toggle-btn';
+        btn.setAttribute('aria-label', 'Şifreyi göster/gizle');
+        btn.textContent = '👁️';
+        btn.onclick = () => {
+            const showing = input.type === 'text';
+            input.type = showing ? 'password' : 'text';
+            btn.textContent = showing ? '👁️' : '🙈';
+        };
+        wrap.appendChild(btn);
+    }
+
+    wireAllPasswordToggles(root = document) {
+        root.querySelectorAll('input[type="password"]').forEach(input => this.wirePasswordToggle(input));
+    }
+
+    // --- Bildirim zili (nav'da id="notifBellBtn"/"notifBadge"/"notifPanel" varsa çalışır) ---
+    async initNotifications() {
+        const bellBtn = document.getElementById('notifBellBtn');
+        const badge = document.getElementById('notifBadge');
+        const panel = document.getElementById('notifPanel');
+        if (!bellBtn || !badge || !panel) return;
+
+        await this.initPromise;
+        if (!this.currentUser) return;
+
+        document.addEventListener('click', (e) => {
+            if (panel.classList.contains('open') && !panel.contains(e.target) && !bellBtn.contains(e.target)) {
+                panel.classList.remove('open');
+            }
+        });
+
+        bellBtn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const willOpen = !panel.classList.contains('open');
+            panel.classList.toggle('open', willOpen);
+            if (willOpen) await this._refreshNotifications(panel, badge, true);
+        });
+
+        await this._refreshNotifications(panel, badge, false);
+        setInterval(() => this._refreshNotifications(panel, badge, panel.classList.contains('open')), 20000);
+    }
+
+    async _refreshNotifications(panel, badge, renderList) {
+        try {
+            const res = await fetch(`${API_BASE_URL}/notifications.php`, { credentials: 'include' });
+            const data = await res.json();
+            if (!data.success) return;
+            const items = data.notifications || [];
+            const unreadCount = items.filter(n => !n.is_read).length;
+
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount > 9 ? '9+' : String(unreadCount);
+                badge.classList.add('visible');
+            } else {
+                badge.classList.remove('visible');
+            }
+
+            if (renderList) this._renderNotifications(panel, items);
+        } catch (error) {
+            console.error('Bildirim yükleme hatası:', error);
+        }
+    }
+
+    _notificationText(n) {
+        const username = this.escapeHtml(n.username || 'Bir kullanıcı');
+        switch (n.type) {
+            case 'follow':
+                return `<strong>${username}</strong> seni takip etmeye başladı`;
+            case 'message':
+                return `<strong>${username}</strong> sana mesaj gönderdi`;
+            default:
+                return `<strong>${username}</strong> bir bildirim gönderdi`;
+        }
+    }
+
+    _renderNotifications(panel, items) {
+        const header = '<div class="nav-panel-header">Bildirimler</div>';
+        if (items.length === 0) {
+            panel.innerHTML = header + '<div class="nav-panel-empty">Henüz bildirim yok</div>';
+            return;
+        }
+        const rows = items.slice(0, 20).map(n => {
+            const text = this._notificationText(n);
+            const timeAgo = this.getTimeAgo(n.created_at);
+            const unreadClass = n.is_read ? '' : 'nav-panel-item-unread';
+            return `<div class="nav-panel-item ${unreadClass}" data-id="${n.id}" data-type="${this.escapeHtml(n.type)}" data-actor="${n.actor_id ?? ''}" data-content-id="${n.content_id ?? ''}">
+                <div>${text}</div>
+                <div class="nav-panel-item-time">${timeAgo}</div>
+            </div>`;
+        }).join('');
+        panel.innerHTML = header + `<div>${rows}</div>`;
+
+        panel.querySelectorAll('.nav-panel-item').forEach(el => {
+            el.addEventListener('click', () => {
+                const { id, type, actor, contentId } = el.dataset;
+                fetch(`${API_BASE_URL}/notifications.php`, {
+                    method: 'PUT',
+                    headers: this.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ id: parseInt(id, 10) })
+                }).catch(() => { });
+
+                if (type === 'follow' && actor) {
+                    window.location.href = `user-profile.html?id=${actor}`;
+                } else if (type === 'message' && contentId) {
+                    window.location.href = `messages.html?conversation_id=${contentId}`;
+                }
+            });
+        });
     }
 
     async searchMovies(query, page = 1) {
@@ -389,4 +594,13 @@ async function logout() {
     app.logout();
     window.location.href = 'index.html';
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    app.wireAllPasswordToggles();
+    document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
+        btn.textContent = app.isDarkMode() ? '☀️' : '🌙';
+        btn.addEventListener('click', () => app.toggleTheme());
+    });
+    app.initNotifications();
+});
 

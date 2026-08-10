@@ -52,6 +52,18 @@ $indexPlans = [
     'login_attempts' => [
         ['key' => ['last_attempt' => 1], 'expireAfterSeconds' => 3600],
     ],
+    'email_change_requests' => [
+        ['key' => ['created_at' => 1], 'expireAfterSeconds' => 3600],
+    ],
+    'conversations' => [
+        // participant_a < participant_b her zaman (sıralı ikili) — dizi alanında unique index
+        // multikey semantiğiyle beklenmedik şekilde davrandığı için iki ayrı skaler alan kullanıyoruz.
+        ['key' => ['participant_a' => 1, 'participant_b' => 1], 'unique' => true],
+        ['key' => ['last_message_at' => -1]],
+    ],
+    'messages' => [
+        ['key' => ['conversation_id' => 1, 'created_at' => 1]],
+    ],
 ];
 
 $successCount = 0;

@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sosyal Akış - Sosyal Kütüphane</title>
+    <link rel="stylesheet" href="css/style.css">
     <style>
         * {
             margin: 0;
@@ -14,65 +15,9 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
+            background: var(--color-bg);
+            color: var(--color-text);
             min-height: 100vh;
-        }
-
-        .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 15px 30px;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .navbar .logo {
-            font-size: 24px;
-            font-weight: bold;
-            text-decoration: none;
-            color: white;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .nav-link {
-            color: white;
-            text-decoration: none;
-            padding: 8px 15px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 5px;
-            transition: background 0.3s;
-        }
-
-        .nav-link:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .nav-link.active {
-            background: rgba(255, 255, 255, 0.4);
-        }
-
-        .logout-btn {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid white;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
         }
 
         .container {
@@ -84,13 +29,13 @@
         .page-title {
             text-align: center;
             margin-bottom: 30px;
-            color: #333;
+            color: var(--color-text);
             font-size: 28px;
         }
 
         /* Aktivite Kartı */
         .activity-card {
-            background: white;
+            background: var(--color-surface);
             border-radius: 15px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
             overflow: hidden;
@@ -108,14 +53,14 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid var(--color-border);
         }
 
         .user-avatar {
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--color-accent-gradient);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -138,7 +83,7 @@
 
         .username-link {
             font-weight: bold;
-            color: #667eea;
+            color: var(--color-accent);
             text-decoration: none;
             cursor: pointer;
         }
@@ -148,13 +93,13 @@
         }
 
         .action-text {
-            color: #555;
+            color: var(--color-text-muted);
             font-size: 14px;
             margin-top: 3px;
         }
 
         .activity-date {
-            color: #999;
+            color: var(--color-text-faint);
             font-size: 12px;
             margin-top: 3px;
         }
@@ -162,7 +107,7 @@
         /* Ana İçerik (Body) */
         .activity-body {
             padding: 20px;
-            background: #fafafa;
+            background: var(--color-surface-2);
             display: flex;
             gap: 20px;
             cursor: pointer;
@@ -170,7 +115,7 @@
         }
 
         .activity-body:hover {
-            background: #f0f0f0;
+            background: var(--color-border);
         }
 
         .content-poster {
@@ -191,7 +136,7 @@
         .content-title {
             font-size: 18px;
             font-weight: bold;
-            color: #333;
+            color: var(--color-text);
             margin-bottom: 10px;
         }
 
@@ -222,10 +167,10 @@
         }
 
         .comment-preview {
-            color: #666;
+            color: var(--color-text-muted);
             font-style: italic;
             line-height: 1.5;
-            border-left: 3px solid #667eea;
+            border-left: 3px solid var(--color-accent);
             padding-left: 12px;
             margin-top: 10px;
         }
@@ -233,7 +178,7 @@
         /* Alt Bilgi (Footer) */
         .activity-footer {
             padding: 12px 20px;
-            border-top: 1px solid #f0f0f0;
+            border-top: 1px solid var(--color-border);
             display: flex;
             gap: 15px;
         }
@@ -241,7 +186,7 @@
         .footer-btn {
             background: none;
             border: none;
-            color: #666;
+            color: var(--color-text-muted);
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -253,24 +198,24 @@
         }
 
         .footer-btn:hover {
-            background: #f5f5f5;
-            color: #667eea;
+            background: var(--color-surface-2);
+            color: var(--color-accent);
         }
 
         .footer-btn.liked {
-            color: #e74c3c;
+            color: var(--color-danger);
         }
 
         /* Boş Durum */
         .empty-state {
             text-align: center;
             padding: 80px 20px;
-            color: #999;
+            color: var(--color-text-faint);
         }
 
         .empty-state h2 {
             margin-bottom: 15px;
-            color: #666;
+            color: var(--color-text-muted);
         }
 
         .empty-state p {
@@ -280,7 +225,7 @@
         .empty-state a {
             display: inline-block;
             padding: 12px 25px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--color-accent-gradient);
             color: white;
             text-decoration: none;
             border-radius: 8px;
@@ -290,7 +235,7 @@
         .loading {
             text-align: center;
             padding: 60px;
-            color: #667eea;
+            color: var(--color-accent);
             font-size: 18px;
         }
 
@@ -300,7 +245,7 @@
         }
 
         .load-more-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--color-accent-gradient);
             color: white;
             border: none;
             padding: 15px 40px;
@@ -324,7 +269,7 @@
         }
 
         .no-more-activities {
-            color: #999;
+            color: var(--color-text-faint);
             font-size: 14px;
         }
 
@@ -342,7 +287,7 @@
 
             .comment-preview {
                 border-left: none;
-                border-top: 3px solid #667eea;
+                border-top: 3px solid var(--color-accent);
                 padding-left: 0;
                 padding-top: 12px;
             }
@@ -358,6 +303,18 @@
             <a href="search.html" class="nav-link">🔍 Keşfet</a>
             <a href="feed.html" class="nav-link active">📰 Akış</a>
             <a href="profile.html" class="nav-link">👤 Profilim</a>
+            <a href="messages.html" class="nav-link">💬 Mesajlar</a>
+            <div class="nav-icon-wrap">
+                <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
+                    🔔
+                    <span class="nav-badge" id="notifBadge"></span>
+                </button>
+                <div class="nav-panel" id="notifPanel">
+                    <div class="nav-panel-header">Bildirimler</div>
+                    <div class="nav-panel-empty">Yükleniyor...</div>
+                </div>
+            </div>
+            <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
             <button class="logout-btn" onclick="logout()">Çıkış</button>
         </div>
     </nav>
@@ -370,6 +327,7 @@
         </div>
     </div>
 
+    <script src="js/escape-html.js"></script>
     <script src="js/app.js"></script>
     <script>
         let allActivities = [];
@@ -568,7 +526,7 @@
                                 ${typeBadge}
                                 <div class="content-title">${safeContentTitle}</div>
                                 ${activity.rating ? `<div class="rating-display">⭐ ${activity.rating}/10 puan verdi</div>` : ''}
-                                ${activity.commentText ? `<div class="comment-preview">"${safeCommentText.substring(0, 150)}${safeCommentText.length > 150 ? '...' : ''}"<br><a href="detail.html?type=${activity.contentType}&id=${activity.contentId}" style="color:#667eea;">daha fazlasını oku</a></div>` : ''}
+                                ${activity.commentText ? `<div class="comment-preview">"${safeCommentText.substring(0, 150)}${safeCommentText.length > 150 ? '...' : ''}"<br><a href="detail.html?type=${activity.contentType}&id=${activity.contentId}" style="color:var(--color-accent);">daha fazlasını oku</a></div>` : ''}
                             </div>
                         </div>
                         

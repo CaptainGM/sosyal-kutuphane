@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arama & Keşfet - Sosyal Kütüphane</title>
+    <link rel="stylesheet" href="css/style.css">
     <style>
         * {
             margin: 0;
@@ -14,45 +15,10 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
+            background: var(--color-bg);
+            color: var(--color-text);
             min-height: 100vh;
-        }
-
-        nav {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 15px 30px;
-            color: white;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        nav h1 {
-            font-size: 24px;
-        }
-
-        .user-info {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .user-welcome {
-            color: white;
-        }
-
-        .logout-btn {
-            padding: 8px 15px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid white;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
+            transition: background-color 0.2s ease, color 0.2s ease;
         }
 
         .container {
@@ -62,7 +28,7 @@
         }
 
         .search-box {
-            background: white;
+            background: var(--color-surface);
             padding: 30px;
             border-radius: 15px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
@@ -83,9 +49,9 @@
 
         .tab-btn {
             padding: 10px 25px;
-            border: 2px solid #667eea;
-            background: white;
-            color: #667eea;
+            border: 2px solid var(--color-accent);
+            background: var(--color-surface);
+            color: var(--color-accent);
             border-radius: 25px;
             cursor: pointer;
             font-weight: 600;
@@ -93,16 +59,18 @@
         }
 
         .tab-btn.active {
-            background: #667eea;
+            background: var(--color-accent);
             color: white;
         }
 
         input[type="text"],
         select {
             padding: 12px 15px;
-            border: 2px solid #e0e0e0;
+            border: 2px solid var(--color-border);
             border-radius: 8px;
             font-size: 14px;
+            background: var(--color-surface);
+            color: var(--color-text);
         }
 
         input[type="text"] {
@@ -112,12 +80,12 @@
         input[type="text"]:focus,
         select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--color-accent);
         }
 
         button.search-btn {
             padding: 12px 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--color-accent-gradient);
             color: white;
             border: none;
             border-radius: 8px;
@@ -133,7 +101,7 @@
 
         /* ✅ DÜZELTME 4: Filtreleme alanları */
         .filter-section {
-            background: #f9f9f9;
+            background: var(--color-surface-2);
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 20px;
@@ -159,7 +127,7 @@
 
         .filter-group label {
             font-weight: 600;
-            color: #333;
+            color: var(--color-text);
             font-size: 14px;
         }
 
@@ -176,9 +144,9 @@
 
         .sort-btn {
             padding: 8px 15px;
-            background: white;
-            border: 2px solid #667eea;
-            color: #667eea;
+            background: var(--color-surface);
+            border: 2px solid var(--color-accent);
+            color: var(--color-accent);
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
@@ -186,7 +154,7 @@
         }
 
         .sort-btn.active {
-            background: #667eea;
+            background: var(--color-accent);
             color: white;
         }
 
@@ -202,23 +170,24 @@
         .pagination button,
         .pagination span {
             padding: 10px 15px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--color-border);
             border-radius: 5px;
             cursor: pointer;
-            background: white;
+            background: var(--color-surface);
+            color: var(--color-text);
             transition: all 0.3s;
         }
 
         .pagination button:hover {
-            background: #667eea;
+            background: var(--color-accent);
             color: white;
-            border-color: #667eea;
+            border-color: var(--color-accent);
         }
 
         .pagination .active {
-            background: #667eea;
+            background: var(--color-accent);
             color: white;
-            border-color: #667eea;
+            border-color: var(--color-accent);
         }
 
         .pagination .disabled {
@@ -234,7 +203,7 @@
         }
 
         .content-card {
-            background: white;
+            background: var(--color-surface);
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
@@ -267,7 +236,7 @@
         .content-card h3 {
             font-size: 13px;
             margin-bottom: 8px;
-            color: #333;
+            color: var(--color-text);
             line-height: 1.3;
             height: 32px;
             overflow: hidden;
@@ -275,7 +244,7 @@
 
         .content-card .meta {
             font-size: 11px;
-            color: #666;
+            color: var(--color-text-muted);
             margin-top: auto;
         }
 
@@ -283,19 +252,19 @@
             text-align: center;
             padding: 40px;
             font-size: 18px;
-            color: #667eea;
+            color: var(--color-accent);
         }
 
         .no-results {
             text-align: center;
             padding: 60px;
-            color: #999;
+            color: var(--color-text-faint);
         }
 
         .section-title {
             font-size: 24px;
             margin: 40px 0 20px 0;
-            color: #333;
+            color: var(--color-text);
         }
 
         .showcase-section {
@@ -311,12 +280,12 @@
 
         .showcase-title {
             font-size: 28px;
-            color: #333;
+            color: var(--color-text);
         }
 
         .error-message {
-            background: #fee;
-            color: #c33;
+            background: var(--color-danger-bg);
+            color: var(--color-danger);
             padding: 15px;
             border-radius: 8px;
             margin: 20px 0;
@@ -341,20 +310,28 @@
 </head>
 
 <body>
-    <nav>
-        <h1>🎬 Sosyal Kütüphane - Arama & Keşfet</h1>
-        <div class="user-info">
-            <span class="user-welcome" id="userWelcome">Hoş geldiniz!</span>
-            <a href="social.html"
-                style="color: white; text-decoration: none; padding: 8px 15px; background: rgba(255,255,255,0.2); border-radius: 5px; margin-right: 10px;">
-                👥 Sosyal
-            </a>
-            <a href="profile.html"
-                style="color: white; text-decoration: none; padding: 8px 15px; background: rgba(255,255,255,0.2); border-radius: 5px; margin-right: 10px;">
-                👤 Profilim
-            </a>
+    <nav class="navbar">
+        <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
+        <div class="nav-links">
+            <a href="search.html" class="nav-link active">🔍 Keşfet</a>
+            <a href="feed.html" class="nav-link">📰 Akış</a>
+            <a href="social.html" class="nav-link">👥 Sosyal</a>
+            <a href="profile.html" class="nav-link">👤 Profilim</a>
+            <a href="messages.html" class="nav-link">💬 Mesajlar</a>
+            <div class="nav-icon-wrap">
+                <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
+                    🔔
+                    <span class="nav-badge" id="notifBadge"></span>
+                </button>
+                <div class="nav-panel" id="notifPanel">
+                    <div class="nav-panel-header">Bildirimler</div>
+                    <div class="nav-panel-empty">Yükleniyor...</div>
+                </div>
+            </div>
+            <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
             <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
         </div>
+        <span id="userWelcome" style="display:none;"></span>
     </nav>
 
     <div class="container">
@@ -453,6 +430,7 @@
         </div>
     </div>
 
+    <script src="js/escape-html.js"></script>
     <script src="js/app.js"></script>
     <script>
         let currentTab = 'movie';
@@ -477,6 +455,19 @@
             { id: 878, name: 'Science Fiction' },
             { id: 53, name: 'Thriller' }
         ];
+        const BOOK_CATEGORIES = [
+            { value: 'fiction', name: 'Roman/Kurgu' },
+            { value: 'fantasy', name: 'Fantastik' },
+            { value: 'science+fiction', name: 'Bilim Kurgu' },
+            { value: 'mystery', name: 'Gizem' },
+            { value: 'romance', name: 'Romantik' },
+            { value: 'history', name: 'Tarih' },
+            { value: 'biography', name: 'Biyografi' },
+            { value: 'science', name: 'Bilim' },
+            { value: 'philosophy', name: 'Felsefe' },
+            { value: 'poetry', name: 'Şiir' },
+            { value: 'self-help', name: 'Kişisel Gelişim' }
+        ];
         function applyMovieFilters(movies) {
             return movies.filter(movie => {
                 if (currentFilters.year) {
@@ -497,7 +488,8 @@
             currentFilters = {
                 genre: document.getElementById('genreFilter')?.value || '',
                 year: document.getElementById('yearFilter')?.value || '',
-                rating: document.getElementById('ratingFilter')?.value || ''
+                rating: document.getElementById('ratingFilter')?.value || '',
+                category: document.getElementById('categoryFilter')?.value || ''
             };
         }
 
@@ -563,7 +555,16 @@
                 allMoviesSection.style.display = 'block';
                 loadShowcaseMovies();
             } else {
-                filterSection.classList.remove('active');
+                filterSection.classList.add('active');
+                filterGrid.innerHTML = `
+                    <div class="filter-group">
+                        <label>📚 Kategori</label>
+                        <select id="categoryFilter" onchange="updateFilters()">
+                            <option value="">Tümü</option>
+                            ${BOOK_CATEGORIES.map(c => `<option value="${c.value}">${c.name}</option>`).join('')}
+                        </select>
+                    </div>
+                `;
                 topRatedSection.style.display = 'none';
                 popularSection.style.display = 'none';
                 allMoviesSection.style.display = 'none';
@@ -577,12 +578,13 @@
         }
         async function performSearch() {
             const query = document.getElementById('searchInput').value.trim();
+            const hasBookCategory = currentTab === 'book' && !!currentFilters.category;
             const resultsContainer = document.getElementById('resultsContainer');
             const topRatedSection = document.getElementById('topRatedSection');
             const popularSection = document.getElementById('popularSection');
             const allMoviesSection = document.getElementById('allMoviesSection');
 
-            if (!query) {
+            if (!query && !hasBookCategory) {
                 resultsContainer.innerHTML = '<div class="no-results">👆 Yukarıdan arama yapın</div>';
                 topRatedSection.style.display = currentTab === 'movie' ? 'block' : 'none';
                 popularSection.style.display = currentTab === 'movie' ? 'block' : 'none';
@@ -609,8 +611,12 @@
                     displayPaginatedResults(results, currentTab, 1);
                 } else {
                     try {
+                        let q = query ? `intitle:${encodeURIComponent(query)}` : '';
+                        if (currentFilters.category) {
+                            q += (q ? '+' : '') + `subject:${currentFilters.category}`;
+                        }
                         const response = await fetch(
-                            `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(query)}&maxResults=40&orderBy=relevance`
+                            `https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=40&orderBy=relevance`
                         );
                         const data = await response.json();
                         let items = data.items || [];
@@ -640,9 +646,10 @@
                     totalPages = Math.ceil(results.length / 12);
                     displayPaginatedResults(results, currentTab, 1);
                 } if (allResults.length === 0) {
+                    const label = query ? `"${app.escapeHtml(query)}" için` : 'Bu kategoride';
                     resultsContainer.innerHTML = `
                 <div class="no-results">
-                    😕 "${query}" için sonuç bulunamadı
+                    😕 ${label} sonuç bulunamadı
                 </div>
             `;
                     document.getElementById('pagination').style.display = 'none';
@@ -668,6 +675,15 @@
         async function applyFilters() {
             updateFilters();
             const query = document.getElementById('searchInput').value.trim();
+
+            if (currentTab === 'book') {
+                if (!query && !currentFilters.category) {
+                    document.getElementById('resultsContainer').innerHTML = '<div class="no-results">👆 Yukarıdan arama yapın veya bir kategori seçin</div>';
+                    return;
+                }
+                performSearch();
+                return;
+            }
 
             if (!query) {
                 isFiltering = true;
@@ -1176,7 +1192,7 @@
                              onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Resim+Yok'">
                         <div class="info">
                             <h3>${item.title}</h3>
-                            <div class="meta" style="color: #667eea; font-weight: 600;">${statValue}</div>
+                            <div class="meta" style="color: var(--color-accent); font-weight: 600;">${statValue}</div>
                         </div>
                     </div>
                 `;

@@ -15,47 +15,8 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
+            background: var(--color-bg);
             min-height: 100vh;
-        }
-
-        .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 15px 30px;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .navbar .logo {
-            font-size: 24px;
-            font-weight: bold;
-            text-decoration: none;
-            color: white;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .nav-link {
-            color: white;
-            text-decoration: none;
-            padding: 8px 15px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 5px;
-            transition: background 0.3s;
-        }
-
-        .nav-link:hover {
-            background: rgba(255, 255, 255, 0.3);
         }
 
         .logout-btn {
@@ -73,7 +34,7 @@
         }
 
         .profile-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--color-accent-gradient);
             color: white;
             padding: 40px 0;
             margin-bottom: 40px;
@@ -102,7 +63,7 @@
         }
 
         .profile-card {
-            background: white;
+            background: var(--color-surface);
             padding: 30px;
             border-radius: 15px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
@@ -114,7 +75,7 @@
             width: 150px;
             height: 150px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--color-accent-gradient);
             margin: 0 auto 20px;
             display: flex;
             align-items: center;
@@ -127,11 +88,11 @@
             font-size: 24px;
             font-weight: bold;
             margin-bottom: 5px;
-            color: #333;
+            color: var(--color-text);
         }
 
         .profile-email {
-            color: #666;
+            color: var(--color-text-muted);
             margin-bottom: 20px;
             font-size: 14px;
         }
@@ -142,8 +103,8 @@
             gap: 15px;
             margin: 20px 0;
             padding: 20px 0;
-            border-top: 1px solid #e0e0e0;
-            border-bottom: 1px solid #e0e0e0;
+            border-top: 1px solid var(--color-border);
+            border-bottom: 1px solid var(--color-border);
         }
 
         .stat-item {
@@ -153,19 +114,19 @@
         .stat-number {
             font-size: 24px;
             font-weight: bold;
-            color: #667eea;
+            color: var(--color-accent);
         }
 
         .stat-label {
             font-size: 12px;
-            color: #999;
+            color: var(--color-text-faint);
             margin-top: 5px;
         }
 
         .follow-btn {
             width: 100%;
             padding: 12px;
-            background: #667eea;
+            background: var(--color-accent);
             color: white;
             border: none;
             border-radius: 8px;
@@ -177,22 +138,22 @@
         }
 
         .follow-btn:hover {
-            background: #764ba2;
+            background: var(--color-accent-2);
             transform: translateY(-2px);
         }
 
         .follow-btn.following {
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
+            background: var(--color-surface);
+            color: var(--color-accent);
+            border: 2px solid var(--color-accent);
         }
 
         .follow-btn.following:hover {
-            background: #f5f5f5;
+            background: var(--color-bg);
         }
 
         .profile-content {
-            background: white;
+            background: var(--color-surface);
             padding: 30px;
             border-radius: 15px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
@@ -201,7 +162,7 @@
         .tabs {
             display: flex;
             gap: 20px;
-            border-bottom: 2px solid #e0e0e0;
+            border-bottom: 2px solid var(--color-border);
             margin-bottom: 30px;
         }
 
@@ -211,19 +172,19 @@
             border: none;
             cursor: pointer;
             font-weight: 600;
-            color: #999;
+            color: var(--color-text-faint);
             border-bottom: 3px solid transparent;
             transition: all 0.3s;
             font-size: 14px;
         }
 
         .tab-btn:hover {
-            color: #667eea;
+            color: var(--color-accent);
         }
 
         .tab-btn.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
+            color: var(--color-accent);
+            border-bottom-color: var(--color-accent);
         }
 
         .tab-content {
@@ -253,7 +214,7 @@
         .content-poster {
             width: 100%;
             height: 200px;
-            background: #e0e0e0;
+            background: var(--color-border);
             border-radius: 8px;
             margin-bottom: 10px;
             object-fit: cover;
@@ -261,7 +222,7 @@
 
         .content-title {
             font-weight: 600;
-            color: #333;
+            color: var(--color-text);
             font-size: 14px;
             margin-bottom: 5px;
         }
@@ -273,15 +234,15 @@
 
         .review-item {
             padding: 15px;
-            border: 1px solid #e0e0e0;
+            border: 1px solid var(--color-border);
             border-radius: 8px;
             margin-bottom: 15px;
-            background: #f9f9f9;
+            background: var(--color-surface-2);
         }
 
         .review-title {
             font-weight: bold;
-            color: #333;
+            color: var(--color-text);
             margin-bottom: 8px;
         }
 
@@ -292,26 +253,26 @@
         }
 
         .review-text {
-            color: #666;
+            color: var(--color-text-muted);
             margin: 10px 0;
             line-height: 1.5;
         }
 
         .review-date {
-            color: #999;
+            color: var(--color-text-faint);
             font-size: 12px;
         }
 
         .no-content {
             text-align: center;
             padding: 60px 20px;
-            color: #999;
+            color: var(--color-text-faint);
         }
 
         .loading {
             text-align: center;
             padding: 40px;
-            color: #667eea;
+            color: var(--color-accent);
         }
 
         @media (max-width: 768px) {
@@ -338,6 +299,18 @@
             <a href="search.html" class="nav-link">🔍 Keşfet</a>
             <a href="feed.html" class="nav-link">📰 Akış</a>
             <a href="profile.html" class="nav-link">👤 Profilim</a>
+            <a href="messages.html" class="nav-link">💬 Mesajlar</a>
+            <div class="nav-icon-wrap">
+                <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
+                    🔔
+                    <span class="nav-badge" id="notifBadge"></span>
+                </button>
+                <div class="nav-panel" id="notifPanel">
+                    <div class="nav-panel-header">Bildirimler</div>
+                    <div class="nav-panel-empty">Yükleniyor...</div>
+                </div>
+            </div>
+            <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
             <button class="logout-btn" onclick="logout()">Çıkış</button>
         </div>
     </nav>
@@ -381,6 +354,9 @@
                 <button id="followBtn" class="follow-btn" onclick="toggleFollow()" style="display: none;">
                     + Takip Et
                 </button>
+                <button id="messageBtn" class="follow-btn" onclick="goToMessages()" style="display: none; margin-top: 10px; background: var(--color-surface-2); color: var(--color-text); border: 2px solid var(--color-border);">
+                    💬 Mesaj Gönder
+                </button>
             </div>
 
 
@@ -415,6 +391,7 @@
         </div>
     </div>
 
+    <script src="js/escape-html.js"></script>
     <script src="js/app.js"></script>
     <script>
         let profileUserId = null;
@@ -545,6 +522,10 @@
             window.location.href = `detail.html?type=${type}&id=${id}`;
         }
 
+        function goToMessages() {
+            window.location.href = `messages.html?with=${profileUserId}`;
+        }
+
         async function loadUserProfile() {
             const userId = profileUserId;
             console.log('loadUserProfile called with userId:', userId);
@@ -613,6 +594,10 @@
                 if (followBtn && !isOwnProfile) {
                     followBtn.style.display = 'block';
                     checkFollowStatus(userId);
+                }
+                const messageBtn = document.getElementById('messageBtn');
+                if (messageBtn && !isOwnProfile) {
+                    messageBtn.style.display = 'block';
                 }
 
                 loadUserContent();
@@ -711,7 +696,7 @@
 
         async function toggleFollow() {
             if (!app.currentUser) {
-                alert('Takip etmek için giriş yapmalısınız!');
+                app.toast('Takip etmek için giriş yapmalısınız!', 'error');
                 return;
             }
 
@@ -746,7 +731,7 @@
                 }
             } catch (error) {
                 console.error('Takip değişikliği hatası:', error);
-                alert('İşlem başarısız oldu!');
+                app.toast('İşlem başarısız oldu!', 'error');
             }
         }
 

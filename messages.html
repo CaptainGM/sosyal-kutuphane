@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesajlar - Sosyal Kütüphane</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .messages-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 20px;
+            height: calc(100vh - 110px);
+            padding: 20px 0;
+        }
+
+        .conv-list {
+            background: var(--color-surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow-y: auto;
+        }
+
+        .conv-item {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--color-border);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .conv-item:hover {
+            background: var(--color-surface-2);
+        }
+
+        .conv-item.active {
+            background: rgba(102, 126, 234, 0.12);
+        }
+
+        .conv-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--color-accent-gradient);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+            overflow: hidden;
+            font-size: 18px;
+        }
+
+        .conv-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .conv-info {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .conv-username {
+            font-weight: 600;
+            color: var(--color-text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .conv-preview {
+            font-size: 12px;
+            color: var(--color-text-faint);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .conv-unread {
+            background: var(--color-danger);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+        }
+
+        .thread-panel {
+            background: var(--color-surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .thread-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--color-border);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .thread-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .msg-bubble {
+            max-width: 65%;
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 14px;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .msg-mine {
+            align-self: flex-end;
+            background: var(--color-accent-gradient);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .msg-theirs {
+            align-self: flex-start;
+            background: var(--color-surface-2);
+            color: var(--color-text);
+            border-bottom-left-radius: 4px;
+        }
+
+        .msg-time {
+            font-size: 10px;
+            opacity: 0.7;
+            margin-top: 4px;
+        }
+
+        .thread-composer {
+            display: flex;
+            gap: 10px;
+            padding: 14px;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .thread-composer textarea {
+            flex: 1;
+            resize: none;
+            min-height: 42px;
+            max-height: 120px;
+            padding: 10px 14px;
+            border: 2px solid var(--color-border);
+            border-radius: var(--radius);
+            font-family: inherit;
+            font-size: 14px;
+            background: var(--color-surface);
+            color: var(--color-text);
+        }
+
+        .empty-thread {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-text-faint);
+            text-align: center;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .messages-layout {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .conv-list.hidden-mobile,
+            .thread-panel.hidden-mobile {
+                display: none;
+            }
+
+            .thread-panel {
+                height: calc(100vh - 130px);
+            }
+
+            .back-to-list {
+                display: inline-block !important;
+            }
+        }
+
+        .back-to-list {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--color-text);
+            cursor: pointer;
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
+        <div class="nav-links">
+            <a href="search.html" class="nav-link">🔍 Keşfet</a>
+            <a href="feed.html" class="nav-link">📰 Akış</a>
+            <a href="messages.html" class="nav-link active">💬 Mesajlar</a>
+            <a href="profile.html" class="nav-link">👤 Profilim</a>
+            <div class="nav-icon-wrap">
+                <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
+                    🔔
+                    <span class="nav-badge" id="notifBadge"></span>
+                </button>
+                <div class="nav-panel" id="notifPanel">
+                    <div class="nav-panel-header">Bildirimler</div>
+                    <div class="nav-panel-empty">Yükleniyor...</div>
+                </div>
+            </div>
+            <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
+            <button class="logout-btn" onclick="logout()">Çıkış</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="messages-layout">
+            <div class="conv-list" id="convList">
+                <div class="nav-panel-empty">Yükleniyor...</div>
+            </div>
+            <div class="thread-panel" id="threadPanel">
+                <div class="empty-thread">💬 Mesajlaşmak için soldan bir konuşma seçin</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/escape-html.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        let activeConversationId = null;
+        let activeOtherUser = null;
+        let pollTimer = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (app.initPromise) await app.initPromise;
+            if (!app.currentUser) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const params = new URLSearchParams(window.location.search);
+            const withUserId = params.get('with');
+            const conversationId = params.get('conversation_id');
+
+            await loadConversations();
+
+            if (conversationId) {
+                openConversation(parseInt(conversationId, 10));
+            } else if (withUserId) {
+                await openWithUser(parseInt(withUserId, 10));
+            }
+
+            pollTimer = setInterval(() => {
+                loadConversations();
+                if (activeConversationId) loadThread(activeConversationId, false);
+            }, 5000);
+        });
+
+        async function loadConversations() {
+            try {
+                const res = await fetch('/api/messages.php', { credentials: 'include' });
+                const data = await res.json();
+                if (!data.success) return;
+
+                const list = document.getElementById('convList');
+                if (!data.conversations || data.conversations.length === 0) {
+                    list.innerHTML = '<div class="nav-panel-empty">Henüz bir konuşman yok</div>';
+                    return;
+                }
+
+                list.innerHTML = data.conversations.map(c => {
+                    const other = c.other_user;
+                    const username = other ? app.escapeHtml(other.username) : 'Bilinmeyen kullanıcı';
+                    const avatarLetter = username.charAt(0).toUpperCase();
+                    const avatarHtml = (other && other.avatar_url)
+                        ? `<img src="${app.escapeHtml(other.avatar_url)}" alt="${username}">`
+                        : avatarLetter;
+                    const activeClass = c.conversation_id === activeConversationId ? 'active' : '';
+                    const unreadBadge = c.unread_count > 0 ? `<span class="conv-unread">${c.unread_count}</span>` : '';
+
+                    return `
+                        <div class="conv-item ${activeClass}" onclick="openConversation(${c.conversation_id}, ${other ? other.id : 'null'}, '${username.replace(/'/g, "\\'")}')">
+                            <div class="conv-avatar">${avatarHtml}</div>
+                            <div class="conv-info">
+                                <div class="conv-username">${username}</div>
+                                <div class="conv-preview">${app.escapeHtml(c.last_message) || 'Henüz mesaj yok'}</div>
+                            </div>
+                            ${unreadBadge}
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Konuşmalar yüklenemedi:', error);
+            }
+        }
+
+        async function openWithUser(otherUserId) {
+            try {
+                const res = await fetch(`/api/messages.php?with=${otherUserId}`, { credentials: 'include' });
+                const data = await res.json();
+                if (data.success && data.conversation_id) {
+                    openConversation(data.conversation_id, otherUserId, null);
+                } else {
+                    activeConversationId = null;
+                    activeOtherUser = { id: otherUserId, username: null };
+                    renderEmptyThreadForNewUser(otherUserId);
+                }
+            } catch (error) {
+                console.error('Konuşma başlatılamadı:', error);
+            }
+        }
+
+        function renderEmptyThreadForNewUser(otherUserId) {
+            const panel = document.getElementById('threadPanel');
+            panel.innerHTML = `
+                <div class="thread-header"><button class="back-to-list" onclick="closeThreadMobile()">←</button> Yeni mesaj</div>
+                <div class="thread-body" id="threadBody"><div class="empty-thread">İlk mesajını gönder</div></div>
+                <div class="thread-composer">
+                    <textarea id="messageInput" placeholder="Bir mesaj yaz..." onkeydown="handleComposerKey(event)"></textarea>
+                    <button class="btn btn-primary" onclick="sendMessage(${otherUserId})">Gönder</button>
+                </div>
+            `;
+        }
+
+        async function openConversation(conversationId, otherUserId, otherUsername) {
+            activeConversationId = conversationId;
+            activeOtherUser = { id: otherUserId, username: otherUsername };
+            document.querySelectorAll('.conv-item').forEach(el => el.classList.remove('active'));
+
+            document.getElementById('convList').classList.add('hidden-mobile');
+            document.getElementById('threadPanel').classList.remove('hidden-mobile');
+
+            await loadThread(conversationId, true);
+            loadConversations();
+        }
+
+        async function loadThread(conversationId, showComposer) {
+            try {
+                const res = await fetch(`/api/messages.php?conversation_id=${conversationId}`, { credentials: 'include' });
+                const data = await res.json();
+                if (!data.success) return;
+
+                const panel = document.getElementById('threadPanel');
+                const headerName = activeOtherUser?.username ? app.escapeHtml(activeOtherUser.username) : 'Konuşma';
+
+                if (showComposer || !document.getElementById('messageInput')) {
+                    panel.innerHTML = `
+                        <div class="thread-header"><button class="back-to-list" onclick="closeThreadMobile()">←</button> ${headerName}</div>
+                        <div class="thread-body" id="threadBody"></div>
+                        <div class="thread-composer">
+                            <textarea id="messageInput" placeholder="Bir mesaj yaz..." onkeydown="handleComposerKey(event)"></textarea>
+                            <button class="btn btn-primary" onclick="sendMessage()">Gönder</button>
+                        </div>
+                    `;
+                }
+
+                const body = document.getElementById('threadBody');
+                const wasNearBottom = body.scrollTop + body.clientHeight >= body.scrollHeight - 40;
+
+                body.innerHTML = (data.messages || []).map(m => {
+                    const mine = app.currentUser && m.sender_id === app.currentUser.id;
+                    return `
+                        <div class="msg-bubble ${mine ? 'msg-mine' : 'msg-theirs'}">
+                            ${app.escapeHtml(m.text)}
+                            <div class="msg-time">${app.formatDate(m.created_at)}</div>
+                        </div>
+                    `;
+                }).join('') || '<div class="empty-thread">Henüz mesaj yok, ilk mesajı sen gönder</div>';
+
+                if (wasNearBottom || showComposer) {
+                    body.scrollTop = body.scrollHeight;
+                }
+            } catch (error) {
+                console.error('Mesajlar yüklenemedi:', error);
+            }
+        }
+
+        function handleComposerKey(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        async function sendMessage(toUserIdIfNew) {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const body = activeConversationId
+                ? { conversation_id: activeConversationId, text }
+                : { to_user_id: toUserIdIfNew || activeOtherUser?.id, text };
+
+            try {
+                const res = await fetch('/api/messages.php', {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    input.value = '';
+                    activeConversationId = data.conversation_id;
+                    await loadThread(activeConversationId, false);
+                    loadConversations();
+                } else {
+                    app.toast(data.message || 'Mesaj gönderilemedi', 'error');
+                }
+            } catch (error) {
+                console.error('Mesaj gönderme hatası:', error);
+                app.toast('Bağlantı hatası', 'error');
+            }
+        }
+
+        function closeThreadMobile() {
+            document.getElementById('convList').classList.remove('hidden-mobile');
+            document.getElementById('threadPanel').classList.add('hidden-mobile');
+        }
+    </script>
+</body>
+
+</html>

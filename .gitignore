@@ -1,4 +1,9 @@
 vendor/
 .env
+*.env
+!.env.example
 .vscode/
 tempCodeRunnerFile.bat
+uploads/*
+!uploads/.gitkeep
+.phpunit.result.cache

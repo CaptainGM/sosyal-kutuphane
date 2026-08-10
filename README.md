@@ -1,8 +1,16 @@
 # 📚 Sosyal Kütüphane
 
+![CI](https://github.com/CaptainGM/sosyal-kutuphane/actions/workflows/ci.yml/badge.svg)
+
 Film ve Kitap Sosyal Ağı Uygulaması
 
 ![Giriş ekranı](screenshot.png)
+
+Karanlık mod + tür filtreleme:
+![Karanlık mod](screenshot-dark.png)
+
+Doğrudan mesajlaşma:
+![Mesajlaşma](screenshot-messages.png)
 
 ## Mimari
 
@@ -61,12 +69,17 @@ http://localhost:8000/index.html
 Veya yeni hesap oluştur.
 
 ## ✨ Özellikler
-- 🔍 Film ve Kitap Arama
-- ⭐ İzlediklerim / Okuduklarım
-- 💬 Yorum Yapma
+- 🔍 Film ve Kitap Arama, tür/kategori filtreleme
+- ⭐ İzlediklerim / Okuduklarım, puanlama
+- 💬 Yorum Yapma (yanıt, beğeni)
 - 👥 Takip Sistemi
 - 📱 Sosyal Feed
-- 🔔 Bildirimler, popüler içerikler, özel listeler
+- 🔔 Gerçek zamanlıya yakın bildirimler (takip, mesaj — otomatik yenilenen zil)
+- 💬 Kullanıcılar arası doğrudan mesajlaşma
+- 📁 Özel listeler, popüler içerikler
+- ⚙️ Hesap ayarları: şifre değiştirme, e-posta değiştirme (çift adımlı e-posta doğrulamalı), dosya ile avatar yükleme
+- 🌙 Karanlık mod
+- 🔐 Hash'lenmiş şifreler, CSRF koruması, giriş denemesi sınırlama
 
 ## 📂 Dosya Yapısı
 ```
@@ -75,24 +88,37 @@ sosyal-kutuphane/
 ├── START.sh               # Server Başlatıcı (Mac/Linux)
 ├── index.html             # Giriş Sayfası
 ├── search.html             # Arama & Keşfet
-├── profile.html            # Profil
+├── profile.html            # Profil, hesap ayarları
 ├── detail.html             # İçerik Detayı
+├── messages.html            # Mesajlaşma
 ├── api/                    # Backend API'leri (PHP)
 ├── js/                     # JavaScript Dosyaları
-└── css/                    # Stil Dosyaları
+├── css/                    # Stil Dosyaları (tasarım token'ları, karanlık mod)
+└── tests/                  # PHPUnit + Node testleri
 ```
 
 ## Teknoloji
 
-PHP (mysqli) + vanilla HTML/CSS/JS, PHPMailer (şifre sıfırlama e-postaları için).
+PHP + MongoDB (`mongodb/mongodb` composer paketi) + vanilla HTML/CSS/JS. PHPMailer (şifre sıfırlama ve e-posta doğrulama kodları için). MongoDB yerelde ya da [Atlas](https://www.mongodb.com/atlas) gibi bulut bir cluster'da çalışabilir — `.env`'deki `MONGO_URI`'yi değiştirmen yeterli.
+
+## 🧪 Testler
+
+```bash
+composer install    # phpunit/phpunit dahil (dev bağımlılık)
+php -S localhost:8000 &
+vendor/bin/phpunit --testdox   # API entegrasyon testleri (çalışan sunucu + MongoDB gerektirir)
+node --test tests/escape-html.test.mjs   # XSS-kaçış birim testleri
+```
+
+`master`/`main`'e her push'ta ve her PR'da GitHub Actions aynı testleri kendi MongoDB servis konteynerine karşı otomatik çalıştırır (bkz. `.github/workflows/ci.yml`).
 
 ## ⚠️ Sorun Giderme
 
 **"Sunucuya bağlanılamıyor"**
 → START.bat'i çalıştırdığından emin ol
 
-**"Veritabanı hatası"**
-→ MySQL servisinin çalıştığından ve `DB_PASSWORD` ortam değişkeninin doğru ayarlandığından emin ol
+**"Veritabanı bağlantı hatası"**
+→ MongoDB servisinin çalıştığından ve `.env`'deki `MONGO_URI`'nin doğru olduğundan emin ol. Atlas kullanıyorsan Atlas konsolunda **Network Access**'e mevcut IP'nin (veya geliştirme için `0.0.0.0/0`) eklendiğini kontrol et — eklenmemişse bağlantı TLS aşamasında sessizce başarısız olur.
 
 **"Giriş yapılamıyor"**
 → Tarayıcıyı yenile (F5)

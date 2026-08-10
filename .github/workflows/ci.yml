@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand({ping:1})' --quiet"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: PHP kur (mongodb eklentisiyle)
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mongodb
+          coverage: none
+
+      - name: Node kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Composer bağımlılıklarını kur
+        run: composer install --no-interaction --prefer-dist
+
+      - name: MongoDB indekslerini ve demo verilerini oluştur
+        env:
+          MONGO_URI: mongodb://localhost:27017
+          MONGO_DB: social_library
+        run: |
+          php -S localhost:8000 &
+          sleep 2
+          curl -sf http://localhost:8000/api/setup-db.php > /dev/null
+
+      - name: PHPUnit testlerini çalıştır
+        env:
+          MONGO_URI: mongodb://localhost:27017
+          MONGO_DB: social_library
+          TEST_BASE_URL: http://localhost:8000
+        run: vendor/bin/phpunit --testdox
+
+      - name: JS (escapeHtml) testlerini çalıştır
+        run: node --test tests/escape-html.test.mjs

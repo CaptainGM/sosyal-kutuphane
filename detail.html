@@ -15,60 +15,13 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
-        }
-
-        .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 15px 30px;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .navbar .logo {
-            font-size: 24px;
-            font-weight: bold;
-            text-decoration: none;
-            color: white;
+            background: var(--color-bg);
         }
 
         .nav-links {
             display: flex;
             gap: 15px;
             align-items: center;
-        }
-
-        .nav-link {
-            color: white;
-            text-decoration: none;
-            padding: 8px 15px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 5px;
-            transition: background 0.3s;
-        }
-
-        .nav-link:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .logout-btn {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid white;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
         }
 
         .container {
@@ -78,7 +31,7 @@
         }
 
         .detail-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--color-accent-gradient);
             color: white;
             padding: 60px 0 40px;
             margin-bottom: 40px;
@@ -145,16 +98,16 @@
         }
 
         .rating-section {
-            background: white;
+            background: var(--color-surface);
             padding: 25px;
             border-radius: 10px;
-            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow);
             margin-bottom: 30px;
         }
 
         .rating-section h3 {
             margin-bottom: 20px;
-            color: #333;
+            color: var(--color-text);
         }
 
         .user-actions {
@@ -166,9 +119,9 @@
 
         .action-btn {
             padding: 12px;
-            border: 2px solid #667eea;
-            background: white;
-            color: #667eea;
+            border: 2px solid var(--color-accent);
+            background: var(--color-surface);
+            color: var(--color-accent);
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
@@ -176,7 +129,7 @@
         }
 
         .action-btn.active {
-            background: #667eea;
+            background: var(--color-accent);
             color: white;
         }
 
@@ -199,7 +152,7 @@
         .star {
             font-size: 24px;
             cursor: pointer;
-            color: #ddd;
+            color: var(--color-border);
             transition: color 0.2s;
         }
 
@@ -222,7 +175,7 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--color-accent-gradient);
             color: white;
         }
 
@@ -232,10 +185,10 @@
         }
 
         .comments-section {
-            background: white;
+            background: var(--color-surface);
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow);
             margin-bottom: 30px;
             width: 100%;
             overflow-x: hidden;
@@ -243,7 +196,7 @@
 
         .comments-section h3 {
             margin-bottom: 20px;
-            color: #333;
+            color: var(--color-text);
         }
 
         .comment-form {
@@ -253,7 +206,7 @@
         .comment-form textarea {
             width: 100%;
             padding: 15px;
-            border: 2px solid #e0e0e0;
+            border: 2px solid var(--color-border);
             border-radius: 8px;
             resize: vertical;
             min-height: 100px;
@@ -263,7 +216,7 @@
 
         .comment-form button {
             padding: 12px 24px;
-            background: #667eea;
+            background: var(--color-accent);
             color: white;
             border: none;
             border-radius: 8px;
@@ -272,15 +225,15 @@
         }
 
         .comment-form button:hover {
-            background: #764ba2;
+            background: var(--color-accent-2);
         }
 
         .comment-item {
             padding: 20px;
-            border: 1px solid #e0e0e0;
+            border: 1px solid var(--color-border);
             border-radius: 8px;
             margin-bottom: 15px;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid var(--color-accent);
             word-break: break-word;
             overflow-wrap: break-word;
         }
@@ -294,7 +247,7 @@
 
         .comment-user {
             font-weight: 600;
-            color: #667eea;
+            color: var(--color-accent);
             cursor: pointer;
         }
 
@@ -303,14 +256,14 @@
         }
 
         .comment-date {
-            color: #999;
+            color: var(--color-text-faint);
             font-size: 14px;
         }
 
         .comment-text {
             line-height: 1.6;
             margin-bottom: 15px;
-            color: #555;
+            color: var(--color-text-muted);
             word-break: break-word;
             overflow-wrap: break-word;
             word-wrap: break-word;
@@ -320,13 +273,13 @@
             display: flex;
             gap: 15px;
             padding-top: 15px;
-            border-top: 1px solid #e0e0e0;
+            border-top: 1px solid var(--color-border);
         }
 
         .action-btn-comment {
             background: none;
             border: none;
-            color: #666;
+            color: var(--color-text-muted);
             cursor: pointer;
             font-size: 14px;
             font-weight: 600;
@@ -334,20 +287,20 @@
         }
 
         .action-btn-comment:hover {
-            color: #667eea;
+            color: var(--color-accent);
         }
 
         .reply-form {
             margin-top: 15px;
             padding: 15px;
-            background: #f9f9f9;
+            background: var(--color-surface-2);
             border-radius: 8px;
         }
 
         .reply-form textarea {
             width: 100%;
             padding: 10px;
-            border: 1px solid #e0e0e0;
+            border: 1px solid var(--color-border);
             border-radius: 5px;
             font-family: inherit;
             min-height: 80px;
@@ -356,7 +309,7 @@
 
         .reply-form button {
             padding: 8px 15px;
-            background: #667eea;
+            background: var(--color-accent);
             color: white;
             border: none;
             border-radius: 5px;
@@ -366,7 +319,7 @@
         }
 
         .reply-form button:hover {
-            background: #764ba2;
+            background: var(--color-accent-2);
         }
 
         .reply-form button.cancel {
@@ -380,11 +333,11 @@
         .replies-container {
             margin-top: 15px;
             padding-left: 20px;
-            border-left: 2px solid #667eea;
+            border-left: 2px solid var(--color-accent);
         }
 
         .reply-item {
-            background: #f9f9f9;
+            background: var(--color-surface-2);
             padding: 12px;
             border-radius: 5px;
             margin-bottom: 10px;
@@ -393,12 +346,12 @@
 
         .reply-header {
             font-weight: 600;
-            color: #333;
+            color: var(--color-text);
             margin-bottom: 5px;
         }
 
         .reply-text {
-            color: #555;
+            color: var(--color-text-muted);
             line-height: 1.5;
         }
 
@@ -406,13 +359,13 @@
             text-align: center;
             padding: 40px;
             font-size: 18px;
-            color: #667eea;
+            color: var(--color-accent);
         }
 
         .no-results {
             text-align: center;
             padding: 60px;
-            color: #999;
+            color: var(--color-text-faint);
         }
 
         @media (max-width: 768px) {
@@ -443,7 +396,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.6);
+            background: var(--color-overlay);
             z-index: 1000;
             justify-content: center;
             align-items: center;
@@ -454,7 +407,7 @@
         }
 
         .modal-content {
-            background: white;
+            background: var(--color-surface);
             border-radius: 15px;
             padding: 30px;
             max-width: 450px;
@@ -473,7 +426,7 @@
 
         .modal-header h3 {
             font-size: 20px;
-            color: #333;
+            color: var(--color-text);
         }
 
         .modal-close {
@@ -481,11 +434,11 @@
             border: none;
             font-size: 28px;
             cursor: pointer;
-            color: #999;
+            color: var(--color-text-faint);
         }
 
         .modal-close:hover {
-            color: #333;
+            color: var(--color-text);
         }
 
         .custom-lists-container {
@@ -496,7 +449,7 @@
             display: flex;
             align-items: center;
             padding: 12px 15px;
-            border: 2px solid #e0e0e0;
+            border: 2px solid var(--color-border);
             border-radius: 8px;
             margin-bottom: 10px;
             cursor: pointer;
@@ -504,13 +457,13 @@
         }
 
         .custom-list-item:hover {
-            border-color: #667eea;
-            background: #f8f9ff;
+            border-color: var(--color-accent);
+            background: var(--color-border);
         }
 
         .custom-list-item.selected {
-            border-color: #667eea;
-            background: #667eea;
+            border-color: var(--color-accent);
+            background: var(--color-accent);
             color: white;
         }
 
@@ -527,7 +480,7 @@
 
         .custom-list-count {
             font-size: 12px;
-            color: #999;
+            color: var(--color-text-faint);
         }
 
         .custom-list-item.selected .custom-list-count {
@@ -537,11 +490,11 @@
         .no-lists-message {
             text-align: center;
             padding: 30px;
-            color: #999;
+            color: var(--color-text-faint);
         }
 
         .create-list-link {
-            color: #667eea;
+            color: var(--color-accent);
             text-decoration: underline;
             cursor: pointer;
         }
@@ -552,7 +505,7 @@
             justify-content: flex-end;
             margin-top: 20px;
             padding-top: 20px;
-            border-top: 1px solid #eee;
+            border-top: 1px solid var(--color-border);
         }
 
         .modal-btn {
@@ -564,17 +517,17 @@
         }
 
         .modal-btn-cancel {
-            background: #f5f5f5;
+            background: var(--color-surface-2);
             border: none;
-            color: #666;
+            color: var(--color-text-muted);
         }
 
         .modal-btn-cancel:hover {
-            background: #e0e0e0;
+            background: var(--color-border);
         }
 
         .modal-btn-save {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--color-accent-gradient);
             border: none;
             color: white;
         }
@@ -593,7 +546,19 @@
         <div class="nav-links">
             <a href="search.html" class="nav-link">🔍 Keşfet</a>
             <a href="feed.html" class="nav-link">📰 Akış</a>
+            <a href="messages.html" class="nav-link">💬 Mesajlar</a>
             <a href="profile.html" class="nav-link">👤 Profilim</a>
+            <div class="nav-icon-wrap">
+                <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
+                    🔔
+                    <span class="nav-badge" id="notifBadge"></span>
+                </button>
+                <div class="nav-panel" id="notifPanel">
+                    <div class="nav-panel-header">Bildirimler</div>
+                    <div class="nav-panel-empty">Yükleniyor...</div>
+                </div>
+            </div>
+            <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
             <button class="logout-btn" onclick="logout()">Çıkış</button>
         </div>
     </nav>
@@ -678,7 +643,7 @@
             </div>
 
             <div id="userRatingSection"
-                style="display: none; margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                style="display: none; margin-top: 20px; padding: 15px; background: var(--color-surface-2); border-radius: 8px;">
                 <h4>⭐ Sizin Puanınız</h4>
                 <div id="userRatingDisplay"></div>
                 <button class="btn btn-primary" onclick="showRatingSection()" style="margin-top: 10px;">Puanı
@@ -695,7 +660,7 @@
             </div>
 
             <div id="comments-section">
-                <p style="text-align: center; color: #999;">Henüz yorum yapılmamış...</p>
+                <p style="text-align: center; color: var(--color-text-faint);">Henüz yorum yapılmamış...</p>
             </div>
         </div>
     </div>
@@ -717,6 +682,7 @@
         </div>
     </div>
 
+    <script src="js/escape-html.js"></script>
     <script src="js/app.js"></script>
     <script>
         let currentContent = null;
@@ -858,7 +824,7 @@
 
         async function followCreator(creatorName, creatorId) {
             if (typeof app === 'undefined' || !app.currentUser) {
-                alert('Takip etmek için giriş yapmalısınız!');
+                app.toast('Takip etmek için giriş yapmalısınız!', 'error');
                 return;
             }
 
@@ -875,13 +841,13 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    alert(`✅ ${creatorName} takip edildi!`);
+                    app.toast(`${creatorName} takip edildi!`, 'success');
                 } else {
-                    alert('⚠️ ' + data.message);
+                    app.toast(data.message, 'error');
                 }
             } catch (error) {
                 console.error('Takip hatası:', error);
-                alert('Takip işlemi başarısız oldu!');
+                app.toast('Takip işlemi başarısız oldu!', 'error');
             }
         }
 
@@ -993,7 +959,7 @@
 
         function showRatingSection() {
             if (typeof app === 'undefined' || !app.currentUser) {
-                alert('Puan vermek için giriş yapmalısınız!');
+                app.toast('Puan vermek için giriş yapmalısınız!', 'error');
                 return;
             }
 
@@ -1014,12 +980,12 @@
         }
         async function submitRating() {
             if (typeof app === 'undefined' || !app.currentUser) {
-                alert('Puan vermek için giriş yapmalısınız!');
+                app.toast('Puan vermek için giriş yapmalısınız!', 'error');
                 return;
             }
 
             if (currentRating === 0) {
-                alert('Lütfen puan seçin!');
+                app.toast('Lütfen puan seçin!', 'error');
                 return;
             }
 
@@ -1045,21 +1011,21 @@
 
                 const data = await response.json();
                 if (data.success) {
-                    alert(`⭐ ${currentRating}/10 puanınız kaydedildi!`);
+                    app.toast(`${currentRating}/10 puanınız kaydedildi!`, 'success');
                     document.getElementById('ratingSection').style.display = 'none';
                     loadUserInteractions();
                     loadPlatformUserRating(); 
                 } else {
-                    alert('❌ Puan gönderilemedi: ' + (data.message || 'Hata oluştu'));
+                    app.toast('Puan gönderilemedi: ' + (data.message || 'Hata oluştu'), 'error');
                 }
             } catch (error) {
                 console.error('Puan gönderme hatası:', error);
-                alert('❌ Bağlantı hatası!');
+                app.toast('Bağlantı hatası!', 'error');
             }
         }
         async function toggleList(listType) {
             if (typeof app === 'undefined' || !app.currentUser) {
-                alert('Bu işlem için giriş yapmalısınız!');
+                app.toast('Bu işlem için giriş yapmalısınız!', 'error');
                 return;
             }
 
@@ -1093,14 +1059,14 @@
                         'readinglist': 'Okunacaklar',
                         'to_read': 'Okunacaklar'
                     };
-                    alert(`✅ ${statusTexts[listType] || listType} listesine eklendi!`);
+                    app.toast(`${statusTexts[listType] || listType} listesine eklendi!`, 'success');
                     loadUserInteractions();
                 } else {
-                    alert('❌ Hata: ' + (data.message || 'Bilinmeyen hata'));
+                    app.toast('Hata: ' + (data.message || 'Bilinmeyen hata'), 'error');
                 }
             } catch (error) {
                 console.error('Liste ekleme hatası:', error);
-                alert('❌ Bağlantı hatası!');
+                app.toast('Bağlantı hatası!', 'error');
             }
         }
 
@@ -1116,8 +1082,8 @@
             Object.entries(buttons).forEach(([key, { btn, text }]) => {
                 if (btn && btn.style.display !== 'none') {
                     btn.classList.remove('active');
-                    btn.style.background = 'white';
-                    btn.style.color = '#667eea';
+                    btn.style.background = 'var(--color-surface)';
+                    btn.style.color = 'var(--color-accent)';
                     const span = btn.querySelector('span');
                     if (span) span.textContent = text;
                 }
@@ -1125,7 +1091,7 @@
             if (status && buttons[status] && buttons[status].btn && buttons[status].btn.style.display !== 'none') {
                 const activeBtn = buttons[status].btn;
                 activeBtn.classList.add('active');
-                activeBtn.style.background = '#667eea';
+                activeBtn.style.background = 'var(--color-accent)';
                 activeBtn.style.color = 'white';
                 const span = activeBtn.querySelector('span');
                 if (span) span.textContent = '✓ ' + buttons[status].text;
@@ -1154,7 +1120,7 @@
                         userRatingSection.style.display = 'block';
                         userRatingDisplay.innerHTML = `
                     <div style="font-size: 24px; font-weight: bold;">${app.ratingToStars(userRating)}</div>
-                    <div style="color: #666;">${userRating}/10</div>
+                    <div style="color: var(--color-text-muted);">${userRating}/10</div>
                 `;
                     } else {
                         userRatingSection.style.display = 'none';
@@ -1167,13 +1133,13 @@
 
         async function submitComment() {
             if (typeof app === 'undefined' || !app.currentUser) {
-                alert('Yorum yapmak için giriş yapmalısınız!');
+                app.toast('Yorum yapmak için giriş yapmalısınız!', 'error');
                 return;
             }
 
             const commentText = document.getElementById('commentText').value.trim();
             if (!commentText) {
-                alert('Lütfen yorumunuzu yazın!');
+                app.toast('Lütfen yorumunuzu yazın!', 'error');
                 return;
             }
 
@@ -1194,13 +1160,13 @@
                 if (data.success) {
                     document.getElementById('commentText').value = '';
                     loadComments();
-                    alert('✅ Yorumunuz gönderildi!');
+                    app.toast('Yorumunuz gönderildi!', 'success');
                 } else {
-                    alert('❌ Yorum gönderilemedi: ' + (data.message || 'Hata oluştu'));
+                    app.toast('Yorum gönderilemedi: ' + (data.message || 'Hata oluştu'), 'error');
                 }
             } catch (error) {
                 console.error('Yorum gönderme hatası:', error);
-                alert('❌ Bağlantı hatası!');
+                app.toast('Bağlantı hatası!', 'error');
             }
         }
 
@@ -1216,7 +1182,7 @@
                 let html = '<div style="display: flex; flex-direction: column; gap: 20px;">';
 
                 if (commentsList.length === 0) {
-                    html += '<p style="text-align: center; color: #999; padding: 20px;">Henüz yorum yapılmamış...</p>';
+                    html += '<p style="text-align: center; color: var(--color-text-faint); padding: 20px;">Henüz yorum yapılmamış...</p>';
                 } else {
                     commentsList.forEach((comment) => {
                         const isOwnComment = (typeof app !== 'undefined' && app.currentUser) ? (comment.user_id === app.currentUser.id) : false;
@@ -1228,69 +1194,69 @@
                         commentTextById[comment.id] = comment.comment_text;
 
                         html += `
-                    <div class="comment-item" id="comment-${comment.id}" style="background: white; padding: 20px; border-radius: 10px; border-left: 4px solid #667eea;">
+                    <div class="comment-item" id="comment-${comment.id}" style="background: var(--color-surface); padding: 20px; border-radius: 10px; border-left: 4px solid var(--color-accent);">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                             <div>
-                                <strong style="color: #667eea;">${safeUsername}</strong>
-                                <span style="color: #999; font-size: 12px; margin-left: 10px;">${timeAgo}</span>
+                                <strong style="color: var(--color-accent);">${safeUsername}</strong>
+                                <span style="color: var(--color-text-faint); font-size: 12px; margin-left: 10px;">${timeAgo}</span>
                             </div>
                         </div>
 
-                        <div id="comment-text-${comment.id}" style="margin: 10px 0; color: #555;">
+                        <div id="comment-text-${comment.id}" style="margin: 10px 0; color: var(--color-text-muted);">
                             ${safeText.length > 200 ? `
                                 <span id="short-${comment.id}">${safeText.substring(0, 200)}...</span>
                                 <span id="full-${comment.id}" style="display: none;">${safeText}</span>
-                                <button onclick="toggleCommentText(${comment.id})" style="background: none; border: none; color: #667eea; cursor: pointer; padding: 0; margin-left: 5px;">Daha Fazla</button>
+                                <button onclick="toggleCommentText(${comment.id})" style="background: none; border: none; color: var(--color-accent); cursor: pointer; padding: 0; margin-left: 5px;">Daha Fazla</button>
                             ` : `${safeText}`}
                         </div>
 
                         <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px;">
-                            <button id="like-btn-${comment.id}" onclick="likeComment(${comment.id})" style="background: none; border: none; color: ${comment.liked_by_me ? '#dc3545' : '#667eea'}; cursor: pointer;">
+                            <button id="like-btn-${comment.id}" onclick="likeComment(${comment.id})" style="background: none; border: none; color: ${comment.liked_by_me ? 'var(--color-danger)' : 'var(--color-accent)'}; cursor: pointer;">
                                 ${comment.liked_by_me ? '❤️' : '🤍'} <span id="like-count-${comment.id}">${comment.likes_count || 0}</span>
                             </button>
-                            <button onclick="showReplyForm(${comment.id})" style="background: none; border: none; color: #667eea; cursor: pointer;">
+                            <button onclick="showReplyForm(${comment.id})" style="background: none; border: none; color: var(--color-accent); cursor: pointer;">
                                 💬 Yanıtla
                             </button>
                             ${isOwnComment ? `
-                                <button onclick="showEditModal(${comment.id})" style="background: none; border: none; color: #667eea; cursor: pointer;">
+                                <button onclick="showEditModal(${comment.id})" style="background: none; border: none; color: var(--color-accent); cursor: pointer;">
                                     ✏️ Düzenle
                                 </button>
-                                <button onclick="deleteComment(${comment.id})" style="background: none; border: none; color: #dc3545; cursor: pointer;">
+                                <button onclick="deleteComment(${comment.id})" style="background: none; border: none; color: var(--color-danger); cursor: pointer;">
                                     🗑️ Sil
                                 </button>
                             ` : ''}
                         </div>
 
 
-                        <div id="reply-form-${comment.id}" style="display: none; margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-                            <textarea id="reply-text-${comment.id}" placeholder="@${safeUsername} kullanıcısına yanıt yazın..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; min-height: 80px; font-family: inherit;"></textarea>
+                        <div id="reply-form-${comment.id}" style="display: none; margin-top: 15px; padding: 15px; background: var(--color-surface-2); border-radius: 8px;">
+                            <textarea id="reply-text-${comment.id}" placeholder="@${safeUsername} kullanıcısına yanıt yazın..." style="width: 100%; padding: 10px; border: 1px solid var(--color-border); border-radius: 5px; min-height: 80px; font-family: inherit;"></textarea>
                             <div style="display: flex; gap: 10px; margin-top: 10px;">
-                                <button onclick="submitReply(${comment.id})" style="background: #667eea; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">Yanıtla</button>
+                                <button onclick="submitReply(${comment.id})" style="background: var(--color-accent); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">Yanıtla</button>
                                 <button onclick="hideReplyForm(${comment.id})" style="background: #ccc; color: #333; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">İptal</button>
                             </div>
                         </div>
 
 
                         ${comment.replies && comment.replies.length > 0 ? `
-                            <div style="margin-top: 15px; margin-left: 20px; border-left: 2px solid #e0e0e0; padding-left: 15px;">
+                            <div style="margin-top: 15px; margin-left: 20px; border-left: 2px solid var(--color-border); padding-left: 15px;">
                                 ${comment.replies.map(reply => {
                             const isOwnReply = (typeof app !== 'undefined' && app.currentUser) ? (reply.user_id === app.currentUser.id) : false;
                             const replyTimeAgo = (typeof app !== 'undefined') ? app.getTimeAgo(reply.created_at) : reply.created_at;
                             const safeReplyUsername = app.escapeHtml(reply.username);
                             const safeReplyText = app.escapeHtml(reply.comment_text);
                             return `
-                                        <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 10px;">
+                                        <div style="background: var(--color-surface-2); padding: 12px; border-radius: 8px; margin-bottom: 10px;">
                                             <div style="margin-bottom: 8px;">
-                                                <strong style="color: #667eea; font-size: 14px;">${safeReplyUsername}</strong>
-                                                <span style="color: #999; font-size: 11px; margin-left: 8px;">${replyTimeAgo}</span>
+                                                <strong style="color: var(--color-accent); font-size: 14px;">${safeReplyUsername}</strong>
+                                                <span style="color: var(--color-text-faint); font-size: 11px; margin-left: 8px;">${replyTimeAgo}</span>
                                             </div>
-                                            <p style="margin: 0; color: #555; font-size: 14px;">${safeReplyText}</p>
+                                            <p style="margin: 0; color: var(--color-text-muted); font-size: 14px;">${safeReplyText}</p>
                                             <div style="display: flex; gap: 10px; margin-top: 8px;">
-                                                <button onclick="likeComment(${reply.id})" style="background: none; border: none; color: ${reply.liked_by_me ? '#dc3545' : '#667eea'}; cursor: pointer; font-size: 12px;">
+                                                <button onclick="likeComment(${reply.id})" style="background: none; border: none; color: ${reply.liked_by_me ? 'var(--color-danger)' : 'var(--color-accent)'}; cursor: pointer; font-size: 12px;">
                                                     ${reply.liked_by_me ? '❤️' : '🤍'} ${reply.likes_count || 0}
                                                 </button>
                                                 ${isOwnReply ? `
-                                                    <button onclick="deleteComment(${reply.id})" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 12px;">🗑️ Sil</button>
+                                                    <button onclick="deleteComment(${reply.id})" style="background: none; border: none; color: var(--color-danger); cursor: pointer; font-size: 12px;">🗑️ Sil</button>
                                                 ` : ''}
                                             </div>
                                         </div>
@@ -1306,12 +1272,12 @@
                 document.getElementById('comments-section').innerHTML = html;
             } catch (error) {
                 console.error('Yorum yükleme hatası:', error);
-                document.getElementById('comments-section').innerHTML = '<p style="color: red;">❌ Yorumlar yüklenemedi</p>';
+                document.getElementById('comments-section').innerHTML = '<p style="color: var(--color-danger);">❌ Yorumlar yüklenemedi</p>';
             }
         }
         function showReplyForm(commentId) {
             if (typeof app === 'undefined' || !app.currentUser) {
-                alert('Yanıt yazmak için giriş yapmalısınız!');
+                app.toast('Yanıt yazmak için giriş yapmalısınız!', 'error');
                 return;
             }
             document.getElementById(`reply-form-${commentId}`).style.display = 'block';
@@ -1324,7 +1290,7 @@
         async function submitReply(parentCommentId) {
             const replyText = document.getElementById(`reply-text-${parentCommentId}`).value.trim();
             if (!replyText) {
-                alert('Yanıt boş olamaz!');
+                app.toast('Yanıt boş olamaz!', 'error');
                 return;
             }
 
@@ -1345,18 +1311,18 @@
                 if (data.success) {
                     hideReplyForm(parentCommentId);
                     loadComments();
-                    alert('✅ Yanıtınız gönderildi!');
+                    app.toast('Yanıtınız gönderildi!', 'success');
                 } else {
-                    alert('❌ Yanıt gönderilemedi: ' + (data.message || 'Hata oluştu'));
+                    app.toast('Yanıt gönderilemedi: ' + (data.message || 'Hata oluştu'), 'error');
                 }
             } catch (error) {
                 console.error('Yanıt gönderme hatası:', error);
-                alert('❌ Bağlantı hatası!');
+                app.toast('Bağlantı hatası!', 'error');
             }
         }
 
         async function deleteComment(commentId) {
-            if (!confirm('Yorumu silmek istediğinize emin misiniz?')) return;
+            if (!(await app.confirmDialog('Yorumu silmek istediğinize emin misiniz?'))) return;
 
             try {
                 const response = await fetch('/api/comments.php', {
@@ -1369,13 +1335,13 @@
                 const data = await response.json();
                 if (data.success) {
                     loadComments();
-                    alert('✅ Yorum silindi!');
+                    app.toast('Yorum silindi!', 'success');
                 } else {
-                    alert('❌ ' + (data.message || 'Yorum silinemedi'));
+                    app.toast(data.message || 'Yorum silinemedi', 'error');
                 }
             } catch (error) {
                 console.error('Yorum silme hatası:', error);
-                alert('❌ Hata oluştu');
+                app.toast('Hata oluştu', 'error');
             }
         }
 
@@ -1400,18 +1366,18 @@
 
             const modal = document.createElement('div');
             modal.id = 'editModal';
-            modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;';
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--color-overlay); display: flex; justify-content: center; align-items: center; z-index: 1000;';
 
             const modalContent = document.createElement('div');
-            modalContent.style.cssText = 'background: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 500px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);';
+            modalContent.style.cssText = 'background: var(--color-surface); padding: 25px; border-radius: 10px; width: 90%; max-width: 500px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);';
 
             const title = document.createElement('h3');
-            title.style.cssText = 'margin-top: 0; margin-bottom: 15px; color: #333;';
+            title.style.cssText = 'margin-top: 0; margin-bottom: 15px; color: var(--color-text);';
             title.textContent = 'Yorumu Düzenle';
 
             const textarea = document.createElement('textarea');
             textarea.id = 'editText';
-            textarea.style.cssText = 'width: 100%; min-height: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit; font-size: 14px;';
+            textarea.style.cssText = 'width: 100%; min-height: 120px; padding: 10px; border: 1px solid var(--color-border); border-radius: 5px; font-family: inherit; font-size: 14px;';
             textarea.value = rawText;
 
             const buttonDiv = document.createElement('div');
@@ -1423,7 +1389,7 @@
             cancelBtn.onclick = () => modal.remove();
 
             const saveBtn = document.createElement('button');
-            saveBtn.style.cssText = 'background: #667eea; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer;';
+            saveBtn.style.cssText = 'background: var(--color-accent); color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer;';
             saveBtn.textContent = 'Kaydet';
             saveBtn.onclick = () => submitEditComment(commentId);
 
@@ -1442,7 +1408,7 @@
         async function submitEditComment(commentId) {
             const newText = document.getElementById('editText').value.trim();
             if (!newText) {
-                alert('Yorum boş olamaz!');
+                app.toast('Yorum boş olamaz!', 'error');
                 return;
             }
 
@@ -1461,13 +1427,13 @@
                 if (data.success) {
                     document.getElementById('editModal').remove();
                     loadComments();
-                    alert('✅ Yorum düzenlendi!');
+                    app.toast('Yorum düzenlendi!', 'success');
                 } else {
-                    alert('❌ ' + (data.message || 'Yorum düzenlenemedi'));
+                    app.toast(data.message || 'Yorum düzenlenemedi', 'error');
                 }
             } catch (error) {
                 console.error('Yorum düzenleme hatası:', error);
-                alert('❌ Hata oluştu');
+                app.toast('Hata oluştu', 'error');
             }
         }
 
@@ -1477,7 +1443,7 @@
 
         async function likeComment(commentId) {
             if (typeof app === 'undefined' || !app.currentUser) {
-                alert('Beğenmek için giriş yapmalısınız!');
+                app.toast('Beğenmek için giriş yapmalısınız!', 'error');
                 return;
             }
 
@@ -1502,19 +1468,19 @@
                     if (likeBtn) {
                         if (data.liked) {
                             likeBtn.innerHTML = `❤️ <span id="like-count-${commentId}">${data.likes_count}</span>`;
-                            likeBtn.style.color = '#dc3545';
+                            likeBtn.style.color = 'var(--color-danger)';
                         } else {
                             likeBtn.innerHTML = `🤍 <span id="like-count-${commentId}">${data.likes_count}</span>`;
-                            likeBtn.style.color = '#667eea';
+                            likeBtn.style.color = 'var(--color-accent)';
                         }
                     }
                 } else {
                     console.error('Like error:', data.message);
-                    alert('❌ Beğeni eklenemedi: ' + (data.message || 'Bilinmeyen hata'));
+                    app.toast('Beğeni eklenemedi: ' + (data.message || 'Bilinmeyen hata'), 'error');
                 }
             } catch (error) {
                 console.error('Like hatası:', error);
-                alert('❌ Hata oluştu: ' + error.message);
+                app.toast('Hata oluştu: ' + error.message, 'error');
             }
         }
 
@@ -1526,7 +1492,7 @@
 
         async function showCustomListModal() {
             if (!app?.currentUser) {
-                alert('Bu özellik için giriş yapmalısınız!');
+                app.toast('Bu özellik için giriş yapmalısınız!', 'error');
                 window.location.href = 'login.html';
                 return;
             }
@@ -1587,7 +1553,7 @@
             const listIds = Array.from(selectedItems).map(item => parseInt(item.dataset.listId));
 
             if (listIds.length === 0) {
-                alert('En az bir liste seçmelisiniz!');
+                app.toast('En az bir liste seçmelisiniz!', 'error');
                 return;
             }
             const contentTitle = currentContent?.title || currentContent?.volumeInfo?.title || 'İçerik';
@@ -1619,12 +1585,12 @@
                 }
 
                 if (successCount > 0) {
-                    alert('✅ İçerik seçili listelere eklendi!');
+                    app.toast('İçerik seçili listelere eklendi!', 'success');
                 }
                 closeCustomListModal();
             } catch (error) {
                 console.error('Kaydetme hatası:', error);
-                alert('❌ Bir hata oluştu!');
+                app.toast('Bir hata oluştu!', 'error');
             }
         }
 

@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil - Sosyal Kütüphane</title>
+    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
@@ -15,18 +16,9 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f8f9fa;
-            color: #333;
+            background: var(--color-bg);
+            color: var(--color-text);
             line-height: 1.6;
-        }
-
-        .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 15px 0;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
         }
 
         .navbar .container {
@@ -36,31 +28,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-
-        .logo {
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
-            text-decoration: none;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-        }
-
-        .nav-link {
-            color: white;
-            text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            transition: background 0.3s;
-        }
-
-        .nav-link:hover {
-            background: rgba(255, 255, 255, 0.1);
         }
 
         .logout-btn {
@@ -77,7 +44,7 @@
         }
 
         .profile-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--color-accent-gradient);
             color: white;
             padding: 60px 0 40px;
             margin-bottom: 40px;
@@ -174,15 +141,15 @@
         }
 
         .edit-profile-btn:hover {
-            background: white;
-            color: #667eea;
+            background: var(--color-surface);
+            color: var(--color-accent);
         }
 
         .tab-navigation {
             display: flex;
             gap: 10px;
             margin-bottom: 30px;
-            border-bottom: 2px solid #e0e0e0;
+            border-bottom: 2px solid var(--color-border);
             padding-bottom: 10px;
             overflow-x: auto;
         }
@@ -191,7 +158,7 @@
             padding: 12px 25px;
             border: none;
             background: none;
-            color: #666;
+            color: var(--color-text-muted);
             font-weight: 600;
             cursor: pointer;
             border-radius: 8px 8px 0 0;
@@ -200,7 +167,7 @@
         }
 
         .tab-btn.active {
-            background: #667eea;
+            background: var(--color-accent);
             color: white;
         }
 
@@ -220,10 +187,10 @@
         }
 
         .content-item {
-            background: white;
+            background: var(--color-surface);
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow);
             transition: transform 0.3s;
             cursor: pointer;
         }
@@ -251,10 +218,10 @@
         }
 
         .activity-item {
-            background: white;
+            background: var(--color-surface);
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow);
             margin-bottom: 15px;
         }
 
@@ -266,7 +233,7 @@
         }
 
         .activity-type {
-            background: #667eea;
+            background: var(--color-accent);
             color: white;
             padding: 4px 8px;
             border-radius: 4px;
@@ -280,19 +247,19 @@
         }
 
         .list-card {
-            background: white;
+            background: var(--color-surface);
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow);
         }
 
         .list-card h3 {
             margin-bottom: 10px;
-            color: #333;
+            color: var(--color-text);
         }
 
         .list-stats {
-            color: #666;
+            color: var(--color-text-muted);
             font-size: 14px;
             margin-bottom: 15px;
         }
@@ -301,14 +268,14 @@
             text-align: center;
             padding: 40px;
             font-size: 18px;
-            color: #667eea;
+            color: var(--color-accent);
         }
 
         .no-results {
             text-align: center;
             padding: 60px;
             font-size: 16px;
-            color: #999;
+            color: var(--color-text-faint);
         }
 
         .btn {
@@ -325,7 +292,7 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--color-accent-gradient);
             color: white;
         }
 
@@ -362,7 +329,19 @@
             <div class="nav-links">
                 <a href="search.html" class="nav-link">🔍 Keşfet</a>
                 <a href="feed.html" class="nav-link">📰 Akış</a>
-                <a href="profile.html" class="nav-link">👤 Profilim</a>
+                <a href="profile.html" class="nav-link active">👤 Profilim</a>
+                <a href="messages.html" class="nav-link">💬 Mesajlar</a>
+                <div class="nav-icon-wrap">
+                    <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
+                        🔔
+                        <span class="nav-badge" id="notifBadge"></span>
+                    </button>
+                    <div class="nav-panel" id="notifPanel">
+                        <div class="nav-panel-header">Bildirimler</div>
+                        <div class="nav-panel-empty">Yükleniyor...</div>
+                    </div>
+                </div>
+                <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
                 <button id="logoutBtn" class="logout-btn" onclick="logout()">Çıkış Yap</button>
             </div>
         </div>
@@ -411,6 +390,7 @@
             <button class="tab-btn active" onclick="switchTab('library')">📚 Kütüphanem</button>
             <button class="tab-btn" onclick="switchTab('activity')">📊 Aktiviteler</button>
             <button class="tab-btn" onclick="switchTab('lists')">📁 Listelerim</button>
+            <button class="tab-btn" onclick="switchTab('settings')">⚙️ Hesap Ayarları</button>
         </div>
 
         <div id="libraryTab" class="tab-content active">
@@ -460,8 +440,75 @@
                 <div class="loading">Listeler yükleniyor...</div>
             </div>
         </div>
+
+        <div id="settingsTab" class="tab-content">
+            <div class="card" style="padding:25px; margin-bottom:20px;">
+                <h3 style="margin-bottom:20px;">🖼️ Avatar</h3>
+                <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+                    <div id="avatarPreview" style="width:80px;height:80px;border-radius:50%;overflow:hidden;background:var(--color-accent-gradient);display:flex;align-items:center;justify-content:center;color:white;font-size:32px;flex-shrink:0;"></div>
+                    <div>
+                        <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;" onchange="handleAvatarFileChange(event)">
+                        <button type="button" class="btn btn-outline" onclick="document.getElementById('avatarFileInput').click()">📁 Fotoğraf Seç</button>
+                        <div style="font-size:12px;color:var(--color-text-faint);margin-top:8px;">JPG, PNG, WEBP veya GIF — en fazla 2MB</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="padding:25px; margin-bottom:20px;">
+                <h3 style="margin-bottom:20px;">🔒 Şifre Değiştir</h3>
+                <form onsubmit="handleChangePassword(event)">
+                    <div class="form-group">
+                        <label class="form-label">Mevcut Şifre</label>
+                        <input type="password" id="currentPasswordInput" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Yeni Şifre</label>
+                        <input type="password" id="newPasswordInput" class="form-control" minlength="6" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Yeni Şifre (Tekrar)</label>
+                        <input type="password" id="newPasswordConfirmInput" class="form-control" minlength="6" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Şifreyi Güncelle</button>
+                </form>
+            </div>
+
+            <div class="card" style="padding:25px;">
+                <h3 style="margin-bottom:10px;">📧 E-posta Değiştir</h3>
+                <p style="color:var(--color-text-muted);font-size:14px;margin-bottom:20px;">Mevcut e-postan: <strong id="currentEmailDisplay"></strong></p>
+
+                <div id="emailStep1">
+                    <button type="button" class="btn btn-outline" onclick="requestOldEmailCode()">Doğrulama Kodu Gönder</button>
+                </div>
+
+                <div id="emailStep2" style="display:none;">
+                    <div class="form-group">
+                        <label class="form-label">Mevcut e-postana gönderilen 6 haneli kod</label>
+                        <input type="text" id="oldCodeInput" class="form-control" maxlength="6" placeholder="000000">
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="verifyOldEmailCode()">Doğrula</button>
+                </div>
+
+                <div id="emailStep3" style="display:none;">
+                    <div class="form-group">
+                        <label class="form-label">Yeni e-posta adresi</label>
+                        <input type="email" id="newEmailInput" class="form-control" placeholder="yeni@email.com">
+                    </div>
+                    <button type="button" class="btn btn-outline" onclick="requestNewEmailCode()">Kod Gönder</button>
+                </div>
+
+                <div id="emailStep4" style="display:none;">
+                    <div class="form-group">
+                        <label class="form-label">Yeni e-postana gönderilen 6 haneli kod</label>
+                        <input type="text" id="newCodeInput" class="form-control" maxlength="6" placeholder="000000">
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="verifyNewEmailCode()">Onayla ve E-postayı Değiştir</button>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <script src="js/escape-html.js"></script>
     <script src="js/app.js"></script>
     <script>
         let contentCache = {};
@@ -576,13 +623,13 @@
                     if (avatarEl) avatarEl.textContent = selectedAvatar;
 
                     closeAvatarModal();
-                    alert('✅ Avatar değiştirildi!');
+                    app.toast('Avatar değiştirildi!', 'success');
                 } else {
-                    alert('❌ ' + (data.message || 'Avatar değiştirilemedi'));
+                    app.toast(data.message || 'Avatar değiştirilemedi', 'error');
                 }
             } catch (error) {
                 console.error('Avatar kayıt hatası:', error);
-                alert('Avatar değiştirilirken hata oluştu!');
+                app.toast('Avatar değiştirilirken hata oluştu!', 'error');
             }
         }
 
@@ -672,7 +719,155 @@
 
             document.getElementById(tabName + 'Tab').classList.add('active');
             event.target.classList.add('active');
+
+            if (tabName === 'settings') initSettingsTab();
         }
+
+        let settingsTabInitialized = false;
+        function initSettingsTab() {
+            if (settingsTabInitialized || !app.currentUser) return;
+            settingsTabInitialized = true;
+
+            document.getElementById('currentEmailDisplay').textContent = app.currentUser.email;
+            renderAvatarPreview(app.currentUser.avatar_url, app.currentUser.username);
+        }
+
+        function renderAvatarPreview(avatarUrl, username) {
+            const preview = document.getElementById('avatarPreview');
+            if (avatarUrl) {
+                preview.innerHTML = `<img src="${app.escapeHtml(avatarUrl)}" style="width:100%;height:100%;object-fit:cover;">`;
+            } else {
+                preview.textContent = (username || '?').charAt(0).toUpperCase();
+            }
+        }
+
+        async function handleAvatarFileChange(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 2 * 1024 * 1024) {
+                app.toast('Dosya çok büyük (maks. 2MB)', 'error');
+                event.target.value = '';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            try {
+                const response = await fetch('/api/upload-avatar.php', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-Token': app.csrfToken || '' },
+                    credentials: 'include',
+                    body: formData
+                });
+                const data = await response.json();
+                if (data.success) {
+                    app.currentUser.avatar_url = data.avatar_url;
+                    renderAvatarPreview(data.avatar_url, app.currentUser.username);
+                    app.toast('Avatar güncellendi', 'success');
+                } else {
+                    app.toast(data.message || 'Avatar yüklenemedi', 'error');
+                }
+            } catch (error) {
+                console.error('Avatar yükleme hatası:', error);
+                app.toast('Bağlantı hatası', 'error');
+            } finally {
+                event.target.value = '';
+            }
+        }
+
+        async function handleChangePassword(event) {
+            event.preventDefault();
+            const currentPassword = document.getElementById('currentPasswordInput').value;
+            const newPassword = document.getElementById('newPasswordInput').value;
+            const confirmPassword = document.getElementById('newPasswordConfirmInput').value;
+
+            if (newPassword !== confirmPassword) {
+                app.toast('Yeni şifreler eşleşmiyor', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/change-password.php', {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ current_password: currentPassword, new_password: newPassword })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    app.toast('Şifreniz güncellendi', 'success');
+                    event.target.reset();
+                } else {
+                    app.toast(data.message || 'Şifre güncellenemedi', 'error');
+                }
+            } catch (error) {
+                console.error('Şifre değiştirme hatası:', error);
+                app.toast('Bağlantı hatası', 'error');
+            }
+        }
+
+        async function changeEmailAction(action, body) {
+            try {
+                const response = await fetch('/api/change-email.php', {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ action, ...body })
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('E-posta değiştirme hatası:', error);
+                return { success: false, message: 'Bağlantı hatası' };
+            }
+        }
+
+        async function requestOldEmailCode() {
+            const data = await changeEmailAction('request_old_code', {});
+            app.toast(data.message, data.success ? 'success' : 'error');
+            if (data.success) {
+                document.getElementById('emailStep1').style.display = 'none';
+                document.getElementById('emailStep2').style.display = 'block';
+            }
+        }
+
+        async function verifyOldEmailCode() {
+            const code = document.getElementById('oldCodeInput').value.trim();
+            const data = await changeEmailAction('verify_old_code', { code });
+            app.toast(data.message, data.success ? 'success' : 'error');
+            if (data.success) {
+                document.getElementById('emailStep2').style.display = 'none';
+                document.getElementById('emailStep3').style.display = 'block';
+            }
+        }
+
+        async function requestNewEmailCode() {
+            const newEmail = document.getElementById('newEmailInput').value.trim();
+            const data = await changeEmailAction('request_new_code', { new_email: newEmail });
+            app.toast(data.message, data.success ? 'success' : 'error');
+            if (data.success) {
+                document.getElementById('emailStep3').style.display = 'none';
+                document.getElementById('emailStep4').style.display = 'block';
+            }
+        }
+
+        async function verifyNewEmailCode() {
+            const code = document.getElementById('newCodeInput').value.trim();
+            const data = await changeEmailAction('verify_new_code', { code });
+            app.toast(data.message, data.success ? 'success' : 'error');
+            if (data.success) {
+                document.getElementById('currentEmailDisplay').textContent = data.new_email;
+                app.currentUser.email = data.new_email;
+                ['emailStep1', 'emailStep2', 'emailStep3', 'emailStep4'].forEach(id => {
+                    document.getElementById(id).style.display = id === 'emailStep1' ? 'block' : 'none';
+                });
+                document.getElementById('oldCodeInput').value = '';
+                document.getElementById('newEmailInput').value = '';
+                document.getElementById('newCodeInput').value = '';
+            }
+        }
+
         function switchLibraryTab(type, element) {
             const moviesDiv = document.getElementById('moviesLibrary');
             const booksDiv = document.getElementById('booksLibrary');
@@ -1014,7 +1209,7 @@
             const newBio = document.getElementById('editBio').value.trim();
 
             if (!newBio) {
-                alert('Biyografi boş olamaz!');
+                app.toast('Biyografi boş olamaz!', 'error');
                 return;
             }
 
@@ -1024,10 +1219,10 @@
             try {
                 document.getElementById('profileBio').textContent = newBio;
                 closeEditModal();
-                alert('✅ Profil güncellendi!');
+                app.toast('Profil güncellendi!', 'success');
             } catch (error) {
                 console.error('Profil kayıt hatası:', error);
-                alert('Profil güncellenirken hata oluştu!');
+                app.toast('Profil güncellenirken hata oluştu!', 'error');
             }
         }
 
@@ -1056,17 +1251,17 @@
                     });
                     const data = await response.json();
                     if (data.success) {
-                        alert(`✅ "${listName}" listesi oluşturuldu!`);
+                        app.toast(`"${listName}" listesi oluşturuldu!`, 'success');
                         loadCustomLists();
                     } else {
-                        alert('❌ Hata: ' + (data.message || 'Liste oluşturulamadı'));
+                        app.toast('Hata: ' + (data.message || 'Liste oluşturulamadı'), 'error');
                     }
                 } catch (error) {
                     console.error('Liste oluşturma hatası:', error);
-                    alert('Liste oluşturulurken hata oluştu!');
+                    app.toast('Liste oluşturulurken hata oluştu!', 'error');
                 }
             } else if (listName !== null) {
-                alert('Liste adı boş olamaz!');
+                app.toast('Liste adı boş olamaz!', 'error');
             }
         }
         async function editList(listId) {
@@ -1090,18 +1285,18 @@
                         });
                         const updateData = await updateResponse.json();
                         if (updateData.success) {
-                            alert('Liste güncellendi!');
+                            app.toast('Liste güncellendi!', 'success');
                             loadCustomLists();
                         }
                     }
                 }
             } catch (error) {
                 console.error('Liste düzenleme hatası:', error);
-                alert('Liste düzenlenmesi sırasında hata oluştu!');
+                app.toast('Liste düzenlenmesi sırasında hata oluştu!', 'error');
             }
         }
-        function addItemToList(listId) {
-            const contentType = confirm('Film mi eklemek istiyorsunuz? (OK=Film, İptal=Kitap)') ? 'movie' : 'book';
+        async function addItemToList(listId) {
+            const contentType = (await app.confirmDialog('Film mi eklemek istiyorsunuz? (OK=Film, İptal=Kitap)')) ? 'movie' : 'book';
 
             const searchQuery = prompt(`${contentType === 'movie' ? '🎬 Film' : '📚 Kitap'} adını girin:`);
             if (!searchQuery || !searchQuery.trim()) {
@@ -1123,14 +1318,14 @@
                 }
 
                 if (results.length === 0) {
-                    alert('Sonuç bulunamadı!');
+                    app.toast('Sonuç bulunamadı!', 'info');
                     return;
                 }
                 displaySearchResults(listId, results, contentType);
 
             } catch (error) {
                 console.error('Arama hatası:', error);
-                alert('Arama sırasında hata oluştu!');
+                app.toast('Arama sırasında hata oluştu!', 'error');
             }
         }
         function displaySearchResults(listId, results, contentType) {
@@ -1208,17 +1403,17 @@
                 });
                 const data = await response.json();
                 if (data.success) {
-                    alert(`"${contentTitle}" listeye eklendi!`);
+                    app.toast(`"${contentTitle}" listeye eklendi!`, 'success');
                     closeSearchModal();
                     closeListModal();
                     loadCustomLists();
                     setTimeout(() => viewList(listId), 500);
                 } else {
-                    alert(data.message || 'Hata oluştu!');
+                    app.toast(data.message || 'Hata oluştu!', 'error');
                 }
             } catch (error) {
                 console.error('İçerik ekleme hatası:', error);
-                alert('İçerik eklenirken hata oluştu!');
+                app.toast('İçerik eklenirken hata oluştu!', 'error');
             }
         }
         async function viewList(listId) {
@@ -1227,7 +1422,7 @@
                 const data = await response.json();
 
                 if (!data.success || !data.list) {
-                    alert('Liste bulunamadı!');
+                    app.toast('Liste bulunamadı!', 'error');
                     return;
                 }
 
@@ -1276,7 +1471,7 @@
                 loadListItemPosters(items);
             } catch (error) {
                 console.error('Liste yüklenirken hata:', error);
-                alert('Liste yüklenirken hata oluştu!');
+                app.toast('Liste yüklenirken hata oluştu!', 'error');
             }
         }
         async function loadListItemPosters(items) {
@@ -1312,7 +1507,7 @@
             }
         }
         async function removeFromList(listId, contentId) {
-            if (confirm('Bu içeriği listeden çıkarmak istediğinize emin misiniz?')) {
+            if (await app.confirmDialog('Bu içeriği listeden çıkarmak istediğinize emin misiniz?')) {
                 try {
                     const response = await fetch(`${API_BASE_URL}/custom-lists.php`, {
                         method: 'DELETE',
@@ -1324,13 +1519,13 @@
                     });
                     const data = await response.json();
                     if (data.success) {
-                        alert('İçerik listeden çıkarıldı!');
+                        app.toast('İçerik listeden çıkarıldı!', 'success');
                         closeListModal();
                         setTimeout(() => viewList(listId), 500);
                     }
                 } catch (error) {
                     console.error('İçerik çıkarma hatası:', error);
-                    alert('İçerik çıkarılırken hata oluştu!');
+                    app.toast('İçerik çıkarılırken hata oluştu!', 'error');
                 }
             }
         }
