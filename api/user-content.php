@@ -64,8 +64,37 @@ if ($type === 'movie') {
             'updated_at' => isset($r->updated_at) ? $r->updated_at->toDateTime()->format('Y-m-d H:i:s') : null,
         ];
     }
+} elseif ($type === 'series') {
+    $statusFilter = $status ? $status : 'watching';
+    $rows = iterator_to_array($db->user_series_status->find(
+        ['user_id' => $userId, 'status' => $statusFilter],
+        ['sort' => ['updated_at' => -1]]
+    ));
+    $seriesIds = array_map(fn($r) => $r->series_id, $rows);
+    $seriesDocs = iterator_to_array($db->series->find(['_id' => ['$in' => $seriesIds]]));
+    $seriesMap = [];
+    foreach ($seriesDocs as $s) {
+        $seriesMap[$s->_id] = $s;
+    }
+
+    $content = [];
+    foreach ($rows as $r) {
+        $s = $seriesMap[$r->series_id] ?? null;
+        if (!$s) {
+            continue;
+        }
+        $content[] = [
+            'id' => $s->_id,
+            'tmdb_id' => $s->tmdb_id,
+            'title' => $s->title,
+            'poster' => $s->poster_path ?? null,
+            'rating' => $r->rating ?? null,
+            'status' => $r->status,
+            'updated_at' => isset($r->updated_at) ? $r->updated_at->toDateTime()->format('Y-m-d H:i:s') : null,
+        ];
+    }
 } else {
-    jsonResponse(['success' => false, 'message' => 'type parametresi gerekli (movie veya book)'], 400);
+    jsonResponse(['success' => false, 'message' => 'type parametresi gerekli (movie, book veya series)'], 400);
 }
 
 jsonResponse(['success' => true, 'content' => $content]);

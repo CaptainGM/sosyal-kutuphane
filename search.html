@@ -338,6 +338,7 @@
         <div class="search-box">
             <div class="tab-buttons">
                 <button class="tab-btn active" onclick="switchTab('movie')">🎬 Filmler</button>
+                <button class="tab-btn" onclick="switchTab('series')">📺 Diziler</button>
                 <button class="tab-btn" onclick="switchTab('book')">📚 Kitaplar</button>
             </div>
 
@@ -367,7 +368,7 @@
 
         <div id="resultsContainer">
             <div class="no-results">
-                👆 Yukarıdan arama yaparak film veya kitap bulabilirsiniz
+                👆 Yukarıdan arama yaparak film, dizi veya kitap bulabilirsiniz
             </div>
         </div>
 
@@ -455,6 +456,24 @@
             { id: 878, name: 'Science Fiction' },
             { id: 53, name: 'Thriller' }
         ];
+        const SERIES_GENRES = [
+            { id: 10759, name: 'Aksiyon & Macera' },
+            { id: 16, name: 'Animasyon' },
+            { id: 35, name: 'Komedi' },
+            { id: 80, name: 'Suç' },
+            { id: 99, name: 'Belgesel' },
+            { id: 18, name: 'Dram' },
+            { id: 10751, name: 'Aile' },
+            { id: 10762, name: 'Çocuk' },
+            { id: 9648, name: 'Gizem' },
+            { id: 10763, name: 'Haber' },
+            { id: 10764, name: 'Reality' },
+            { id: 10765, name: 'Bilim Kurgu & Fantastik' },
+            { id: 10766, name: 'Pembe Dizi' },
+            { id: 10767, name: 'Talk Show' },
+            { id: 10768, name: 'Savaş & Politika' },
+            { id: 37, name: 'Western' }
+        ];
         const BOOK_CATEGORIES = [
             { value: 'fiction', name: 'Roman/Kurgu' },
             { value: 'fantasy', name: 'Fantastik' },
@@ -479,6 +498,22 @@
                 }
                 if (currentFilters.genre) {
                     if (!movie.genre_ids?.includes(parseInt(currentFilters.genre))) return false;
+                }
+
+                return true;
+            });
+        }
+        function applySeriesFilters(seriesList) {
+            return seriesList.filter(series => {
+                if (currentFilters.year) {
+                    const seriesYear = series.first_air_date?.split('-')[0];
+                    if (seriesYear !== currentFilters.year) return false;
+                }
+                if (currentFilters.rating) {
+                    if (series.vote_average < parseFloat(currentFilters.rating)) return false;
+                }
+                if (currentFilters.genre) {
+                    if (!series.genre_ids?.includes(parseInt(currentFilters.genre))) return false;
                 }
 
                 return true;
@@ -511,7 +546,7 @@
             event.target.classList.add('active');
 
             const input = document.getElementById('searchInput');
-            input.placeholder = tab === 'movie' ? 'Film ara...' : 'Kitap ara...';
+            input.placeholder = tab === 'movie' ? 'Film ara...' : tab === 'series' ? 'Dizi ara...' : 'Kitap ara...';
             input.value = '';
 
             document.getElementById('resultsContainer').innerHTML = '<div class="no-results">👆 Yukarıdan arama yapın</div>';
@@ -550,10 +585,47 @@
                         </select>
                     </div>
                 `;
+                document.getElementById('topRatedSection').querySelector('h2').textContent = '🎯 En Yüksek Puanlı Filmler';
+                document.getElementById('popularSection').querySelector('h2').textContent = '🔥 En Popüler Filmler';
+                document.getElementById('allMoviesSection').querySelector('h2').textContent = '🎬 Tüm Filmler';
                 topRatedSection.style.display = 'block';
                 popularSection.style.display = 'block';
                 allMoviesSection.style.display = 'block';
                 loadShowcaseMovies();
+            } else if (tab === 'series') {
+                filterSection.classList.add('active');
+                filterGrid.innerHTML = `
+                    <div class="filter-group">
+                        <label>📺 Tür</label>
+                        <select id="genreFilter" onchange="updateFilters()">
+                            <option value="">Tümü</option>
+                            ${SERIES_GENRES.map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>📅 Yıl</label>
+                        <select id="yearFilter" onchange="updateFilters()">
+                            <option value="">Tümü</option>
+                            ${Array.from({ length: 30 }, (_, i) => 2024 - i).map(y => `<option value="${y}">${y}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>⭐ Minimum Puan</label>
+                        <select id="ratingFilter" onchange="updateFilters()">
+                            <option value="">Tümü</option>
+                            <option value="9">9+ ⭐⭐⭐⭐⭐</option>
+                            <option value="8">8+ ⭐⭐⭐⭐</option>
+                            <option value="7">7+ ⭐⭐⭐</option>
+                            <option value="6">6+ ⭐⭐</option>
+                        </select>
+                    </div>
+                `;
+                document.getElementById('topRatedSection').querySelector('h2').textContent = '🎯 En Yüksek Puanlı Diziler';
+                document.getElementById('popularSection').querySelector('h2').textContent = '🔥 En Popüler Diziler';
+                topRatedSection.style.display = 'block';
+                popularSection.style.display = 'block';
+                allMoviesSection.style.display = 'none';
+                loadShowcaseSeries();
             } else {
                 filterSection.classList.add('active');
                 filterGrid.innerHTML = `
@@ -586,8 +658,9 @@
 
             if (!query && !hasBookCategory) {
                 resultsContainer.innerHTML = '<div class="no-results">👆 Yukarıdan arama yapın</div>';
-                topRatedSection.style.display = currentTab === 'movie' ? 'block' : 'none';
-                popularSection.style.display = currentTab === 'movie' ? 'block' : 'none';
+                const showsShowcase = currentTab === 'movie' || currentTab === 'series';
+                topRatedSection.style.display = showsShowcase ? 'block' : 'none';
+                popularSection.style.display = showsShowcase ? 'block' : 'none';
                 allMoviesSection.style.display = currentTab === 'movie' ? 'block' : 'none';
                 return;
             }
@@ -606,6 +679,14 @@
                     results = data.results || [];
                     results = applyMovieFilters(results);
                     results = sortResults(results, currentSortBy);
+                    allResults = results;
+                    totalPages = Math.ceil(results.length / 12);
+                    displayPaginatedResults(results, currentTab, 1);
+                } else if (currentTab === 'series') {
+                    const data = await app.searchSeries(query);
+                    results = data.results || [];
+                    results = applySeriesFilters(results);
+                    results = sortResults(results, currentSortBy, 'first_air_date');
                     allResults = results;
                     totalPages = Math.ceil(results.length / 12);
                     displayPaginatedResults(results, currentTab, 1);
@@ -679,6 +760,15 @@
             if (currentTab === 'book') {
                 if (!query && !currentFilters.category) {
                     document.getElementById('resultsContainer').innerHTML = '<div class="no-results">👆 Yukarıdan arama yapın veya bir kategori seçin</div>';
+                    return;
+                }
+                performSearch();
+                return;
+            }
+
+            if (currentTab === 'series') {
+                if (!query) {
+                    document.getElementById('resultsContainer').innerHTML = '<div class="no-results">👆 Filtreleri uygulamak için önce bir arama yapın</div>';
                     return;
                 }
                 performSearch();
@@ -764,7 +854,7 @@
 
             loadShowcaseMovies();
         });
-        function sortResults(results, sortType) {
+        function sortResults(results, sortType, dateField = 'release_date') {
             const sorted = [...results];
 
             switch (sortType) {
@@ -777,8 +867,8 @@
 
                 case 'year':
                     return sorted.sort((a, b) => {
-                        const yearA = parseInt(a.release_date?.split('-')[0] || '0');
-                        const yearB = parseInt(b.release_date?.split('-')[0] || '0');
+                        const yearA = parseInt(a[dateField]?.split('-')[0] || '0');
+                        const yearB = parseInt(b[dateField]?.split('-')[0] || '0');
                         return yearB - yearA;
                     });
 
@@ -871,6 +961,23 @@
                                  onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok'">
                             <div class="info">
                                 <h3>${item.title}</h3>
+                                <div class="meta">📅 ${year} | ⭐ ${item.vote_average?.toFixed(1) || 'N/A'}</div>
+                            </div>
+                        </div>
+                    `;
+                } else if (type === 'series') {
+                    const posterUrl = item.poster_path
+                        ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+                        : 'https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok';
+
+                    const year = item.first_air_date ? item.first_air_date.split('-')[0] : 'Bilinmiyor';
+
+                    html += `
+                        <div class="content-card" onclick="goToDetail('series', '${item.id}')">
+                            <img src="${posterUrl}" alt="${item.name}"
+                                 onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok'">
+                            <div class="info">
+                                <h3>${item.name}</h3>
                                 <div class="meta">📅 ${year} | ⭐ ${item.vote_average?.toFixed(1) || 'N/A'}</div>
                             </div>
                         </div>
@@ -1168,7 +1275,7 @@
             results.forEach(item => {
                 let posterUrl, statValue;
 
-                if (type === 'movie') {
+                if (type === 'movie' || type === 'series') {
                     posterUrl = item.poster_path
                         ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
                         : 'https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok';
@@ -1225,6 +1332,52 @@
                         <div class="info">
                             <h3>${movie.title}</h3>
                             <div class="meta">📅 ${year} | ⭐ ${movie.vote_average?.toFixed(1) || 'N/A'}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        async function loadShowcaseSeries() {
+            try {
+                const topRated = await app.getTopRatedSeries();
+                displayShowcaseSeries(topRated, 'topRatedMovies');
+
+                const popular = await app.getPopularSeries();
+                displayShowcaseSeries(popular, 'popularMovies');
+
+                loadPlatformPopularContent('series');
+            } catch (error) {
+                console.error('Dizi vitrini yükleme hatası:', error);
+            }
+        }
+
+        function displayShowcaseSeries(results, containerId) {
+            const container = document.getElementById(containerId);
+
+            if (!results || results.length === 0) {
+                container.innerHTML = '<div class="no-results">Dizi bulunamadı</div>';
+                return;
+            }
+
+            let html = '';
+
+            results.forEach(series => {
+                const posterUrl = series.poster_path
+                    ? `https://image.tmdb.org/t/p/w500${series.poster_path}`
+                    : 'https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok';
+
+                const year = series.first_air_date ? series.first_air_date.split('-')[0] : 'Bilinmiyor';
+
+                html += `
+                    <div class="content-card" onclick="goToDetail('series', '${series.id}')">
+                        <img src="${posterUrl}" alt="${series.name}"
+                             onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok'">
+                        <div class="info">
+                            <h3>${series.name}</h3>
+                            <div class="meta">📅 ${year} | ⭐ ${series.vote_average?.toFixed(1) || 'N/A'}</div>
                         </div>
                     </div>
                 `;

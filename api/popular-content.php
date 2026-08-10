@@ -17,6 +17,12 @@ if ($type === 'movie') {
     $contentIdCol = 'book_id';
     $externalIdCol = 'google_books_id';
     $imageCol = 'cover_url';
+} elseif ($type === 'series') {
+    $contentCollectionName = 'series';
+    $statusCollectionName = 'user_series_status';
+    $contentIdCol = 'series_id';
+    $externalIdCol = 'tmdb_id';
+    $imageCol = 'poster_path';
 } else {
     jsonResponse(['success' => false, 'message' => 'Geçersiz içerik türü'], 400);
 }
@@ -124,7 +130,7 @@ foreach ($results as $row) {
         'type' => $type
     ];
 
-    if ($type === 'movie') {
+    if ($type === 'movie' || $type === 'series') {
         $item['poster_path'] = $row['image_url'];
     } else {
         $item['cover_url'] = $row['image_url'];

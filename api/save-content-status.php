@@ -30,6 +30,12 @@ if ($contentType === 'movie') {
     $contentId = (string)$contentId;
     $statusCollectionName = 'user_book_status';
     $statusIdField = 'book_id';
+} elseif ($contentType === 'series') {
+    $contentCollectionName = 'series';
+    $idColumn = 'tmdb_id';
+    $contentId = (int)$contentId;
+    $statusCollectionName = 'user_series_status';
+    $statusIdField = 'series_id';
 } else {
     jsonResponse(['success' => false, 'message' => 'Geçersiz içerik türü'], 400);
 }
@@ -67,6 +73,23 @@ if ($contentType === 'book' && $contentData) {
             'description' => $contentData['description'] ?? null,
             'published_date' => $contentData['published_date'] ?? null,
             'categories' => $contentData['categories'] ?? null,
+            'created_at' => new MongoDB\BSON\UTCDateTime(),
+        ]],
+        ['upsert' => true]
+    );
+}
+
+if ($contentType === 'series' && $contentData) {
+    $contentCollection->updateOne(
+        [$idColumn => $contentId],
+        ['$setOnInsert' => [
+            '_id' => nextSequence($db, 'series'),
+            'tmdb_id' => $contentId,
+            'title' => $contentData['title'] ?? null,
+            'poster_path' => $contentData['poster_path'] ?? null,
+            'overview' => $contentData['overview'] ?? null,
+            'first_air_date' => $contentData['first_air_date'] ?? null,
+            'genres' => $contentData['genres'] ?? null,
             'created_at' => new MongoDB\BSON\UTCDateTime(),
         ]],
         ['upsert' => true]

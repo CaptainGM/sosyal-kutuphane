@@ -16,11 +16,17 @@ $indexPlans = [
     'books' => [
         ['key' => ['google_books_id' => 1], 'unique' => true],
     ],
+    'series' => [
+        ['key' => ['tmdb_id' => 1], 'unique' => true],
+    ],
     'user_movie_status' => [
         ['key' => ['user_id' => 1, 'movie_id' => 1], 'unique' => true],
     ],
     'user_book_status' => [
         ['key' => ['user_id' => 1, 'book_id' => 1], 'unique' => true],
+    ],
+    'user_series_status' => [
+        ['key' => ['user_id' => 1, 'series_id' => 1], 'unique' => true],
     ],
     'comments' => [
         ['key' => ['content_type' => 1, 'content_id' => 1]],

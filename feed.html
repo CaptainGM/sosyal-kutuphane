@@ -160,6 +160,11 @@
             color: #388e3c;
         }
 
+        .badge-series {
+            background: #f3e5f5;
+            color: #8e24aa;
+        }
+
         .rating-display {
             color: #f39c12;
             font-size: 16px;
@@ -405,6 +410,7 @@
 
                 const items = [
                     ...(data.movies || []).map(m => ({ ...m, type: 'movie', poster: m.poster_path ? `https://image.tmdb.org/t/p/w200${m.poster_path}` : 'https://placehold.co/110x160?text=Film' })),
+                    ...(data.series || []).map(s => ({ ...s, type: 'series', poster: s.poster_path ? `https://image.tmdb.org/t/p/w200${s.poster_path}` : 'https://placehold.co/110x160?text=Dizi' })),
                     ...(data.books || []).map(b => ({ ...b, type: 'book', poster: b.cover_url || 'https://placehold.co/110x160?text=Kitap' }))
                 ];
 
@@ -481,6 +487,24 @@
                                 });
                             });
                         }
+
+                        if (contentData.success && contentData.series) {
+                            contentData.series.forEach(series => {
+                                activities.push({
+                                    type: 'series_watching',
+                                    userId: user.id,
+                                    username: user.username,
+                                    avatar: user.avatar_url || user.avatar,
+                                    contentType: 'series',
+                                    contentId: series.tmdb_id || series.series_id,
+                                    contentTitle: series.title || 'Dizi',
+                                    poster: series.poster_path,
+                                    rating: series.rating,
+                                    likes: 0,
+                                    date: series.updated_at || new Date().toISOString()
+                                });
+                            });
+                        }
                     } catch (e) {
                         console.error('İçerik yüklenemedi:', e);
                     }
@@ -505,6 +529,12 @@
                                         if (bookData?.volumeInfo) {
                                             contentTitle = bookData.volumeInfo.title;
                                             poster = bookData.volumeInfo.imageLinks?.thumbnail;
+                                        }
+                                    } else if (comment.content_type === 'series') {
+                                        const seriesData = await app.getSeriesDetail(comment.content_id);
+                                        if (seriesData) {
+                                            contentTitle = seriesData.name;
+                                            poster = seriesData.poster_path;
                                         }
                                     }
                                 } catch (e) {
@@ -536,7 +566,7 @@
                 const ITEMS_PER_PAGE = 10;
 
                 if (activities.length === 0) {
-                    showEmptyState('Takip ettiklerinizin aktivitesi yok', 'Takip ettiğiniz kullanıcılar film izleyip kitap okudukça burada görünecek.');
+                    showEmptyState('Takip ettiklerinizin aktivitesi yok', 'Takip ettiğiniz kullanıcılar film/dizi izleyip kitap okudukça burada görünecek.');
                     return;
                 }
                 const initialActivities = activities.slice(0, ITEMS_PER_PAGE);
@@ -572,9 +602,11 @@
                 const actionText = getActionText(activity);
                 const typeBadge = activity.contentType === 'movie'
                     ? '<span class="content-type-badge badge-movie">🎬 Film</span>'
-                    : '<span class="content-type-badge badge-book">📚 Kitap</span>';
+                    : activity.contentType === 'series'
+                        ? '<span class="content-type-badge badge-series">📺 Dizi</span>'
+                        : '<span class="content-type-badge badge-book">📚 Kitap</span>';
                 let posterUrl = 'https://placehold.co/100x150?text=Yükleniyor';
-                if (activity.contentType === 'movie' && activity.poster) {
+                if ((activity.contentType === 'movie' || activity.contentType === 'series') && activity.poster) {
                     posterUrl = `https://image.tmdb.org/t/p/w200${activity.poster}`;
                 } else if (activity.contentType === 'book' && activity.poster) {
                     posterUrl = activity.poster.replace('http://', 'https://');
@@ -672,6 +704,10 @@
                     return activity.rating
                         ? `📚 <strong>${title}</strong> kitabını oyladı`
                         : `📚 <strong>${title}</strong> kitabını okudu`;
+                case 'series_watching':
+                    return activity.rating
+                        ? `📺 <strong>${title}</strong> dizisini oyladı`
+                        : `📺 <strong>${title}</strong> dizisini izliyor`;
                 case 'comment':
                     return `💬 <strong>${title}</strong> hakkında yorum yaptı`;
                 default:

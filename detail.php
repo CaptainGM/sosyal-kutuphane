@@ -45,6 +45,11 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             if ($cached && ($cached->cover_url ?? null)) {
                 $ogImage = $cached->cover_url;
             }
+        } elseif ($type === 'series') {
+            $cached = $ogDb->series->findOne(['tmdb_id' => (int) $id]);
+            if ($cached && ($cached->poster_path ?? null)) {
+                $ogImage = 'https://image.tmdb.org/t/p/w500' . $cached->poster_path;
+            }
         }
 
         if ($cached && ($cached->title ?? null)) {
@@ -806,6 +811,8 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 let content;
                 if (type === 'movie') {
                     content = await app.getMovieDetail(id);
+                } else if (type === 'series') {
+                    content = await app.getSeriesDetail(id);
                 } else {
                     console.log('Fetching book detail for ID:', id);
                     content = await app.getBookDetail(id);
@@ -838,6 +845,8 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 
             if (type === 'movie') {
                 displayMovieDetail(content);
+            } else if (type === 'series') {
+                displaySeriesDetail(content);
             } else {
                 displayBookDetail(content);
             }
@@ -892,6 +901,53 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                     followBtn.dataset.creatorId = director.id;
                     followBtn.style.display = 'block';
                 }
+            }
+        }
+
+        function displaySeriesDetail(series) {
+            currentContent = {
+                id: series.id,
+                title: series.name,
+                poster_path: series.poster_path,
+                overview: series.overview,
+                release_date: series.first_air_date,
+                genres: series.genres,
+                vote_average: series.vote_average,
+                vote_count: series.vote_count,
+                credits: series.credits
+            };
+
+            document.getElementById('contentTitle').textContent = series.name;
+
+            const posterUrl = series.poster_path
+                ? `https://image.tmdb.org/t/p/w500${series.poster_path}`
+                : 'https://placehold.co/300x450?text=Poster+Yok';
+            document.getElementById('contentPoster').src = posterUrl;
+
+            const year = series.first_air_date ? series.first_air_date.split('-')[0] : 'Bilinmiyor';
+            const seasons = series.number_of_seasons ? `${series.number_of_seasons} sezon` : 'Bilinmiyor';
+            const genres = series.genres ? series.genres.map(g => g.name).join(', ') : 'Bilinmiyor';
+
+            document.getElementById('contentMeta').innerHTML = `
+        <div>📅 ${year} | 📺 ${seasons}</div>
+        <div>🎭 ${genres}</div>
+    `;
+
+            document.getElementById('contentDescription').textContent = series.overview || 'Açıklama bulunamadı.';
+
+            document.getElementById('ratingScore').textContent = series.vote_average
+                ? `${series.vote_average.toFixed(1)}/10`
+                : '-/-';
+            document.getElementById('ratingCount').textContent = series.vote_count
+                ? `📺 TMDb: ${series.vote_count.toLocaleString()} oy`
+                : '📺 TMDb Puanı';
+
+            const followBtn = document.getElementById('followCreatorBtn');
+            if (followBtn && series.created_by && series.created_by.length > 0) {
+                const creator = series.created_by[0];
+                followBtn.textContent = `👥 ${creator.name}'i Takip Et`;
+                followBtn.dataset.creatorId = creator.id;
+                followBtn.style.display = 'block';
             }
         }
 
@@ -991,11 +1047,13 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             const readBtn = document.getElementById('readBtn');
             const readinglistBtn = document.getElementById('readinglistBtn');
 
-            if (type === 'movie') {
+            if (type === 'movie' || type === 'series') {
                 watchBtn.style.display = 'block';
                 watchlistBtn.style.display = 'block';
                 readBtn.style.display = 'none';
                 readinglistBtn.style.display = 'none';
+                const watchBtnSpan = document.getElementById('watchBtnText');
+                if (watchBtnSpan) watchBtnSpan.textContent = type === 'series' ? '📺 İzliyorum' : '🎬 İzledim';
             } else {
                 watchBtn.style.display = 'none';
                 watchlistBtn.style.display = 'none';
@@ -1063,12 +1121,14 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             }
 
             try {
+                const isScreenContent = currentContentType === 'movie' || currentContentType === 'series';
                 let contentData = {
                     title: currentContent?.title,
-                    poster_path: currentContentType === 'movie' ? currentContent?.poster_path : null,
+                    poster_path: isScreenContent ? currentContent?.poster_path : null,
                     cover_url: currentContentType === 'book' ? (currentContent?.volumeInfo?.imageLinks?.thumbnail || null) : null,
-                    overview: currentContentType === 'movie' ? (currentContent?.overview || null) : (currentContent?.volumeInfo?.description || null),
-                    genres: currentContentType === 'movie' ? (currentContent?.genres?.map(g => g.id) || null) : null,
+                    overview: isScreenContent ? (currentContent?.overview || null) : (currentContent?.volumeInfo?.description || null),
+                    first_air_date: currentContentType === 'series' ? currentContent?.release_date : undefined,
+                    genres: isScreenContent ? (currentContent?.genres?.map(g => g.id) || null) : null,
                     categories: currentContentType === 'book' ? (currentContent?.volumeInfo?.categories || null) : null
                 };
 
@@ -1079,7 +1139,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                     body: JSON.stringify({
                         content_type: currentContentType,
                         content_id: currentContentId,
-                        status: currentContentType === 'movie' ? 'watched' : 'read',
+                        status: currentContentType === 'series' ? 'watching' : (isScreenContent ? 'watched' : 'read'),
                         rating: currentRating,
                         content_data: contentData
                     })
@@ -1106,13 +1166,17 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             }
 
             try {
-                const apiStatus = listType === 'readinglist' ? 'to_read' : listType;
+                const apiStatus = listType === 'readinglist'
+                    ? 'to_read'
+                    : (currentContentType === 'series' && listType === 'watched' ? 'watching' : listType);
+                const isScreenContent = currentContentType === 'movie' || currentContentType === 'series';
                 let contentData = {
                     title: currentContent?.title || currentContent?.volumeInfo?.title,
-                    poster_path: currentContentType === 'movie' ? currentContent?.poster_path : null,
+                    poster_path: isScreenContent ? currentContent?.poster_path : null,
                     cover_url: currentContentType === 'book' ? (currentContent?.volumeInfo?.imageLinks?.thumbnail || null) : null,
-                    overview: currentContentType === 'movie' ? (currentContent?.overview || null) : (currentContent?.volumeInfo?.description || null),
-                    genres: currentContentType === 'movie' ? (currentContent?.genres?.map(g => g.id) || null) : null,
+                    overview: isScreenContent ? (currentContent?.overview || null) : (currentContent?.volumeInfo?.description || null),
+                    first_air_date: currentContentType === 'series' ? currentContent?.release_date : undefined,
+                    genres: isScreenContent ? (currentContent?.genres?.map(g => g.id) || null) : null,
                     categories: currentContentType === 'book' ? (currentContent?.volumeInfo?.categories || null) : null
                 };
 
@@ -1133,12 +1197,13 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 if (data.success) {
                     const statusTexts = {
                         'watched': 'İzledim',
+                        'watching': 'İzliyorum',
                         'watchlist': 'İzlenecekler',
                         'read': 'Okudum',
                         'readinglist': 'Okunacaklar',
                         'to_read': 'Okunacaklar'
                     };
-                    app.toast(`${statusTexts[listType] || listType} listesine eklendi!`, 'success');
+                    app.toast(`${statusTexts[apiStatus] || apiStatus} listesine eklendi!`, 'success');
                     loadUserInteractions();
                 } else {
                     app.toast('Hata: ' + (data.message || 'Bilinmeyen hata'), 'error');
@@ -1152,8 +1217,11 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
         function updateListButtons(status) {
             if (status === 'to_read') status = 'readinglist';
 
+            const watchKey = currentContentType === 'series' ? 'watching' : 'watched';
+            const watchLabel = currentContentType === 'series' ? '📺 İzliyorum' : '🎬 İzledim';
+
             const buttons = {
-                'watched': { btn: document.getElementById('watchBtn'), text: '🎬 İzledim' },
+                [watchKey]: { btn: document.getElementById('watchBtn'), text: watchLabel },
                 'watchlist': { btn: document.getElementById('watchlistBtn'), text: '📋 İzlenecekler' },
                 'read': { btn: document.getElementById('readBtn'), text: '📖 Okudum' },
                 'readinglist': { btn: document.getElementById('readinglistBtn'), text: '📚 Okunacaklar' }

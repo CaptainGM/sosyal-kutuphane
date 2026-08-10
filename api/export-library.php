@@ -52,6 +52,27 @@ foreach ($bookStatuses as $s) {
     ];
 }
 
+// İzlenen diziler
+$seriesStatuses = iterator_to_array($db->user_series_status->find(['user_id' => $userId]), false);
+$seriesIds = array_map(fn($s) => $s->series_id, $seriesStatuses);
+$seriesById = [];
+if ($seriesIds) {
+    foreach ($db->series->find(['_id' => ['$in' => $seriesIds]]) as $s) {
+        $seriesById[$s->_id] = $s;
+    }
+}
+$watchedSeries = [];
+foreach ($seriesStatuses as $s) {
+    $ser = $seriesById[$s->series_id] ?? null;
+    $watchedSeries[] = [
+        'title' => $ser->title ?? null,
+        'tmdb_id' => $ser->tmdb_id ?? null,
+        'status' => $s->status,
+        'rating' => $s->rating ?? null,
+        'updated_at' => formatDate($s->updated_at ?? null),
+    ];
+}
+
 // Özel listeler + öğeleri
 $lists = iterator_to_array($db->custom_lists->find(['user_id' => $userId]), false);
 $listIds = array_map(fn($l) => $l->_id, $lists);
@@ -96,6 +117,7 @@ $export = [
     ],
     'watched_movies' => $watchedMovies,
     'read_books' => $readBooks,
+    'watched_series' => $watchedSeries,
     'custom_lists' => $exportedLists,
     'comments' => $comments,
 ];

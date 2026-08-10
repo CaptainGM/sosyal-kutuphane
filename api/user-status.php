@@ -37,6 +37,12 @@ if ($contentType === 'movie') {
     $contentDbIdCol = 'google_books_id';
     $contentTableName = 'books';
     $contentId = (string)$contentId;
+} elseif ($contentType === 'series') {
+    $statusCollectionName = 'user_series_status';
+    $contentIdCol = 'series_id';
+    $contentDbIdCol = 'tmdb_id';
+    $contentTableName = 'series';
+    $contentId = (int)$contentId;
 } else {
     jsonResponse(['success' => false, 'message' => 'Geçersiz içerik türü.'], 400);
 }
@@ -70,6 +76,21 @@ function saveContentToDb($contentCollection, $contentTableName, $contentDbIdCol,
                 'cover_url' => $input['cover_url'] ?? null,
                 'description' => $input['overview'] ?? null,
                 'categories' => $input['categories'] ?? null,
+                'created_at' => new MongoDB\BSON\UTCDateTime(),
+            ]],
+            ['upsert' => true]
+        );
+    } elseif ($contentType === 'series') {
+        $contentCollection->updateOne(
+            [$contentDbIdCol => $contentId],
+            ['$setOnInsert' => [
+                '_id' => nextSequence($db, 'series'),
+                'tmdb_id' => $contentId,
+                'title' => $input['title'] ?? null,
+                'poster_path' => $input['poster_path'] ?? null,
+                'overview' => $input['overview'] ?? null,
+                'first_air_date' => $input['first_air_date'] ?? null,
+                'genres' => $input['genres'] ?? null,
                 'created_at' => new MongoDB\BSON\UTCDateTime(),
             ]],
             ['upsert' => true]
@@ -127,7 +148,7 @@ if ($method === 'GET') {
         jsonResponse(['success' => true, 'message' => 'Durum güncellendi.', 'new_status' => $status]);
     }
     elseif ($rating !== null && $rating > 0) {
-        $defaultStatus = ($contentType === 'movie') ? 'watched' : 'read';
+        $defaultStatus = $contentType === 'movie' ? 'watched' : ($contentType === 'series' ? 'watching' : 'read');
         $existing = $statusCollection->findOne(['user_id' => $currentUserId, $contentIdCol => $dbContentId]);
 
         if ($existing) {

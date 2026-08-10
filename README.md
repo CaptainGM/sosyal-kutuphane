@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/CaptainGM/sosyal-kutuphane/actions/workflows/ci.yml/badge.svg)
 
-Film ve Kitap Sosyal Ağı Uygulaması
+Film, Dizi ve Kitap Sosyal Ağı Uygulaması
 
 ![Giriş ekranı](screenshot.png)
 
@@ -69,8 +69,8 @@ http://localhost:8000/index.html
 Veya yeni hesap oluştur.
 
 ## ✨ Özellikler
-- 🔍 Film ve Kitap Arama, tür/kategori filtreleme
-- ⭐ İzlediklerim / Okuduklarım, puanlama
+- 🔍 Film, Dizi ve Kitap Arama, tür/kategori filtreleme
+- ⭐ İzlediklerim (Film/Dizi) / Okuduklarım, puanlama
 - 💬 Yorum Yapma (yanıt, beğeni)
 - 👥 Takip Sistemi
 - 📱 Sosyal Feed
@@ -89,7 +89,7 @@ sosyal-kutuphane/
 ├── index.html             # Giriş Sayfası
 ├── search.html             # Arama & Keşfet
 ├── profile.html            # Profil, hesap ayarları
-├── detail.html             # İçerik Detayı
+├── detail.php              # İçerik Detayı (film/dizi/kitap, Open Graph önizlemesi)
 ├── messages.html            # Mesajlaşma
 ├── api/                    # Backend API'leri (PHP)
 ├── js/                     # JavaScript Dosyaları
@@ -128,4 +128,4 @@ node --test tests/escape-html.test.mjs   # XSS-kaçış birim testleri
 2. START.bat çalıştır
 3. http://localhost:8000/index.html aç
 4. Hesap oluştur veya demo hesapla giriş yap
-5. Film/Kitap ara ve keşfet!
+5. Film/Dizi/Kitap ara ve keşfet!

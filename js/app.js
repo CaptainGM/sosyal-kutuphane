@@ -307,6 +307,57 @@ class SocialLibraryApp {
         }
     }
 
+    // --- Diziler (TMDB /tv) — filmlerle aynı desen, sadece uç nokta ve alan adları farklı (name/first_air_date) ---
+    async searchSeries(query, page = 1) {
+        try {
+            const response = await fetch(
+                `${TMDB_BASE_URL}/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&language=tr-TR&page=${page}`
+            );
+            return await response.json();
+        } catch (error) {
+            console.error('Dizi arama hatası:', error);
+            return { results: [] };
+        }
+    }
+
+    async getSeriesDetail(seriesId) {
+        try {
+            const response = await fetch(
+                `${TMDB_BASE_URL}/tv/${seriesId}?api_key=${TMDB_API_KEY}&language=tr-TR&append_to_response=credits`
+            );
+            return await response.json();
+        } catch (error) {
+            console.error('Dizi detay hatası:', error);
+            return null;
+        }
+    }
+
+    async getTopRatedSeries() {
+        try {
+            const response = await fetch(
+                `${TMDB_BASE_URL}/tv/top_rated?api_key=${TMDB_API_KEY}&language=tr-TR&page=1`
+            );
+            const data = await response.json();
+            return data.results.slice(0, 12);
+        } catch (error) {
+            console.error('En iyi diziler hatası:', error);
+            return [];
+        }
+    }
+
+    async getPopularSeries() {
+        try {
+            const response = await fetch(
+                `${TMDB_BASE_URL}/tv/popular?api_key=${TMDB_API_KEY}&language=tr-TR&page=1`
+            );
+            const data = await response.json();
+            return data.results.slice(0, 12);
+        } catch (error) {
+            console.error('Popüler diziler hatası:', error);
+            return [];
+        }
+    }
+
     async searchBooks(query) {
         try {
             const url = `${GOOGLE_BOOKS_BASE_URL}?q=intitle:${encodeURIComponent(query)}&maxResults=40&orderBy=relevance`;

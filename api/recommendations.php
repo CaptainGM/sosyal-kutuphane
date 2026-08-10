@@ -71,12 +71,15 @@ function recommendContent($db, string $contentCollectionName, string $statusColl
 
 $watchedMovieIds = watchedIds($db, 'user_movie_status', 'movie_id', $userId);
 $watchedBookIds = watchedIds($db, 'user_book_status', 'book_id', $userId);
+$watchedSeriesIds = watchedIds($db, 'user_series_status', 'series_id', $userId);
 
 $topGenres = topTags($db, 'user_movie_status', 'movies', 'movie_id', 'genres', $userId);
 $topCategories = topTags($db, 'user_book_status', 'books', 'book_id', 'categories', $userId);
+$topSeriesGenres = topTags($db, 'user_series_status', 'series', 'series_id', 'genres', $userId);
 
 $movieDocs = recommendContent($db, 'movies', 'user_movie_status', 'movie_id', 'genres', $watchedMovieIds, $topGenres, $limit);
 $bookDocs = recommendContent($db, 'books', 'user_book_status', 'book_id', 'categories', $watchedBookIds, $topCategories, $limit);
+$seriesDocs = recommendContent($db, 'series', 'user_series_status', 'series_id', 'genres', $watchedSeriesIds, $topSeriesGenres, $limit);
 
 $movies = [];
 foreach ($movieDocs as $m) {
@@ -98,5 +101,15 @@ foreach ($bookDocs as $b) {
     ];
 }
 
-jsonResponse(['success' => true, 'movies' => $movies, 'books' => $books]);
+$series = [];
+foreach ($seriesDocs as $s) {
+    $series[] = [
+        'id' => $s->tmdb_id,
+        'title' => $s->title,
+        'poster_path' => $s->poster_path ?? null,
+        'avg_rating' => isset($s->avg_rating) ? round((float) $s->avg_rating, 1) : null,
+    ];
+}
+
+jsonResponse(['success' => true, 'movies' => $movies, 'books' => $books, 'series' => $series]);
 ?>

@@ -21,6 +21,12 @@ if ($contentType === 'movie') {
     $contentIdCol = 'book_id';
     $contentDbIdCol = 'google_books_id';
     $contentId = (string)$contentId;
+} elseif ($contentType === 'series') {
+    $contentCollectionName = 'series';
+    $statusCollectionName = 'user_series_status';
+    $contentIdCol = 'series_id';
+    $contentDbIdCol = 'tmdb_id';
+    $contentId = (int)$contentId;
 } else {
     jsonResponse(['success' => false, 'message' => 'Geçersiz içerik türü.'], 400);
 }

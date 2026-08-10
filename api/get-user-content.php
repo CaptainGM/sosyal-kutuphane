@@ -52,7 +52,31 @@ if ($contentType === null) {
         ];
     }
 
-    jsonResponse(['success' => true, 'watched' => $watched, 'read' => $read]);
+    $watchingRows = iterator_to_array($db->user_series_status->find(
+        ['user_id' => $userId, 'status' => 'watching'],
+        ['sort' => ['updated_at' => -1]]
+    ));
+    $seriesIds = array_map(fn($r) => $r->series_id, $watchingRows);
+    $seriesDocs = iterator_to_array($db->series->find(['_id' => ['$in' => $seriesIds]]));
+    $seriesMap = [];
+    foreach ($seriesDocs as $s) {
+        $seriesMap[$s->_id] = $s;
+    }
+    $series = [];
+    foreach ($watchingRows as $r) {
+        $s = $seriesMap[$r->series_id] ?? null;
+        $series[] = [
+            'series_id' => $r->series_id,
+            'status' => $r->status,
+            'rating' => $r->rating ?? null,
+            'updated_at' => isset($r->updated_at) ? $r->updated_at->toDateTime()->format('Y-m-d H:i:s') : null,
+            'tmdb_id' => $s->tmdb_id ?? null,
+            'title' => $s->title ?? null,
+            'poster_path' => $s->poster_path ?? null,
+        ];
+    }
+
+    jsonResponse(['success' => true, 'watched' => $watched, 'read' => $read, 'series' => $series]);
 }
 
 $status = $_GET['status'] ?? 'watched';
@@ -115,6 +139,37 @@ if ($contentType === 'movie') {
             'published_date' => $b->published_date ?? null,
             'categories' => $b->categories ?? null,
             'created_at' => isset($b->created_at) ? $b->created_at->toDateTime()->format('Y-m-d H:i:s') : null,
+            'status' => $r->status,
+            'rating' => $r->rating ?? null,
+        ];
+    }
+} else if ($contentType === 'series') {
+    $rows = iterator_to_array($db->user_series_status->find(
+        ['user_id' => $userId, 'status' => $status],
+        ['sort' => ['updated_at' => -1]]
+    ));
+    $seriesIds = array_map(fn($r) => $r->series_id, $rows);
+    $seriesDocs = iterator_to_array($db->series->find(['_id' => ['$in' => $seriesIds]]));
+    $seriesMap = [];
+    foreach ($seriesDocs as $s) {
+        $seriesMap[$s->_id] = $s;
+    }
+
+    $content = [];
+    foreach ($rows as $r) {
+        $s = $seriesMap[$r->series_id] ?? null;
+        if (!$s) {
+            continue;
+        }
+        $content[] = [
+            'id' => $s->_id,
+            'tmdb_id' => $s->tmdb_id ?? null,
+            'title' => $s->title ?? null,
+            'poster_path' => $s->poster_path ?? null,
+            'overview' => $s->overview ?? null,
+            'first_air_date' => $s->first_air_date ?? null,
+            'genres' => $s->genres ?? null,
+            'created_at' => isset($s->created_at) ? $s->created_at->toDateTime()->format('Y-m-d H:i:s') : null,
             'status' => $r->status,
             'rating' => $r->rating ?? null,
         ];
