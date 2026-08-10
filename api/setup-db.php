@@ -70,6 +70,11 @@ $indexPlans = [
     'messages' => [
         ['key' => ['conversation_id' => 1, 'created_at' => 1]],
     ],
+    'api_cache' => [
+        // Gerçek geçerlilik süresi cacheGet()'te expires_at ile kontrol edilir;
+        // bu indeks sadece uzun süre hiç kullanılmayan anahtarları temizleyen bir güvenlik ağı.
+        ['key' => ['cached_at' => 1], 'expireAfterSeconds' => 259200], // 3 gün
+    ],
 ];
 
 $successCount = 0;

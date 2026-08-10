@@ -147,4 +147,29 @@ function clearLoginAttempts($db, string $email) {
     $key = ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . '|' . strtolower($email);
     $db->login_attempts->deleteOne(['_id' => $key]);
 }
+
+// TMDB/Google Books gibi dış API'lerin yanıtlarını Atlas'ta önbelleklemek için.
+// Amaç: her ziyaretçi sayfayı her açtığında aynı verinin (en popüler/en yüksek
+// puanlı listeler, arama sonuçları, içerik detayları) TMDB'den tekrar tekrar
+// çekilmesini önlemek — özellikle yavaş internetli kullanıcılar için maliyetli.
+// Anahtar başına TTL süresi cacheSet() çağrısında belirlenir (bkz. tmdb-proxy.php).
+function cacheGet($db, string $key) {
+    $doc = $db->api_cache->findOne(['_id' => $key]);
+    if (!$doc || $doc->expires_at->toDateTime()->getTimestamp() < time()) {
+        return null;
+    }
+    return json_decode($doc->data, true);
+}
+
+function cacheSet($db, string $key, $data, int $ttlSeconds) {
+    $db->api_cache->updateOne(
+        ['_id' => $key],
+        ['$set' => [
+            'data' => json_encode($data),
+            'cached_at' => new MongoDB\BSON\UTCDateTime(),
+            'expires_at' => new MongoDB\BSON\UTCDateTime((time() + $ttlSeconds) * 1000),
+        ]],
+        ['upsert' => true]
+    );
+}
 ?>

@@ -1,8 +1,13 @@
 
-const TMDB_API_KEY = '23623d25826824baf3e05d2ea9870b27';
-const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-const GOOGLE_BOOKS_BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
 const API_BASE_URL = '/api';
+// TMDB ve Google Books istekleri artık doğrudan bu dış servislere değil, kendi
+// sunucumuzdaki önbellekli vekil (proxy) uçlarına gidiyor — bkz. api/tmdb-proxy.php
+// ve api/books-proxy.php. Böylece aynı popüler/en yüksek puanlı liste tüm
+// ziyaretçiler arasında paylaşılan bir önbellekten sunuluyor (yavaş internetli
+// kullanıcılar her sayfa açılışında aynı veriyi baştan indirmek zorunda kalmıyor)
+// ve TMDB anahtarı istemci tarafında görünmüyor.
+const TMDB_PROXY_URL = `${API_BASE_URL}/tmdb-proxy.php`;
+const BOOKS_PROXY_URL = `${API_BASE_URL}/books-proxy.php`;
 const fetchOptions = {
     credentials: 'include'
 };
@@ -260,7 +265,7 @@ class SocialLibraryApp {
     async searchMovies(query, page = 1) {
         try {
             const response = await fetch(
-                `${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&language=tr-TR&page=${page}`
+                `${TMDB_PROXY_URL}?endpoint=search&type=movie&query=${encodeURIComponent(query)}&page=${page}`
             );
             return await response.json();
         } catch (error) {
@@ -271,9 +276,7 @@ class SocialLibraryApp {
 
     async getMovieDetail(movieId) {
         try {
-            const response = await fetch(
-                `${TMDB_BASE_URL}/movie/${movieId}?api_key=${TMDB_API_KEY}&language=tr-TR&append_to_response=credits`
-            );
+            const response = await fetch(`${TMDB_PROXY_URL}?endpoint=detail&type=movie&id=${movieId}`);
             return await response.json();
         } catch (error) {
             console.error('Film detay hatası:', error);
@@ -283,11 +286,9 @@ class SocialLibraryApp {
 
     async getTopRatedMovies() {
         try {
-            const response = await fetch(
-                `${TMDB_BASE_URL}/movie/top_rated?api_key=${TMDB_API_KEY}&language=tr-TR&page=1`
-            );
+            const response = await fetch(`${TMDB_PROXY_URL}?endpoint=list&type=movie&list=top_rated&page=1`);
             const data = await response.json();
-            return data.results.slice(0, 12);
+            return (data.results || []).slice(0, 12);
         } catch (error) {
             console.error('En iyi filmler hatası:', error);
             return [];
@@ -296,11 +297,9 @@ class SocialLibraryApp {
 
     async getPopularMovies() {
         try {
-            const response = await fetch(
-                `${TMDB_BASE_URL}/movie/popular?api_key=${TMDB_API_KEY}&language=tr-TR&page=1`
-            );
+            const response = await fetch(`${TMDB_PROXY_URL}?endpoint=list&type=movie&list=popular&page=1`);
             const data = await response.json();
-            return data.results.slice(0, 12);
+            return (data.results || []).slice(0, 12);
         } catch (error) {
             console.error('Popüler filmler hatası:', error);
             return [];
@@ -311,7 +310,7 @@ class SocialLibraryApp {
     async searchSeries(query, page = 1) {
         try {
             const response = await fetch(
-                `${TMDB_BASE_URL}/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&language=tr-TR&page=${page}`
+                `${TMDB_PROXY_URL}?endpoint=search&type=series&query=${encodeURIComponent(query)}&page=${page}`
             );
             return await response.json();
         } catch (error) {
@@ -322,9 +321,7 @@ class SocialLibraryApp {
 
     async getSeriesDetail(seriesId) {
         try {
-            const response = await fetch(
-                `${TMDB_BASE_URL}/tv/${seriesId}?api_key=${TMDB_API_KEY}&language=tr-TR&append_to_response=credits`
-            );
+            const response = await fetch(`${TMDB_PROXY_URL}?endpoint=detail&type=series&id=${seriesId}`);
             return await response.json();
         } catch (error) {
             console.error('Dizi detay hatası:', error);
@@ -334,11 +331,9 @@ class SocialLibraryApp {
 
     async getTopRatedSeries() {
         try {
-            const response = await fetch(
-                `${TMDB_BASE_URL}/tv/top_rated?api_key=${TMDB_API_KEY}&language=tr-TR&page=1`
-            );
+            const response = await fetch(`${TMDB_PROXY_URL}?endpoint=list&type=series&list=top_rated&page=1`);
             const data = await response.json();
-            return data.results.slice(0, 12);
+            return (data.results || []).slice(0, 12);
         } catch (error) {
             console.error('En iyi diziler hatası:', error);
             return [];
@@ -347,11 +342,9 @@ class SocialLibraryApp {
 
     async getPopularSeries() {
         try {
-            const response = await fetch(
-                `${TMDB_BASE_URL}/tv/popular?api_key=${TMDB_API_KEY}&language=tr-TR&page=1`
-            );
+            const response = await fetch(`${TMDB_PROXY_URL}?endpoint=list&type=series&list=popular&page=1`);
             const data = await response.json();
-            return data.results.slice(0, 12);
+            return (data.results || []).slice(0, 12);
         } catch (error) {
             console.error('Popüler diziler hatası:', error);
             return [];
@@ -360,7 +353,7 @@ class SocialLibraryApp {
 
     async searchBooks(query) {
         try {
-            const url = `${GOOGLE_BOOKS_BASE_URL}?q=intitle:${encodeURIComponent(query)}&maxResults=40&orderBy=relevance`;
+            const url = `${BOOKS_PROXY_URL}?action=search&q=${encodeURIComponent('intitle:' + query)}&maxResults=40&orderBy=relevance`;
             const response = await fetch(url);
             if (!response.ok) throw new Error(`Google Books API error: ${response.status}`);
             const data = await response.json();
@@ -389,7 +382,7 @@ class SocialLibraryApp {
 
     async getBookDetail(bookId) {
         try {
-            const url = `${GOOGLE_BOOKS_BASE_URL}/${bookId}`;
+            const url = `${BOOKS_PROXY_URL}?action=detail&id=${encodeURIComponent(bookId)}`;
             const response = await fetch(url);
             if (!response.ok) throw new Error(`Google Books detail error: ${response.status}`);
             return await response.json();

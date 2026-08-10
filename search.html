@@ -692,12 +692,12 @@
                     displayPaginatedResults(results, currentTab, 1);
                 } else {
                     try {
-                        let q = query ? `intitle:${encodeURIComponent(query)}` : '';
+                        let q = query ? `intitle:${query}` : '';
                         if (currentFilters.category) {
                             q += (q ? '+' : '') + `subject:${currentFilters.category}`;
                         }
                         const response = await fetch(
-                            `https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=40&orderBy=relevance`
+                            `${BOOKS_PROXY_URL}?action=search&q=${encodeURIComponent(q)}&maxResults=40&orderBy=relevance`
                         );
                         const data = await response.json();
                         let items = data.items || [];
@@ -957,7 +957,7 @@
 
                     html += `
                         <div class="content-card" onclick="goToDetail('movie', '${item.id}')">
-                            <img src="${posterUrl}" alt="${item.title}" 
+                            <img src="${posterUrl}" alt="${item.title}" loading="lazy"
                                  onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok'">
                             <div class="info">
                                 <h3>${item.title}</h3>
@@ -974,7 +974,7 @@
 
                     html += `
                         <div class="content-card" onclick="goToDetail('series', '${item.id}')">
-                            <img src="${posterUrl}" alt="${item.name}"
+                            <img src="${posterUrl}" alt="${item.name}" loading="lazy"
                                  onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok'">
                             <div class="info">
                                 <h3>${item.name}</h3>
@@ -993,7 +993,7 @@
 
                     html += `
                         <div class="content-card" onclick="goToDetail('book', '${item.id}')">
-                            <img src="${coverUrl}" alt="${volumeInfo.title}"
+                            <img src="${coverUrl}" alt="${volumeInfo.title}" loading="lazy"
                                  onerror="this.src='https://placehold.co/150x225/764ba2/ffffff?text=Kapak+Yok'">
                             <div class="info">
                                 <h3>${volumeInfo.title}</h3>
@@ -1010,7 +1010,6 @@
 
         async function loadShowcaseBooks() {
             try {
-                const GOOGLE_BOOKS_BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
                 document.getElementById('topRatedSection').querySelector('h2').textContent = '📚 En İyi Kitaplar';
                 document.getElementById('allMoviesSection').querySelector('h2').textContent = '📖 Tüm Kitaplar';
                 document.getElementById('topRatedSection').style.display = 'block';
@@ -1020,7 +1019,7 @@
                 loadPlatformPopularContent('book');
 
                 const topRatedBooks = await fetch(
-                    `${GOOGLE_BOOKS_BASE_URL}?q=subject:fiction&orderBy=relevance&maxResults=12&langRestrict=tr`
+                    `${BOOKS_PROXY_URL}?action=search&q=${encodeURIComponent('subject:fiction')}&orderBy=relevance&maxResults=12&langRestrict=tr`
                 ).then(r => r.json());
 
                 displayShowcaseBooks(topRatedBooks.items || [], 'topRatedMovies');
@@ -1029,7 +1028,7 @@
                 for (let i = 0; i < 2; i++) {
                     const startIndex = i * 20;
                     const response = await fetch(
-                        `${GOOGLE_BOOKS_BASE_URL}?q=subject:literature&orderBy=newest&startIndex=${startIndex}&maxResults=20`
+                        `${BOOKS_PROXY_URL}?action=search&q=${encodeURIComponent('subject:literature')}&orderBy=newest&startIndex=${startIndex}&maxResults=20`
                     ).then(r => r.json());
                     allBooks = [...allBooks, ...(response.items || [])];
                 }
@@ -1064,7 +1063,7 @@
 
                 html += `
                     <div class="content-card" onclick="goToDetail('book', '${item.id}')">
-                        <img src="${coverUrl}" alt="${volumeInfo.title || 'Kitap'}"
+                        <img src="${coverUrl}" alt="${volumeInfo.title || 'Kitap'}" loading="lazy"
                              onerror="this.onerror=null; this.src='https://placehold.co/150x225/764ba2/ffffff?text=Kapak';">
                         <div class="info">
                             <h3>${volumeInfo.title}</h3>
@@ -1088,10 +1087,13 @@
             try {
                 let allMovies = [];
 
-                for (let page = 1; page <= 100; page++) {
-                    const response = await fetch(
-                        `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}&language=tr-TR&page=${page}`
-                    );
+                // Eskiden 100 sayfa (≈2000 film) çekilip hepsinin posteri aynı anda
+                // render ediliyordu — yavaş internetli ziyaretçiler için ağır bir
+                // yükti. Artık önbellekli vekil uç noktası üzerinden, en fazla 5
+                // sayfa (≈100 film) çekiliyor; resimler de lazy-loading ile sadece
+                // kullanıcı kaydırdıkça indiriliyor (bkz. displayShowcaseResults).
+                for (let page = 1; page <= 5; page++) {
+                    const response = await fetch(`${TMDB_PROXY_URL}?endpoint=list&type=movie&list=popular&page=${page}`);
                     const data = await response.json();
                     allMovies = [...allMovies, ...(data.results || [])];
                 }
@@ -1132,10 +1134,8 @@
             try {
                 let allMovies = allMoviesCache.length > 0 ? [...allMoviesCache] : [];
                 if (allMovies.length === 0) {
-                    for (let page = 1; page <= 100; page++) {
-                        const response = await fetch(
-                            `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}&language=tr-TR&page=${page}`
-                        );
+                    for (let page = 1; page <= 5; page++) {
+                        const response = await fetch(`${TMDB_PROXY_URL}?endpoint=list&type=movie&list=popular&page=${page}`);
                         const data = await response.json();
                         allMovies = [...allMovies, ...(data.results || [])];
                     }
@@ -1295,7 +1295,7 @@
 
                 html += `
                     <div class="content-card" onclick="goToDetail('${type}', '${item.id}')">
-                        <img src="${posterUrl}" alt="${item.title}" 
+                        <img src="${posterUrl}" alt="${item.title}" loading="lazy"
                              onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Resim+Yok'">
                         <div class="info">
                             <h3>${item.title}</h3>
@@ -1327,7 +1327,7 @@
 
                 html += `
                     <div class="content-card" onclick="goToDetail('movie', '${movie.id}')">
-                        <img src="${posterUrl}" alt="${movie.title}" 
+                        <img src="${posterUrl}" alt="${movie.title}" loading="lazy"
                              onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok'">
                         <div class="info">
                             <h3>${movie.title}</h3>
@@ -1373,7 +1373,7 @@
 
                 html += `
                     <div class="content-card" onclick="goToDetail('series', '${series.id}')">
-                        <img src="${posterUrl}" alt="${series.name}"
+                        <img src="${posterUrl}" alt="${series.name}" loading="lazy"
                              onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok'">
                         <div class="info">
                             <h3>${series.name}</h3>

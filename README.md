@@ -45,6 +45,8 @@ composer install
 copy .env.example .env
 ```
 
+`.env`'de `TMDB_API_KEY`'i doldurun ([themoviedb.org](https://www.themoviedb.org/settings/api)'dan ücretsiz alınır) — film/dizi arama ve keşif bu olmadan çalışmaz. `GOOGLE_BOOKS_API_KEY` opsiyoneldir (boş bırakılırsa Google'ın düşük anonim kotası kullanılır, kitap aramasında zaman zaman 429 hatası görülebilir).
+
 E-posta ile şifre sıfırlama özelliğini kullanacaksanız `.env`'de `SMTP_USERNAME`/`SMTP_PASSWORD` alanlarını doldurun (opsiyonel — boş bırakılırsa sıfırlama linki e-posta yerine sunucu loguna yazılır).
 
 `api/setup-db.php` dosyasını bir kez tarayıcıda açarak MongoDB indekslerini ve demo hesapları oluşturun.
@@ -100,6 +102,8 @@ sosyal-kutuphane/
 ## Teknoloji
 
 PHP + MongoDB (`mongodb/mongodb` composer paketi) + vanilla HTML/CSS/JS. PHPMailer (şifre sıfırlama ve e-posta doğrulama kodları için). MongoDB yerelde ya da [Atlas](https://www.mongodb.com/atlas) gibi bulut bir cluster'da çalışabilir — `.env`'deki `MONGO_URI`'yi değiştirmen yeterli.
+
+**TMDB/Google Books önbelleği:** Tarayıcı bu dış API'lere hiç doğrudan gitmiyor — tüm istekler `api/tmdb-proxy.php` ve `api/books-proxy.php` üzerinden geçip Atlas'ta (`api_cache` koleksiyonu) önbelleklenir (popüler/en yüksek puanlı listeler 6 saat, arama 1 saat, detay 24 saat). Böylece aynı veri tüm ziyaretçiler arasında paylaşılır, yavaş internetli kullanıcılar her sayfa açılışında aynı içeriği baştan indirmek zorunda kalmaz, ve dış API anahtarları istemci tarafında görünmez.
 
 ## 🧪 Testler
 
