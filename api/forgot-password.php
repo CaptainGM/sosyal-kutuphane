@@ -1,9 +1,6 @@
 <?php
 require_once 'config.php';
 require_once 'mail-config.php';
-require_once 'PHPMailer/src/Exception.php';
-require_once 'PHPMailer/src/PHPMailer.php';
-require_once 'PHPMailer/src/SMTP.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -23,46 +20,33 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     jsonResponse(['success' => false, 'message' => 'Geçerli bir e-posta adresi giriniz!'], 400);
 }
 
-$stmt = $conn->prepare("SELECT id, username FROM users WHERE email = ?");
-$stmt->bind_param("s", $email);
-$stmt->execute();
-$result = $stmt->get_result();
-$user = $result->fetch_assoc();
+$user = $db->users->findOne(['email' => $email]);
 
-if (!$user) {
-    jsonResponse([
-        'success' => true,
-        'message' => 'Eğer bu e-posta sistemde kayıtlıysa, şifre sıfırlama linki gönderildi.'
-    ], 200);
+// Kullanıcı bulunamasa bile aynı mesajı döndürüyoruz — böylece bu uç nokta
+// hangi e-postaların kayıtlı olduğunu dışarıya sızdırmıyor (enumeration koruması).
+if ($user) {
+    $token = bin2hex(random_bytes(32));
+    $expiresAt = new MongoDB\BSON\UTCDateTime((time() + 3600) * 1000);
+
+    $db->password_resets->deleteMany(['email' => $email]);
+    $db->password_resets->insertOne([
+        'email' => $email,
+        'token' => $token,
+        'expires_at' => $expiresAt,
+        'created_at' => new MongoDB\BSON\UTCDateTime(),
+    ]);
+
+    $resetLink = SITE_URL . '/reset-password.html?token=' . $token;
+    sendPasswordResetEmail($email, $user->username, $resetLink);
+    // Not: mail gönderimi başarısız olsa bile linki API yanıtında döndürmüyoruz —
+    // bu, SMTP yapılandırılmamışken sıfırlama token'ının herkese açık sızmasını önler.
+    // Yerel geliştirme sırasında linke ihtiyacın olursa PHP hata loguna bakabilirsin.
 }
 
-$token = bin2hex(random_bytes(32));
-$expires_at = date('Y-m-d H:i:s', strtotime('+1 hour'));
-
-$stmt = $conn->prepare("DELETE FROM password_resets WHERE email = ?");
-$stmt->bind_param("s", $email);
-$stmt->execute();
-
-$stmt = $conn->prepare("INSERT INTO password_resets (email, token, expires_at) VALUES (?, ?, ?)");
-$stmt->bind_param("sss", $email, $token, $expires_at);
-$stmt->execute();
-
-$reset_link = "http://localhost:8000/reset-password.html?token=" . $token;
-
-$mailSent = sendPasswordResetEmail($email, $user['username'], $reset_link);
-
-if ($mailSent) {
-    jsonResponse([
-        'success' => true,
-        'message' => 'Şifre sıfırlama linki e-postanıza gönderildi!'
-    ], 200);
-} else {
-    jsonResponse([
-        'success' => true,
-        'message' => 'Şifre sıfırlama linki e-postanıza gönderildi!',
-        'debug_link' => $reset_link
-    ], 200);
-}
+jsonResponse([
+    'success' => true,
+    'message' => 'Eğer bu e-posta sistemde kayıtlıysa, şifre sıfırlama linki gönderildi.'
+], 200);
 
 function sendPasswordResetEmail($toEmail, $username, $resetLink) {
     $mail = new PHPMailer(true);
@@ -107,7 +91,7 @@ function sendPasswordResetEmail($toEmail, $username, $resetLink) {
                 </div>
                 <div style="text-align: center; padding-top: 20px; border-top: 1px solid #eee; color: #999; font-size: 12px;">
                     <p>Bu e-posta otomatik olarak gönderilmiştir.</p>
-                    <p>© 2025 Sosyal Kütüphane</p>
+                    <p>© 2026 Sosyal Kütüphane</p>
                 </div>
             </div>
         </body>
@@ -119,6 +103,7 @@ function sendPasswordResetEmail($toEmail, $username, $resetLink) {
         return true;
     } catch (Exception $e) {
         error_log("Mail gönderilemedi: " . $mail->ErrorInfo);
+        error_log("Şifre sıfırlama linki (SMTP başarısız, gelişim amaçlı log): " . $resetLink);
         return false;
     }
 }

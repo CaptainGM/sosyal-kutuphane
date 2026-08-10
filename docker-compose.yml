@@ -1,14 +1,10 @@
 services:
   db:
-    image: mysql:8
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpass
-      MYSQL_DATABASE: social_library
+    image: mongo:7
     volumes:
-      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
-      - db_data:/var/lib/mysql
+      - db_data:/data/db
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -19,9 +15,8 @@ services:
       db:
         condition: service_healthy
     environment:
-      DB_HOST: db
-      DB_USER: root
-      DB_PASSWORD: rootpass
+      MONGO_URI: mongodb://db:27017
+      MONGO_DB: social_library
     ports:
       - "8000:8000"
 

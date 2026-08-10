@@ -1,38 +1,72 @@
-
 <?php
 require_once 'config.php';
 requireLogin();
 
-$userId = $_GET['user_id'] ?? getCurrentUserId();
+$userId = (int)($_GET['user_id'] ?? getCurrentUserId());
 $type = $_GET['type'] ?? null;
 $status = $_GET['status'] ?? null;
+
 if ($type === 'movie') {
     $statusFilter = $status ? $status : 'watched';
-    $stmt = $conn->prepare("
-        SELECT m.id, m.tmdb_id, m.title, m.poster_path as poster, ums.rating, ums.status, ums.updated_at
-        FROM user_movie_status ums
-        JOIN movies m ON ums.movie_id = m.id
-        WHERE ums.user_id = ? AND ums.status = ?
-        ORDER BY ums.updated_at DESC
-    ");
-    $stmt->bind_param("is", $userId, $statusFilter);
+    $rows = iterator_to_array($db->user_movie_status->find(
+        ['user_id' => $userId, 'status' => $statusFilter],
+        ['sort' => ['updated_at' => -1]]
+    ));
+    $movieIds = array_map(fn($r) => $r->movie_id, $rows);
+    $movies = iterator_to_array($db->movies->find(['_id' => ['$in' => $movieIds]]));
+    $movieMap = [];
+    foreach ($movies as $m) {
+        $movieMap[$m->_id] = $m;
+    }
+
+    $content = [];
+    foreach ($rows as $r) {
+        $m = $movieMap[$r->movie_id] ?? null;
+        if (!$m) {
+            continue;
+        }
+        $content[] = [
+            'id' => $m->_id,
+            'tmdb_id' => $m->tmdb_id,
+            'title' => $m->title,
+            'poster' => $m->poster_path ?? null,
+            'rating' => $r->rating ?? null,
+            'status' => $r->status,
+            'updated_at' => isset($r->updated_at) ? $r->updated_at->toDateTime()->format('Y-m-d H:i:s') : null,
+        ];
+    }
 } elseif ($type === 'book') {
     $statusFilter = $status ? $status : 'read';
-    $stmt = $conn->prepare("
-        SELECT b.id, b.google_books_id, b.title, b.cover_url as poster, ubs.rating, ubs.status, ubs.updated_at
-        FROM user_book_status ubs
-        JOIN books b ON ubs.book_id = b.id
-        WHERE ubs.user_id = ? AND ubs.status = ?
-        ORDER BY ubs.updated_at DESC
-    ");
-    $stmt->bind_param("is", $userId, $statusFilter);
+    $rows = iterator_to_array($db->user_book_status->find(
+        ['user_id' => $userId, 'status' => $statusFilter],
+        ['sort' => ['updated_at' => -1]]
+    ));
+    $bookIds = array_map(fn($r) => $r->book_id, $rows);
+    $books = iterator_to_array($db->books->find(['_id' => ['$in' => $bookIds]]));
+    $bookMap = [];
+    foreach ($books as $b) {
+        $bookMap[$b->_id] = $b;
+    }
+
+    $content = [];
+    foreach ($rows as $r) {
+        $b = $bookMap[$r->book_id] ?? null;
+        if (!$b) {
+            continue;
+        }
+        $content[] = [
+            'id' => $b->_id,
+            'google_books_id' => $b->google_books_id,
+            'title' => $b->title,
+            'poster' => $b->cover_url ?? null,
+            'rating' => $r->rating ?? null,
+            'status' => $r->status,
+            'updated_at' => isset($r->updated_at) ? $r->updated_at->toDateTime()->format('Y-m-d H:i:s') : null,
+        ];
+    }
 } else {
     jsonResponse(['success' => false, 'message' => 'type parametresi gerekli (movie veya book)'], 400);
 }
-
-$stmt->execute();
-$result = $stmt->get_result();
-$content = $result->fetch_all(MYSQLI_ASSOC);
 
 jsonResponse(['success' => true, 'content' => $content]);
 ?>

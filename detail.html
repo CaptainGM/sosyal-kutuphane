@@ -723,6 +723,7 @@
         let currentRating = 0;
         let currentContentType = '';
         let currentContentId = '';
+        const commentTextById = {};
 
         document.addEventListener('DOMContentLoaded', async function () {
             if (typeof app !== 'undefined' && app.initPromise) {
@@ -866,7 +867,7 @@
 
                 const response = await fetch('/api/follow.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: app.authHeaders(),
                     credentials: 'include',
                     body: JSON.stringify({ target_user_id: targetUserId })
                 });
@@ -1031,7 +1032,7 @@
 
                 const response = await fetch('/api/user-status.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: app.authHeaders(),
                     credentials: 'include',
                     body: JSON.stringify({
                         content_type: currentContentType,
@@ -1072,7 +1073,7 @@
 
                 const response = await fetch('/api/user-status.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: app.authHeaders(),
                     credentials: 'include',
                     body: JSON.stringify({
                         content_type: currentContentType,
@@ -1179,7 +1180,7 @@
             try {
                 const response = await fetch('/api/comments.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: app.authHeaders(),
                     credentials: 'include',
                     body: JSON.stringify({
                         content_type: currentContentType,
@@ -1220,34 +1221,38 @@
                     commentsList.forEach((comment) => {
                         const isOwnComment = (typeof app !== 'undefined' && app.currentUser) ? (comment.user_id === app.currentUser.id) : false;
                         const timeAgo = (typeof app !== 'undefined') ? app.getTimeAgo(comment.created_at) : comment.created_at;
-                        const safeCommentText = comment.comment_text.replace(/`/g, '&#96;').replace(/\\/g, '&#92;');
+                        const safeUsername = app.escapeHtml(comment.username);
+                        const safeText = app.escapeHtml(comment.comment_text);
+                        // Düzenleme modalının orijinal metne erişebilmesi için ham metni bir haritada
+                        // tutuyoruz — onclick içine gömmüyoruz (tırnak kaçışı/JS enjeksiyonu riski).
+                        commentTextById[comment.id] = comment.comment_text;
 
                         html += `
                     <div class="comment-item" id="comment-${comment.id}" style="background: white; padding: 20px; border-radius: 10px; border-left: 4px solid #667eea;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                             <div>
-                                <strong style="color: #667eea;">${comment.username}</strong>
+                                <strong style="color: #667eea;">${safeUsername}</strong>
                                 <span style="color: #999; font-size: 12px; margin-left: 10px;">${timeAgo}</span>
                             </div>
                         </div>
-                        
+
                         <div id="comment-text-${comment.id}" style="margin: 10px 0; color: #555;">
-                            ${comment.comment_text.length > 200 ? `
-                                <span id="short-${comment.id}">${comment.comment_text.substring(0, 200)}...</span>
-                                <span id="full-${comment.id}" style="display: none;">${comment.comment_text}</span>
+                            ${safeText.length > 200 ? `
+                                <span id="short-${comment.id}">${safeText.substring(0, 200)}...</span>
+                                <span id="full-${comment.id}" style="display: none;">${safeText}</span>
                                 <button onclick="toggleCommentText(${comment.id})" style="background: none; border: none; color: #667eea; cursor: pointer; padding: 0; margin-left: 5px;">Daha Fazla</button>
-                            ` : `${comment.comment_text}`}
+                            ` : `${safeText}`}
                         </div>
-                        
+
                         <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px;">
                             <button id="like-btn-${comment.id}" onclick="likeComment(${comment.id})" style="background: none; border: none; color: ${comment.liked_by_me ? '#dc3545' : '#667eea'}; cursor: pointer;">
                                 ${comment.liked_by_me ? '❤️' : '🤍'} <span id="like-count-${comment.id}">${comment.likes_count || 0}</span>
                             </button>
-                            <button onclick="showReplyForm(${comment.id}, '${comment.username}')" style="background: none; border: none; color: #667eea; cursor: pointer;">
+                            <button onclick="showReplyForm(${comment.id})" style="background: none; border: none; color: #667eea; cursor: pointer;">
                                 💬 Yanıtla
                             </button>
                             ${isOwnComment ? `
-                                <button onclick="showEditModal(${comment.id}, '${safeCommentText}')" style="background: none; border: none; color: #667eea; cursor: pointer;">
+                                <button onclick="showEditModal(${comment.id})" style="background: none; border: none; color: #667eea; cursor: pointer;">
                                     ✏️ Düzenle
                                 </button>
                                 <button onclick="deleteComment(${comment.id})" style="background: none; border: none; color: #dc3545; cursor: pointer;">
@@ -1255,29 +1260,31 @@
                                 </button>
                             ` : ''}
                         </div>
-                        
-                        
+
+
                         <div id="reply-form-${comment.id}" style="display: none; margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-                            <textarea id="reply-text-${comment.id}" placeholder="@${comment.username} kullanıcısına yanıt yazın..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; min-height: 80px; font-family: inherit;"></textarea>
+                            <textarea id="reply-text-${comment.id}" placeholder="@${safeUsername} kullanıcısına yanıt yazın..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; min-height: 80px; font-family: inherit;"></textarea>
                             <div style="display: flex; gap: 10px; margin-top: 10px;">
                                 <button onclick="submitReply(${comment.id})" style="background: #667eea; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">Yanıtla</button>
                                 <button onclick="hideReplyForm(${comment.id})" style="background: #ccc; color: #333; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">İptal</button>
                             </div>
                         </div>
-                        
-                        
+
+
                         ${comment.replies && comment.replies.length > 0 ? `
                             <div style="margin-top: 15px; margin-left: 20px; border-left: 2px solid #e0e0e0; padding-left: 15px;">
                                 ${comment.replies.map(reply => {
                             const isOwnReply = (typeof app !== 'undefined' && app.currentUser) ? (reply.user_id === app.currentUser.id) : false;
                             const replyTimeAgo = (typeof app !== 'undefined') ? app.getTimeAgo(reply.created_at) : reply.created_at;
+                            const safeReplyUsername = app.escapeHtml(reply.username);
+                            const safeReplyText = app.escapeHtml(reply.comment_text);
                             return `
                                         <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 10px;">
                                             <div style="margin-bottom: 8px;">
-                                                <strong style="color: #667eea; font-size: 14px;">${reply.username}</strong>
+                                                <strong style="color: #667eea; font-size: 14px;">${safeReplyUsername}</strong>
                                                 <span style="color: #999; font-size: 11px; margin-left: 8px;">${replyTimeAgo}</span>
                                             </div>
-                                            <p style="margin: 0; color: #555; font-size: 14px;">${reply.comment_text}</p>
+                                            <p style="margin: 0; color: #555; font-size: 14px;">${safeReplyText}</p>
                                             <div style="display: flex; gap: 10px; margin-top: 8px;">
                                                 <button onclick="likeComment(${reply.id})" style="background: none; border: none; color: ${reply.liked_by_me ? '#dc3545' : '#667eea'}; cursor: pointer; font-size: 12px;">
                                                     ${reply.liked_by_me ? '❤️' : '🤍'} ${reply.likes_count || 0}
@@ -1302,7 +1309,7 @@
                 document.getElementById('comments-section').innerHTML = '<p style="color: red;">❌ Yorumlar yüklenemedi</p>';
             }
         }
-        function showReplyForm(commentId, username) {
+        function showReplyForm(commentId) {
             if (typeof app === 'undefined' || !app.currentUser) {
                 alert('Yanıt yazmak için giriş yapmalısınız!');
                 return;
@@ -1324,7 +1331,7 @@
             try {
                 const response = await fetch('/api/comments.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: app.authHeaders(),
                     credentials: 'include',
                     body: JSON.stringify({
                         content_type: currentContentType,
@@ -1354,7 +1361,7 @@
             try {
                 const response = await fetch('/api/comments.php', {
                     method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: app.authHeaders(),
                     credentials: 'include',
                     body: JSON.stringify({ comment_id: commentId })
                 });
@@ -1388,8 +1395,8 @@
             }
         }
 
-        function showEditModal(commentId, oldText) {
-            const decodedText = oldText.replace(/&#96;/g, '`').replace(/&#92;/g, '\\').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+        function showEditModal(commentId) {
+            const rawText = commentTextById[commentId] || '';
 
             const modal = document.createElement('div');
             modal.id = 'editModal';
@@ -1405,7 +1412,7 @@
             const textarea = document.createElement('textarea');
             textarea.id = 'editText';
             textarea.style.cssText = 'width: 100%; min-height: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit; font-size: 14px;';
-            textarea.value = decodedText;
+            textarea.value = rawText;
 
             const buttonDiv = document.createElement('div');
             buttonDiv.style.cssText = 'display: flex; gap: 10px; margin-top: 15px; justify-content: flex-end;';
@@ -1442,7 +1449,7 @@
             try {
                 const response = await fetch('/api/comments.php', {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: app.authHeaders(),
                     credentials: 'include',
                     body: JSON.stringify({
                         comment_id: commentId,
@@ -1464,8 +1471,8 @@
             }
         }
 
-        async function editCommentPrompt(commentId, oldText) {
-            showEditModal(commentId, oldText);
+        async function editCommentPrompt(commentId) {
+            showEditModal(commentId);
         }
 
         async function likeComment(commentId) {
@@ -1477,7 +1484,7 @@
             try {
                 const response = await fetch('/api/like-comment.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: app.authHeaders(),
                     credentials: 'include',
                     body: JSON.stringify({ comment_id: commentId })
                 });
@@ -1544,7 +1551,7 @@
                                  onclick="toggleCustomListSelection(this, ${list.id})"
                                  data-list-id="${list.id}">
                                 <input type="checkbox" ${isInList ? 'checked' : ''} onclick="event.stopPropagation()">
-                                <span class="custom-list-name">${list.name}</span>
+                                <span class="custom-list-name">${app.escapeHtml(list.name)}</span>
                                 <span class="custom-list-count">${list.item_count || 0} içerik</span>
                             </div>
                         `;
@@ -1590,7 +1597,7 @@
                 for (const listId of listIds) {
                     const response = await fetch('/api/custom-lists.php', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: app.authHeaders(),
                         credentials: 'include',
                         body: JSON.stringify({
                             action: 'add_item',

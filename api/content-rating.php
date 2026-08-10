@@ -10,26 +10,25 @@ if (!$contentType || !$contentId) {
 }
 
 if ($contentType === 'movie') {
-    $contentTable = 'movies';
-    $statusTable = 'user_movie_status';
+    $contentCollectionName = 'movies';
+    $statusCollectionName = 'user_movie_status';
     $contentIdCol = 'movie_id';
     $contentDbIdCol = 'tmdb_id';
+    $contentId = (int)$contentId;
 } elseif ($contentType === 'book') {
-    $contentTable = 'books';
-    $statusTable = 'user_book_status';
+    $contentCollectionName = 'books';
+    $statusCollectionName = 'user_book_status';
     $contentIdCol = 'book_id';
     $contentDbIdCol = 'google_books_id';
+    $contentId = (string)$contentId;
 } else {
     jsonResponse(['success' => false, 'message' => 'Geçersiz içerik türü.'], 400);
 }
 
 
-$stmt = $conn->prepare("SELECT id FROM $contentTable WHERE $contentDbIdCol = ?");
-$stmt->bind_param("s", $contentId);
-$stmt->execute();
-$result = $stmt->get_result()->fetch_assoc();
+$content = $db->$contentCollectionName->findOne([$contentDbIdCol => $contentId]);
 
-if (!$result) {
+if (!$content) {
     jsonResponse([
         'success' => true,
         'data' => [
@@ -40,42 +39,33 @@ if (!$result) {
     ]);
 }
 
-$dbContentId = $result['id'];
+$dbContentId = $content->_id;
+$statusCollection = $db->$statusCollectionName;
 
 
-$stmt = $conn->prepare("
-    SELECT 
-        AVG(rating) as average_rating,
-        COUNT(rating) as total_votes
-    FROM $statusTable 
-    WHERE $contentIdCol = ? AND rating IS NOT NULL AND rating > 0
-");
-$stmt->bind_param("i", $dbContentId);
-$stmt->execute();
-$stats = $stmt->get_result()->fetch_assoc();
+$statsResult = $statusCollection->aggregate([
+    ['$match' => [$contentIdCol => $dbContentId, 'rating' => ['$gt' => 0]]],
+    ['$group' => ['_id' => null, 'average_rating' => ['$avg' => '$rating'], 'total_votes' => ['$sum' => 1]]],
+])->toArray();
+$stats = $statsResult[0] ?? null;
 
 
-$stmt = $conn->prepare("
-    SELECT rating, COUNT(*) as count
-    FROM $statusTable 
-    WHERE $contentIdCol = ? AND rating IS NOT NULL AND rating > 0
-    GROUP BY rating
-    ORDER BY rating DESC
-");
-$stmt->bind_param("i", $dbContentId);
-$stmt->execute();
-$distributionResult = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$distributionResult = $statusCollection->aggregate([
+    ['$match' => [$contentIdCol => $dbContentId, 'rating' => ['$gt' => 0]]],
+    ['$group' => ['_id' => '$rating', 'count' => ['$sum' => 1]]],
+    ['$sort' => ['_id' => -1]],
+])->toArray();
 
 $distribution = [];
 foreach ($distributionResult as $row) {
-    $distribution[$row['rating']] = (int)$row['count'];
+    $distribution[$row->_id] = (int)$row->count;
 }
 
 jsonResponse([
     'success' => true,
     'data' => [
-        'average_rating' => $stats['average_rating'] ? round((float)$stats['average_rating'], 1) : null,
-        'total_votes' => (int)$stats['total_votes'],
+        'average_rating' => $stats ? round((float)$stats->average_rating, 1) : null,
+        'total_votes' => $stats ? (int)$stats->total_votes : 0,
         'rating_distribution' => $distribution
     ]
 ]);

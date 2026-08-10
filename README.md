@@ -9,7 +9,7 @@ Film ve Kitap Sosyal Ağı Uygulaması
 ```mermaid
 flowchart LR
     B[Tarayıcı] --> API[PHP API]
-    API --> DB[(MySQL)]
+    API --> DB[(MongoDB)]
     API --> MAIL["PHPMailer / SMTP"]
 ```
 
@@ -23,24 +23,23 @@ docker compose up
 
 ## 🚀 Manuel Kurulum
 
-### Adım 0: Veritabanı ve ortam değişkenleri
+### Adım 0: Bağımlılıklar, veritabanı ve ortam değişkenleri
 
-MySQL'de boş bir `social_library` veritabanı için kullanıcı/şifre tanımlayın ve ortam değişkenlerini ayarlayın:
-
-```bash
-set DB_HOST=localhost
-set DB_USER=root
-set DB_PASSWORD=your_mysql_password
-```
-
-E-posta ile şifre sıfırlama özelliğini kullanacaksanız (opsiyonel):
+MongoDB'nin yerelde çalıştığından emin ol (varsayılan port 27017), sonra PHP bağımlılıklarını kur:
 
 ```bash
-set SMTP_USERNAME=your_gmail_address
-set SMTP_PASSWORD=your_gmail_app_password
+composer install
 ```
 
-`api/setup-db.php` dosyasını bir kez tarayıcıda açarak veritabanı ve tabloları oluşturun.
+`.env.example` dosyasını `.env` olarak kopyala ve gerekirse değerleri düzenle (varsayılanlar yerel MongoDB için zaten çalışır):
+
+```bash
+copy .env.example .env
+```
+
+E-posta ile şifre sıfırlama özelliğini kullanacaksanız `.env`'de `SMTP_USERNAME`/`SMTP_PASSWORD` alanlarını doldurun (opsiyonel — boş bırakılırsa sıfırlama linki e-posta yerine sunucu loguna yazılır).
+
+`api/setup-db.php` dosyasını bir kez tarayıcıda açarak MongoDB indekslerini ve demo hesapları oluşturun.
 
 ### Adım 1: Server Başlat
 `START.bat` dosyasına çift tıkla (Windows) veya `START.sh` (Mac/Linux)

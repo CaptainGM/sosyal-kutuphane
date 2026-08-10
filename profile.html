@@ -562,7 +562,7 @@
             try {
                 const response = await fetch('/api/user-profile.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: app.authHeaders(),
                     credentials: 'include',
                     body: JSON.stringify({ avatar: selectedAvatar })
                 });
@@ -843,9 +843,10 @@
                     const commentsData = await commentsResponse.json();
                     if (commentsData.success && commentsData.comments) {
                         commentsData.comments.forEach(comment => {
+                            const safeText = app.escapeHtml(comment.comment_text);
                             activities.push({
                                 type: 'comment',
-                                content: `💬 "${comment.comment_text.substring(0, 50)}${comment.comment_text.length > 50 ? '...' : ''}" yorumu`,
+                                content: `💬 "${safeText.substring(0, 50)}${safeText.length > 50 ? '...' : ''}" yorumu`,
                                 date: new Date(comment.created_at)
                             });
                         });
@@ -856,16 +857,17 @@
                     const moviesData = await moviesResponse.json();
                     if (moviesData.success && moviesData.content) {
                         moviesData.content.forEach(movie => {
+                            const safeTitle = app.escapeHtml(movie.title || 'Film');
                             if (movie.rating) {
                                 activities.push({
                                     type: 'rating',
-                                    content: `🎬 <strong>${movie.title || 'Film'}</strong> filmine <span style="color: #f39c12; font-weight: bold;">⭐ ${movie.rating}/10</span> puan verdi`,
+                                    content: `🎬 <strong>${safeTitle}</strong> filmine <span style="color: #f39c12; font-weight: bold;">⭐ ${movie.rating}/10</span> puan verdi`,
                                     date: new Date(movie.updated_at)
                                 });
                             } else {
                                 activities.push({
                                     type: 'watched',
-                                    content: `🎬 <strong>${movie.title || 'Film'}</strong> filmini izledi`,
+                                    content: `🎬 <strong>${safeTitle}</strong> filmini izledi`,
                                     date: new Date(movie.updated_at)
                                 });
                             }
@@ -877,16 +879,17 @@
                     const booksData = await booksResponse.json();
                     if (booksData.success && booksData.content) {
                         booksData.content.forEach(book => {
+                            const safeTitle = app.escapeHtml(book.title || 'Kitap');
                             if (book.rating) {
                                 activities.push({
                                     type: 'rating',
-                                    content: `📚 <strong>${book.title || 'Kitap'}</strong> kitabına <span style="color: #f39c12; font-weight: bold;">⭐ ${book.rating}/10</span> puan verdi`,
+                                    content: `📚 <strong>${safeTitle}</strong> kitabına <span style="color: #f39c12; font-weight: bold;">⭐ ${book.rating}/10</span> puan verdi`,
                                     date: new Date(book.updated_at)
                                 });
                             } else {
                                 activities.push({
                                     type: 'read',
-                                    content: `📚 <strong>${book.title || 'Kitap'}</strong> kitabını okudu`,
+                                    content: `📚 <strong>${safeTitle}</strong> kitabını okudu`,
                                     date: new Date(book.updated_at)
                                 });
                             }
@@ -972,9 +975,9 @@
 
             container.innerHTML = lists.map(list => `
                 <div class="list-card">
-                    <h3>${list.name}</h3>
+                    <h3>${app.escapeHtml(list.name)}</h3>
                     <div class="list-stats">${list.item_count || 0} içerik</div>
-                    <p style="color: #666; margin-bottom: 15px; line-height: 1.4;">${list.description || 'Açıklama bulunmuyor'}</p>
+                    <p style="color: #666; margin-bottom: 15px; line-height: 1.4;">${app.escapeHtml(list.description) || 'Açıklama bulunmuyor'}</p>
                     <div style="display: flex; gap: 10px;">
                         <button class="btn btn-primary" onclick="viewList('${list.id}')">📋 Listeyi Görüntüle</button>
                         <button class="btn" style="background: #6c757d; color: white;" onclick="editList('${list.id}')">✏️ Düzenle</button>
@@ -993,7 +996,7 @@
             
             <div style="margin-bottom: 20px;">
                 <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Biyografi:</label>
-                <textarea id="editBio" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: inherit; min-height: 100px;">${currentBio}</textarea>
+                <textarea id="editBio" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: inherit; min-height: 100px;">${app.escapeHtml(currentBio)}</textarea>
             </div>
 
             <div style="display: flex; gap: 10px;">
@@ -1043,7 +1046,7 @@
                 try {
                     const response = await fetch(`${API_BASE_URL}/custom-lists.php`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: app.authHeaders(),
                         credentials: 'include',
                         body: JSON.stringify({
                             action: 'create',
@@ -1078,7 +1081,7 @@
 
                         const updateResponse = await fetch(`${API_BASE_URL}/custom-lists.php`, {
                             method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: app.authHeaders(),
                             body: JSON.stringify({
                                 id: listId,
                                 name: newName.trim(),
@@ -1150,9 +1153,9 @@
                     const title = item.title || 'Bilinmiyor';
 
                     html += `
-                        <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer;" onclick="selectContentForList('${listId}', 'movie', '${item.id}', '${title.replace(/'/g, "\\'")}')">
-                            <img src="${posterUrl}" alt="${title}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 5px; margin-bottom: 8px;">
-                            <div style="font-size: 12px; font-weight: 600; word-break: break-word;">${title}</div>
+                        <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer;" onclick="selectContentForList('${listId}', 'movie', '${item.id}', '${encodeURIComponent(title)}')">
+                            <img src="${posterUrl}" alt="${app.escapeHtml(title)}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 5px; margin-bottom: 8px;">
+                            <div style="font-size: 12px; font-weight: 600; word-break: break-word;">${app.escapeHtml(title)}</div>
                             <div style="font-size: 11px; color: #999;">⭐ ${item.vote_average?.toFixed(1) || 'N/A'}</div>
                         </div>
                     `;
@@ -1164,10 +1167,10 @@
                     const title = volumeInfo.title || 'Bilinmiyor';
 
                     html += `
-                        <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer;" onclick="selectContentForList('${listId}', 'book', '${item.id}', '${title.replace(/'/g, "\\'")}')">
-                            <img src="${coverUrl}" alt="${title}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 5px; margin-bottom: 8px;">
-                            <div style="font-size: 12px; font-weight: 600; word-break: break-word;">${title}</div>
-                            <div style="font-size: 11px; color: #999;">✍️ ${volumeInfo.authors ? volumeInfo.authors[0] : 'Bilinmiyor'}</div>
+                        <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer;" onclick="selectContentForList('${listId}', 'book', '${item.id}', '${encodeURIComponent(title)}')">
+                            <img src="${coverUrl}" alt="${app.escapeHtml(title)}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 5px; margin-bottom: 8px;">
+                            <div style="font-size: 12px; font-weight: 600; word-break: break-word;">${app.escapeHtml(title)}</div>
+                            <div style="font-size: 11px; color: #999;">✍️ ${app.escapeHtml(volumeInfo.authors ? volumeInfo.authors[0] : 'Bilinmiyor')}</div>
                         </div>
                     `;
                 }
@@ -1194,7 +1197,7 @@
             try {
                 const response = await fetch(`${API_BASE_URL}/custom-lists.php`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: app.authHeaders(),
                     body: JSON.stringify({
                         action: 'add_item',
                         list_id: listId,
@@ -1235,21 +1238,21 @@
                     <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 9999;" id="listModal">
                         <div style="background: white; padding: 30px; border-radius: 15px; max-width: 800px; width: 90%; max-height: 80vh; overflow-y: auto;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                                <h2 style="margin: 0;">${list.name}</h2>
+                                <h2 style="margin: 0;">${app.escapeHtml(list.name)}</h2>
                                 <button onclick="closeListModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">✕</button>
                             </div>
-                            
-                            <p style="color: #666; margin-bottom: 20px;">${list.description || 'Açıklama bulunmuyor'}</p>
-                            
+
+                            <p style="color: #666; margin-bottom: 20px;">${app.escapeHtml(list.description) || 'Açıklama bulunmuyor'}</p>
+
                             <h3 style="margin-bottom: 15px;">📚 Listedeki İçerikler (${items.length})</h3>
-                            
+
                             <div id="listItems" style="margin-bottom: 20px; max-height: 400px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px;">
                                 ${items.length > 0 ? `
                                     <div id="listItemsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px;">
                                         ${items.map(item => `
                                             <div id="item-${item.id}" style="background: #f8f9fa; padding: 10px; border-radius: 8px; text-align: center; display: flex; flex-direction: column; gap: 8px;">
-                                                <img src="https://placehold.co/140x200?text=Yükleniyor" alt="${item.content_title}" class="item-poster" data-item-id="${item.content_id}" data-item-type="${item.content_type}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 5px;">
-                                                <div style="font-size: 12px; font-weight: 600; word-break: break-word; line-height: 1.3;">${item.content_title}</div>
+                                                <img src="https://placehold.co/140x200?text=Yükleniyor" alt="${app.escapeHtml(item.content_title)}" class="item-poster" data-item-id="${item.content_id}" data-item-type="${item.content_type}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 5px;">
+                                                <div style="font-size: 12px; font-weight: 600; word-break: break-word; line-height: 1.3;">${app.escapeHtml(item.content_title)}</div>
                                                 <button onclick="removeFromList('${listId}', '${item.id}')" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;">🗑️ Çıkar</button>
                                             </div>
                                         `).join('')}
@@ -1313,7 +1316,7 @@
                 try {
                     const response = await fetch(`${API_BASE_URL}/custom-lists.php`, {
                         method: 'DELETE',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: app.authHeaders(),
                         body: JSON.stringify({
                             list_id: listId,
                             item_id: contentId

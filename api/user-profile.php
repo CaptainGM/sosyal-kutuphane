@@ -1,75 +1,62 @@
-
 <?php
 require_once 'config.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 if ($method === 'POST') {
     requireLogin();
-    $userId = getCurrentUserId();
+    requireCsrf();
+    $userId = (int)getCurrentUserId();
     $input = json_decode(file_get_contents('php://input'), true);
-    
+
     $avatar = $input['avatar'] ?? null;
-    
+
     if ($avatar) {
-        $stmt = $conn->prepare("UPDATE users SET avatar_url = ? WHERE id = ?");
-        $stmt->bind_param("si", $avatar, $userId);
-        
-        if ($stmt->execute()) {
-            jsonResponse(['success' => true, 'message' => 'Avatar güncellendi']);
-        } else {
-            jsonResponse(['success' => false, 'message' => 'Avatar güncellenemedi'], 500);
+        // XSS önlemi: avatar yalnızca http(s) ile başlayan geçerli bir URL olabilir.
+        // javascript:, data: vb. şemalar ve script/HTML içeren değerler reddedilir.
+        if (!filter_var($avatar, FILTER_VALIDATE_URL) || !(str_starts_with($avatar, 'http://') || str_starts_with($avatar, 'https://'))) {
+            jsonResponse(['success' => false, 'message' => 'Geçersiz avatar URL'], 400);
         }
+
+        $db->users->updateOne(
+            ['_id' => $userId],
+            ['$set' => ['avatar_url' => $avatar, 'updated_at' => new MongoDB\BSON\UTCDateTime()]]
+        );
+        jsonResponse(['success' => true, 'message' => 'Avatar güncellendi']);
     } else {
         jsonResponse(['success' => false, 'message' => 'Avatar gerekli'], 400);
     }
     exit;
 }
+
 $userId = $_GET['id'] ?? null;
 
 if (!$userId) {
     jsonResponse(['success' => false, 'message' => 'Kullanıcı ID gereklidir'], 400);
 }
-$stmt = $conn->prepare("SELECT id, username, email, bio, avatar_url FROM users WHERE id = ?");
-$stmt->bind_param("i", $userId);
-$stmt->execute();
-$user = $stmt->get_result()->fetch_assoc();
+$userId = (int)$userId;
+
+$user = $db->users->findOne(['_id' => $userId]);
 
 if (!$user) {
     jsonResponse(['success' => false, 'message' => 'Kullanıcı bulunamadı'], 404);
 }
-$stmt = $conn->prepare("
-    SELECT COUNT(*) as count FROM user_movie_status 
-    WHERE user_id = ? AND status = 'watched'
-");
-$stmt->bind_param("i", $userId);
-$stmt->execute();
-$movies = $stmt->get_result()->fetch_assoc();
-$stmt = $conn->prepare("
-    SELECT COUNT(*) as count FROM user_book_status 
-    WHERE user_id = ? AND status = 'read'
-");
-$stmt->bind_param("i", $userId);
-$stmt->execute();
-$books = $stmt->get_result()->fetch_assoc();
-$stmt = $conn->prepare("SELECT COUNT(*) as count FROM follows WHERE following_id = ?");
-$stmt->bind_param("i", $userId);
-$stmt->execute();
-$followers = $stmt->get_result()->fetch_assoc();
-$stmt = $conn->prepare("SELECT COUNT(*) as count FROM follows WHERE follower_id = ?");
-$stmt->bind_param("i", $userId);
-$stmt->execute();
-$following = $stmt->get_result()->fetch_assoc();
 
 $stats = [
-    'movies_watched' => $movies['count'] ?? 0,
-    'books_read' => $books['count'] ?? 0,
-    'followers' => $followers['count'] ?? 0,
-    'following' => $following['count'] ?? 0
+    'movies_watched' => $db->user_movie_status->countDocuments(['user_id' => $userId, 'status' => 'watched']),
+    'books_read' => $db->user_book_status->countDocuments(['user_id' => $userId, 'status' => 'read']),
+    'followers' => $db->follows->countDocuments(['following_id' => $userId]),
+    'following' => $db->follows->countDocuments(['follower_id' => $userId])
 ];
 
 jsonResponse([
     'success' => true,
-    'user' => $user,
+    'user' => [
+        'id' => $user->_id,
+        'username' => $user->username,
+        'email' => $user->email,
+        'bio' => $user->bio,
+        'avatar_url' => $user->avatar_url
+    ],
     'stats' => $stats
 ]);
 ?>

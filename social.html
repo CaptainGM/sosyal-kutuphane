@@ -425,7 +425,7 @@
                     html += `
                         <div class="user-card">
                             <div class="user-info" onclick="window.location.href='user-profile.html?id=${user.id}'" style="cursor: pointer;">
-                                <h4>${user.username}</h4>
+                                <h4>${app.escapeHtml(user.username)}</h4>
                             </div>
                             <button class="follow-btn ${isFollowing ? 'followed' : ''}" 
                                     onclick="event.stopPropagation(); toggleFollow(${user.id})">
@@ -449,13 +449,15 @@
                 if (isFollowing) {
                     await fetch('/api/follow.php', {
                         method: 'DELETE',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: app.authHeaders(),
+                        credentials: 'include',
                         body: JSON.stringify({ target_user_id: targetUserId })
                     });
                 } else {
                     await fetch('/api/follow.php', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: app.authHeaders(),
+                        credentials: 'include',
                         body: JSON.stringify({ target_user_id: targetUserId })
                     });
                 }
@@ -524,10 +526,10 @@
                 html += `
                     <div class="comment-item">
                         <div class="comment-header">
-                            <span class="comment-author">👤 ${activity.username}</span>
+                            <span class="comment-author">👤 ${app.escapeHtml(activity.username)}</span>
                             <span class="comment-date">${app.formatDate(activity.date)}</span>
                         </div>
-                        <div class="comment-text">${activity.text}</div>
+                        <div class="comment-text">${app.escapeHtml(activity.text)}</div>
                         <div class="comment-actions">
                             <button class="action-btn" onclick="likeFeedItem(${idx})">
                                 ❤️ Beğen (${activity.likes})
@@ -577,14 +579,14 @@
 
             let html = '';
             comments.forEach((comment, idx) => {
-                const text = comment.text || '';
+                const text = app.escapeHtml(comment.text || '');
                 const isLong = text.length > 200;
                 const truncatedClass = isLong ? 'truncated' : '';
 
                 html += `
                     <div class="comment-item">
                         <div class="comment-header">
-                            <span class="comment-author">👤 ${comment.username}</span>
+                            <span class="comment-author">👤 ${app.escapeHtml(comment.username)}</span>
                         </div>
                         <div class="comment-text ${truncatedClass}" id="comment-text-${idx}">"${text}"</div>
                         ${isLong ? `<button class="show-more-btn" onclick="toggleCommentText(${idx})">Daha fazla göster</button>` : ''}
@@ -636,14 +638,15 @@
 
                 let html = '<div class="following-list">';
                 for (const user of following) {
-                    const avatarLetter = user.username.charAt(0).toUpperCase();
+                    const safeUsername = app.escapeHtml(user.username);
+                    const avatarLetter = safeUsername.charAt(0).toUpperCase();
                     const avatar = user.avatar_url || user.avatar;
 
                     let avatarContent;
                     if (avatar && avatar.startsWith('http')) {
-                        avatarContent = `<img src="${avatar}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                        avatarContent = `<img src="${app.escapeHtml(avatar)}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
                     } else if (avatar && avatar.trim() !== '') {
-                        avatarContent = `<span style="font-size: 36px;">${avatar}</span>`;
+                        avatarContent = `<span style="font-size: 36px;">${app.escapeHtml(avatar)}</span>`;
                     } else {
                         avatarContent = avatarLetter;
                     }
@@ -651,7 +654,7 @@
                     html += `
                         <div class="following-card">
                             <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: bold; margin: 0 auto 10px; overflow: hidden;">${avatarContent}</div>
-                            <h4 style="cursor: pointer; color: #667eea;" onclick="goToUserProfile(${user.id})">${user.username}</h4>
+                            <h4 style="cursor: pointer; color: #667eea;" onclick="goToUserProfile(${user.id})">${safeUsername}</h4>
                             <button class="unfollow-btn" onclick="toggleFollow(${user.id})">
                                 Takibi Bırak
                             </button>

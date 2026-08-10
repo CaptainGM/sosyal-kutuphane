@@ -17,35 +17,24 @@ if (empty($password) || strlen($password) < 6) {
     jsonResponse(['success' => false, 'message' => 'Şifre en az 6 karakter olmalıdır!'], 400);
 }
 
-$stmt = $conn->prepare("SELECT email, expires_at FROM password_resets WHERE token = ?");
-$stmt->bind_param("s", $token);
-$stmt->execute();
-$result = $stmt->get_result();
-$reset = $result->fetch_assoc();
+$reset = $db->password_resets->findOne(['token' => $token]);
 
 if (!$reset) {
     jsonResponse(['success' => false, 'message' => 'Geçersiz veya kullanılmış token!'], 400);
 }
 
-if (strtotime($reset['expires_at']) < time()) {
-    $stmt = $conn->prepare("DELETE FROM password_resets WHERE token = ?");
-    $stmt->bind_param("s", $token);
-    $stmt->execute();
+if ($reset->expires_at->toDateTime()->getTimestamp() < time()) {
+    $db->password_resets->deleteOne(['token' => $token]);
     jsonResponse(['success' => false, 'message' => 'Token süresi dolmuş! Lütfen yeni bir sıfırlama talebi oluşturun.'], 400);
 }
 
-$email = $reset['email'];
+$email = $reset->email;
 
-$stmt = $conn->prepare("UPDATE users SET password = ? WHERE email = ?");
-$stmt->bind_param("ss", $password, $email);
+$db->users->updateOne(
+    ['email' => $email],
+    ['$set' => ['password' => password_hash($password, PASSWORD_DEFAULT), 'updated_at' => new MongoDB\BSON\UTCDateTime()]]
+);
+$db->password_resets->deleteMany(['email' => $email]);
 
-if ($stmt->execute()) {
-    $stmt = $conn->prepare("DELETE FROM password_resets WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    
-    jsonResponse(['success' => true, 'message' => 'Şifreniz başarıyla güncellendi!']);
-} else {
-    jsonResponse(['success' => false, 'message' => 'Şifre güncellenirken hata oluştu!'], 500);
-}
+jsonResponse(['success' => true, 'message' => 'Şifreniz başarıyla güncellendi!']);
 ?>

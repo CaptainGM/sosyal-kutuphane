@@ -532,6 +532,9 @@
 
             activities.forEach((activity, idx) => {
                 const avatarContent = getAvatarContent(activity.avatar, activity.username);
+                const safeUsername = app.escapeHtml(activity.username);
+                const safeContentTitle = app.escapeHtml(activity.contentTitle);
+                const safeCommentText = app.escapeHtml(activity.commentText);
                 const timeAgo = getTimeAgo(activity.date);
                 const actionText = getActionText(activity);
                 const typeBadge = activity.contentType === 'movie'
@@ -552,20 +555,20 @@
                                 ${avatarContent}
                             </div>
                             <div class="header-info">
-                                <span class="username-link" onclick="goToUserProfile(${activity.userId})">${activity.username}</span>
+                                <span class="username-link" onclick="goToUserProfile(${activity.userId})">${safeUsername}</span>
                                 <div class="action-text">${actionText}</div>
                                 <div class="activity-date">${timeAgo}</div>
                             </div>
                         </div>
-                        
-                        
+
+
                         <div class="activity-body" onclick="goToDetail('${activity.contentType}', '${activity.contentId}')">
-                            <img class="content-poster" src="${posterUrl}" alt="${activity.contentTitle}" onerror="this.src='https://placehold.co/100x150?text=Resim+Yok'">
+                            <img class="content-poster" src="${posterUrl}" alt="${safeContentTitle}" onerror="this.src='https://placehold.co/100x150?text=Resim+Yok'">
                             <div class="content-info">
                                 ${typeBadge}
-                                <div class="content-title">${activity.contentTitle}</div>
+                                <div class="content-title">${safeContentTitle}</div>
                                 ${activity.rating ? `<div class="rating-display">⭐ ${activity.rating}/10 puan verdi</div>` : ''}
-                                ${activity.commentText ? `<div class="comment-preview">"${activity.commentText.substring(0, 150)}${activity.commentText.length > 150 ? '...' : ''}"<br><a href="detail.html?type=${activity.contentType}&id=${activity.contentId}" style="color:#667eea;">daha fazlasını oku</a></div>` : ''}
+                                ${activity.commentText ? `<div class="comment-preview">"${safeCommentText.substring(0, 150)}${safeCommentText.length > 150 ? '...' : ''}"<br><a href="detail.html?type=${activity.contentType}&id=${activity.contentId}" style="color:#667eea;">daha fazlasını oku</a></div>` : ''}
                             </div>
                         </div>
                         
@@ -613,27 +616,31 @@
         }
 
         function getAvatarContent(avatar, username) {
+            const safeUsername = app.escapeHtml(username);
             if (avatar && avatar.startsWith('http')) {
-                return `<img src="${avatar}" alt="${username}">`;
+                return `<img src="${app.escapeHtml(avatar)}" alt="${safeUsername}">`;
             } else if (avatar && avatar.trim() !== '') {
-                return `<span style="font-size: 28px;">${avatar}</span>`;
+                // avatar_url artık sunucu tarafında yalnızca http(s) URL olarak doğrulanıyor
+                // (bkz. api/user-profile.php); buraya düşen serbest metin/emoji kısmını da kaçışlıyoruz.
+                return `<span style="font-size: 28px;">${app.escapeHtml(avatar)}</span>`;
             } else {
-                return username.charAt(0).toUpperCase();
+                return safeUsername.charAt(0).toUpperCase();
             }
         }
 
         function getActionText(activity) {
+            const title = app.escapeHtml(activity.contentTitle);
             switch (activity.type) {
                 case 'movie_watched':
                     return activity.rating
-                        ? `🎬 <strong>${activity.contentTitle}</strong> filmini oyladı`
-                        : `🎬 <strong>${activity.contentTitle}</strong> filmini izledi`;
+                        ? `🎬 <strong>${title}</strong> filmini oyladı`
+                        : `🎬 <strong>${title}</strong> filmini izledi`;
                 case 'book_read':
                     return activity.rating
-                        ? `📚 <strong>${activity.contentTitle}</strong> kitabını oyladı`
-                        : `📚 <strong>${activity.contentTitle}</strong> kitabını okudu`;
+                        ? `📚 <strong>${title}</strong> kitabını oyladı`
+                        : `📚 <strong>${title}</strong> kitabını okudu`;
                 case 'comment':
-                    return `💬 <strong>${activity.contentTitle}</strong> hakkında yorum yaptı`;
+                    return `💬 <strong>${title}</strong> hakkında yorum yaptı`;
                 default:
                     return 'bir aktivite gerçekleştirdi';
             }

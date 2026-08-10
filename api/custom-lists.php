@@ -1,102 +1,106 @@
 <?php
 require_once 'config.php';
-
-header('Content-Type: application/json');
-error_reporting(E_ALL);
-ini_set('display_errors', 0);
-
-try {
-    requireLogin();
-} catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => 'Giriş yapmalısınız']);
-    exit;
-}
+requireLogin();
 
 $method = $_SERVER['REQUEST_METHOD'];
 $input = json_decode(file_get_contents('php://input'), true);
-$userId = getCurrentUserId();
-
-if (!$userId) {
-    echo json_encode(['success' => false, 'message' => 'Kullanıcı bulunamadı']);
-    exit;
-}
+$userId = (int)getCurrentUserId();
 
 if ($method === 'GET') {
     $listId = $_GET['id'] ?? null;
 
     if ($listId) {
-        $stmt = $conn->prepare("SELECT id, name, description, created_at, updated_at FROM custom_lists WHERE id = ? AND user_id = ?");
-        if (!$stmt) {
-            echo json_encode(['success' => false, 'message' => 'SQL hatası: ' . $conn->error]);
-            exit;
-        }
-        $stmt->bind_param("ii", $listId, $userId);
-        $stmt->execute();
-        $list = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
+        $listId = (int)$listId;
+        $list = $db->custom_lists->findOne(['_id' => $listId, 'user_id' => $userId]);
 
         if (!$list) {
-            echo json_encode(['success' => false, 'message' => 'Liste bulunamadı']);
-            exit;
+            jsonResponse(['success' => false, 'message' => 'Liste bulunamadı']);
         }
 
-        $stmt = $conn->prepare("SELECT id, content_type, content_id, content_title, added_at FROM custom_list_items WHERE list_id = ? ORDER BY added_at DESC");
-        $stmt->bind_param("i", $listId);
-        $stmt->execute();
-        $items = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-        $stmt->close();
+        $items = iterator_to_array(
+            $db->custom_list_items->find(['list_id' => $listId], ['sort' => ['added_at' => -1]]),
+            false
+        );
 
-        $list['items'] = $items;
-        echo json_encode(['success' => true, 'list' => $list]);
+        $itemRows = [];
+        foreach ($items as $item) {
+            $itemRows[] = [
+                'id' => $item->_id,
+                'content_type' => $item->content_type,
+                'content_id' => $item->content_id,
+                'content_title' => $item->content_title,
+                'added_at' => $item->added_at->toDateTime()->format('Y-m-d H:i:s'),
+            ];
+        }
+
+        $listRow = [
+            'id' => $list->_id,
+            'name' => $list->name,
+            'description' => $list->description,
+            'created_at' => $list->created_at->toDateTime()->format('Y-m-d H:i:s'),
+            'updated_at' => $list->updated_at->toDateTime()->format('Y-m-d H:i:s'),
+            'items' => $itemRows,
+        ];
+
+        jsonResponse(['success' => true, 'list' => $listRow]);
     } else {
-        $stmt = $conn->prepare("SELECT id, name, description, created_at, updated_at FROM custom_lists WHERE user_id = ? ORDER BY updated_at DESC");
-        if (!$stmt) {
-            echo json_encode(['success' => false, 'message' => 'SQL hatası: ' . $conn->error]);
-            exit;
-        }
-        $stmt->bind_param("i", $userId);
-        $stmt->execute();
-        $lists = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-        $stmt->close();
+        $lists = iterator_to_array(
+            $db->custom_lists->find(['user_id' => $userId], ['sort' => ['updated_at' => -1]]),
+            false
+        );
 
-        foreach ($lists as &$list) {
-            $stmt = $conn->prepare("SELECT COUNT(*) as count FROM custom_list_items WHERE list_id = ?");
-            $stmt->bind_param("i", $list['id']);
-            $stmt->execute();
-            $count = $stmt->get_result()->fetch_assoc();
-            $list['item_count'] = $count['count'];
-            $stmt->close();
+        $listIds = [];
+        foreach ($lists as $list) {
+            $listIds[] = $list->_id;
         }
 
-        echo json_encode(['success' => true, 'lists' => $lists]);
+        $itemCounts = [];
+        if ($listIds) {
+            foreach ($db->custom_list_items->find(['list_id' => ['$in' => $listIds]], ['projection' => ['list_id' => 1]]) as $item) {
+                $itemCounts[$item->list_id] = ($itemCounts[$item->list_id] ?? 0) + 1;
+            }
+        }
+
+        $listRows = [];
+        foreach ($lists as $list) {
+            $listRows[] = [
+                'id' => $list->_id,
+                'name' => $list->name,
+                'description' => $list->description,
+                'created_at' => $list->created_at->toDateTime()->format('Y-m-d H:i:s'),
+                'updated_at' => $list->updated_at->toDateTime()->format('Y-m-d H:i:s'),
+                'item_count' => $itemCounts[$list->_id] ?? 0,
+            ];
+        }
+
+        jsonResponse(['success' => true, 'lists' => $listRows]);
     }
 
 } elseif ($method === 'POST') {
+    requireCsrf();
     $action = $input['action'] ?? 'create';
-    
+
     if ($action === 'create') {
         $name = $input['name'] ?? null;
         $description = $input['description'] ?? '';
 
         if (!$name || empty(trim($name))) {
-            echo json_encode(['success' => false, 'message' => 'Liste adı gereklidir']);
-            exit;
+            jsonResponse(['success' => false, 'message' => 'Liste adı gereklidir']);
         }
 
-        $stmt = $conn->prepare("INSERT INTO custom_lists (user_id, name, description) VALUES (?, ?, ?)");
-        if (!$stmt) {
-            echo json_encode(['success' => false, 'message' => 'SQL hatası: ' . $conn->error]);
-            exit;
-        }
-        $stmt->bind_param("iss", $userId, $name, $description);
+        $listId = nextSequence($db, 'custom_lists');
+        $now = new MongoDB\BSON\UTCDateTime();
+        $db->custom_lists->insertOne([
+            '_id' => $listId,
+            'user_id' => $userId,
+            'name' => $name,
+            'description' => $description,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
 
-        if ($stmt->execute()) {
-            $listId = $stmt->insert_id;
-            $stmt->close();
-            echo json_encode(['success' => true, 'message' => 'Liste oluşturuldu', 'list_id' => $listId]);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Liste oluşturulamadı: ' . $stmt->error]);
-        }
+        jsonResponse(['success' => true, 'message' => 'Liste oluşturuldu', 'list_id' => $listId]);
+
     } elseif ($action === 'add_item') {
         $listId = $input['list_id'] ?? null;
         $contentType = $input['content_type'] ?? null;
@@ -104,82 +108,87 @@ if ($method === 'GET') {
         $contentTitle = $input['content_title'] ?? '';
 
         if (!$listId || !$contentType || !$contentId) {
-            echo json_encode(['success' => false, 'message' => 'Gerekli alanlar eksik']);
-            exit;
+            jsonResponse(['success' => false, 'message' => 'Gerekli alanlar eksik']);
+        }
+        $listId = (int)$listId;
+        // custom_list_items.content_id şemada VARCHAR(255) — eski koddaki "s" bind ile aynı tipte tut.
+        $contentId = (string)$contentId;
+
+        $listOwner = $db->custom_lists->findOne(['_id' => $listId]);
+
+        if (!$listOwner || $listOwner->user_id != $userId) {
+            jsonResponse(['success' => false, 'message' => 'Bu listeye erişim yetkiniz yok']);
         }
 
-        $stmt = $conn->prepare("SELECT user_id FROM custom_lists WHERE id = ?");
-        $stmt->bind_param("i", $listId);
-        $stmt->execute();
-        $listOwner = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
+        $db->custom_list_items->updateOne(
+            ['list_id' => $listId, 'content_type' => $contentType, 'content_id' => $contentId],
+            [
+                '$set' => ['content_title' => $contentTitle],
+                '$setOnInsert' => [
+                    '_id' => nextSequence($db, 'custom_list_items'),
+                    'list_id' => $listId,
+                    'content_type' => $contentType,
+                    'content_id' => $contentId,
+                    'added_at' => new MongoDB\BSON\UTCDateTime(),
+                ],
+            ],
+            ['upsert' => true]
+        );
 
-        if (!$listOwner || $listOwner['user_id'] != $userId) {
-            echo json_encode(['success' => false, 'message' => 'Bu listeye erişim yetkiniz yok']);
-            exit;
-        }
+        $db->custom_lists->updateOne(['_id' => $listId], ['$set' => ['updated_at' => new MongoDB\BSON\UTCDateTime()]]);
 
-        $stmt = $conn->prepare("INSERT INTO custom_list_items (list_id, content_type, content_id, content_title) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE content_title = VALUES(content_title)");
-        $stmt->bind_param("isss", $listId, $contentType, $contentId, $contentTitle);
-
-        if ($stmt->execute()) {
-            $stmt->close();
-            $conn->query("UPDATE custom_lists SET updated_at = CURRENT_TIMESTAMP WHERE id = $listId");
-            echo json_encode(['success' => true, 'message' => 'Öğe listeye eklendi']);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Öğe eklenirken hata oluştu']);
-        }
+        jsonResponse(['success' => true, 'message' => 'Öğe listeye eklendi']);
     }
 
 } elseif ($method === 'PUT') {
+    requireCsrf();
     $listId = $input['id'] ?? null;
     $name = $input['name'] ?? null;
     $description = $input['description'] ?? '';
 
     if (!$listId || !$name) {
-        echo json_encode(['success' => false, 'message' => 'Gerekli alanlar eksik']);
-        exit;
+        jsonResponse(['success' => false, 'message' => 'Gerekli alanlar eksik']);
     }
+    $listId = (int)$listId;
 
-    $stmt = $conn->prepare("UPDATE custom_lists SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?");
-    $stmt->bind_param("ssii", $name, $description, $listId, $userId);
+    $db->custom_lists->updateOne(
+        ['_id' => $listId, 'user_id' => $userId],
+        ['$set' => ['name' => $name, 'description' => $description, 'updated_at' => new MongoDB\BSON\UTCDateTime()]]
+    );
 
-    if ($stmt->execute()) {
-        $stmt->close();
-        echo json_encode(['success' => true, 'message' => 'Liste güncellendi']);
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Liste güncellenirken hata oluştu']);
-    }
+    jsonResponse(['success' => true, 'message' => 'Liste güncellendi']);
 
 } elseif ($method === 'DELETE') {
+    requireCsrf();
     $listId = $input['list_id'] ?? null;
     $itemId = $input['item_id'] ?? null;
 
     if (!$listId) {
-        echo json_encode(['success' => false, 'message' => 'Liste ID gereklidir']);
-        exit;
+        jsonResponse(['success' => false, 'message' => 'Liste ID gereklidir']);
     }
+    $listId = (int)$listId;
 
     if ($itemId) {
-        $stmt = $conn->prepare("DELETE FROM custom_list_items WHERE id = ? AND list_id = ?");
-        $stmt->bind_param("ii", $itemId, $listId);
-        if ($stmt->execute()) {
-            $stmt->close();
-            echo json_encode(['success' => true, 'message' => 'Öğe listeden çıkarıldı']);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Öğe silinirken hata oluştu']);
+        $itemId = (int)$itemId;
+        // Öğe, gerçekten kullanıcının sahip olduğu bir listeye ait mi kontrol et
+        // (eski koddaki eksik bir yetki kontrolüydü — herkes başkasının liste öğesini silebiliyordu).
+        $listOwner = $db->custom_lists->findOne(['_id' => $listId, 'user_id' => $userId]);
+        if (!$listOwner) {
+            jsonResponse(['success' => false, 'message' => 'Bu listeye erişim yetkiniz yok'], 403);
         }
+        $db->custom_list_items->deleteOne(['_id' => $itemId, 'list_id' => $listId]);
+        jsonResponse(['success' => true, 'message' => 'Öğe listeden çıkarıldı']);
     } else {
-        $stmt = $conn->prepare("DELETE FROM custom_lists WHERE id = ? AND user_id = ?");
-        $stmt->bind_param("ii", $listId, $userId);
-        if ($stmt->execute()) {
-            $stmt->close();
-            echo json_encode(['success' => true, 'message' => 'Liste silindi']);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Liste silinirken hata oluştu']);
+        // Eski MySQL şemasında custom_list_items -> custom_lists ON DELETE CASCADE vardı, Mongo'da yok.
+        // Yalnızca liste gerçekten silindiyse (yani gerçekten sahibiyse) öğeleri de temizle;
+        // aksi halde başka bir kullanıcının liste öğelerini yanlışlıkla silmiş oluruz.
+        $deleteResult = $db->custom_lists->deleteOne(['_id' => $listId, 'user_id' => $userId]);
+        if ($deleteResult->getDeletedCount() > 0) {
+            $db->custom_list_items->deleteMany(['list_id' => $listId]);
         }
+        jsonResponse(['success' => true, 'message' => 'Liste silindi']);
     }
 } else {
-    echo json_encode(['success' => false, 'message' => 'Geçersiz istek yöntemi']);
+    jsonResponse(['success' => false, 'message' => 'Geçersiz istek yöntemi']);
 }
-
+?>

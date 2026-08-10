@@ -1,21 +1,19 @@
 <?php
 require_once 'config.php';
 
-header('Content-Type: application/json');
-
 $type = $_GET['type'] ?? 'movie';
 $sortBy = $_GET['sort'] ?? 'comments';
 $limit = min((int)($_GET['limit'] ?? 10), 50);
 
 if ($type === 'movie') {
-    $contentTable = 'movies';
-    $statusTable = 'user_movie_status';
+    $contentCollectionName = 'movies';
+    $statusCollectionName = 'user_movie_status';
     $contentIdCol = 'movie_id';
     $externalIdCol = 'tmdb_id';
     $imageCol = 'poster_path';
 } elseif ($type === 'book') {
-    $contentTable = 'books';
-    $statusTable = 'user_book_status';
+    $contentCollectionName = 'books';
+    $statusCollectionName = 'user_book_status';
     $contentIdCol = 'book_id';
     $externalIdCol = 'google_books_id';
     $imageCol = 'cover_url';
@@ -23,64 +21,96 @@ if ($type === 'movie') {
     jsonResponse(['success' => false, 'message' => 'Geçersiz içerik türü'], 400);
 }
 
+$contentCollection = $db->$contentCollectionName;
+$statusCollection = $db->$statusCollectionName;
+
 $results = [];
 
 try {
-    if ($sortBy === 'comments') {
-        $sql = "
-            SELECT 
-                c.$externalIdCol as external_id,
-                c.title,
-                c.$imageCol as image_url,
-                COUNT(cm.id) as comment_count
-            FROM $contentTable c
-            INNER JOIN comments cm ON cm.content_type = ? AND cm.content_id = c.$externalIdCol
-            GROUP BY c.id
-            ORDER BY comment_count DESC
-            LIMIT ?
-        ";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("si", $type, $limit);
-        $stmt->execute();
-        $results = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    if ($limit > 0 && $sortBy === 'comments') {
+        $grouped = $db->comments->aggregate([
+            ['$match' => ['content_type' => $type]],
+            ['$group' => ['_id' => '$content_id', 'comment_count' => ['$sum' => 1]]],
+            ['$sort' => ['comment_count' => -1]],
+            ['$limit' => $limit],
+        ])->toArray();
 
-    } elseif ($sortBy === 'lists') {
-        $sql = "
-            SELECT 
-                c.$externalIdCol as external_id,
-                c.title,
-                c.$imageCol as image_url,
-                COUNT(s.id) as list_count
-            FROM $contentTable c
-            INNER JOIN $statusTable s ON s.$contentIdCol = c.id
-            GROUP BY c.id
-            ORDER BY list_count DESC
-            LIMIT ?
-        ";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $limit);
-        $stmt->execute();
-        $results = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $extIds = array_map(fn($g) => $g->_id, $grouped);
+        $docs = iterator_to_array($contentCollection->find([$externalIdCol => ['$in' => $extIds]]));
+        $docMap = [];
+        foreach ($docs as $d) {
+            $docMap[(string)$d->$externalIdCol] = $d;
+        }
 
-    } elseif ($sortBy === 'ratings') {
-        $sql = "
-            SELECT 
-                c.$externalIdCol as external_id,
-                c.title,
-                c.$imageCol as image_url,
-                AVG(s.rating) as avg_rating,
-                COUNT(s.rating) as vote_count
-            FROM $contentTable c
-            INNER JOIN $statusTable s ON s.$contentIdCol = c.id AND s.rating IS NOT NULL AND s.rating > 0
-            GROUP BY c.id
-            HAVING vote_count >= 1
-            ORDER BY avg_rating DESC, vote_count DESC
-            LIMIT ?
-        ";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $limit);
-        $stmt->execute();
-        $results = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        foreach ($grouped as $g) {
+            $d = $docMap[(string)$g->_id] ?? null;
+            if (!$d) {
+                continue;
+            }
+            $results[] = [
+                'external_id' => $d->$externalIdCol,
+                'title' => $d->title,
+                'image_url' => $d->$imageCol ?? null,
+                'comment_count' => (int)$g->comment_count,
+            ];
+        }
+
+    } elseif ($limit > 0 && $sortBy === 'lists') {
+        $grouped = $statusCollection->aggregate([
+            ['$group' => ['_id' => '$' . $contentIdCol, 'list_count' => ['$sum' => 1]]],
+            ['$sort' => ['list_count' => -1]],
+            ['$limit' => $limit],
+        ])->toArray();
+
+        $ids = array_map(fn($g) => $g->_id, $grouped);
+        $docs = iterator_to_array($contentCollection->find(['_id' => ['$in' => $ids]]));
+        $docMap = [];
+        foreach ($docs as $d) {
+            $docMap[$d->_id] = $d;
+        }
+
+        foreach ($grouped as $g) {
+            $d = $docMap[$g->_id] ?? null;
+            if (!$d) {
+                continue;
+            }
+            $results[] = [
+                'external_id' => $d->$externalIdCol,
+                'title' => $d->title,
+                'image_url' => $d->$imageCol ?? null,
+                'list_count' => (int)$g->list_count,
+            ];
+        }
+
+    } elseif ($limit > 0 && $sortBy === 'ratings') {
+        $grouped = $statusCollection->aggregate([
+            ['$match' => ['rating' => ['$gt' => 0]]],
+            ['$group' => ['_id' => '$' . $contentIdCol, 'avg_rating' => ['$avg' => '$rating'], 'vote_count' => ['$sum' => 1]]],
+            ['$match' => ['vote_count' => ['$gte' => 1]]],
+            ['$sort' => ['avg_rating' => -1, 'vote_count' => -1]],
+            ['$limit' => $limit],
+        ])->toArray();
+
+        $ids = array_map(fn($g) => $g->_id, $grouped);
+        $docs = iterator_to_array($contentCollection->find(['_id' => ['$in' => $ids]]));
+        $docMap = [];
+        foreach ($docs as $d) {
+            $docMap[$d->_id] = $d;
+        }
+
+        foreach ($grouped as $g) {
+            $d = $docMap[$g->_id] ?? null;
+            if (!$d) {
+                continue;
+            }
+            $results[] = [
+                'external_id' => $d->$externalIdCol,
+                'title' => $d->title,
+                'image_url' => $d->$imageCol ?? null,
+                'avg_rating' => (float)$g->avg_rating,
+                'vote_count' => (int)$g->vote_count,
+            ];
+        }
     }
 } catch (Exception $e) {
     jsonResponse(['success' => false, 'message' => 'Veritabanı hatası: ' . $e->getMessage()], 500);
@@ -93,13 +123,13 @@ foreach ($results as $row) {
         'title' => $row['title'],
         'type' => $type
     ];
-    
+
     if ($type === 'movie') {
         $item['poster_path'] = $row['image_url'];
     } else {
         $item['cover_url'] = $row['image_url'];
     }
-    
+
     if (isset($row['comment_count'])) {
         $item['comment_count'] = (int)$row['comment_count'];
     }
@@ -110,7 +140,7 @@ foreach ($results as $row) {
         $item['avg_rating'] = round((float)$row['avg_rating'], 1);
         $item['vote_count'] = (int)$row['vote_count'];
     }
-    
+
     $formattedResults[] = $item;
 }
 

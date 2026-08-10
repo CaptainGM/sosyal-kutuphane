@@ -14,10 +14,17 @@ if (empty($username) || empty($email) || empty($password)) {
     ], 400);
 }
 
-if (strlen($username) < 3) {
+if (strlen($username) < 3 || strlen($username) > 30) {
     jsonResponse([
         'success' => false,
-        'message' => 'Kullanıcı adı en az 3 karakter olmalıdır!'
+        'message' => 'Kullanıcı adı 3-30 karakter olmalıdır!'
+    ], 400);
+}
+
+if (!preg_match('/^[\p{L}0-9_.]+$/u', $username)) {
+    jsonResponse([
+        'success' => false,
+        'message' => 'Kullanıcı adı yalnızca harf, rakam, alt çizgi ve nokta içerebilir!'
     ], 400);
 }
 
@@ -34,51 +41,45 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         'message' => 'Geçerli bir e-posta adresi giriniz!'
     ], 400);
 }
-$stmt = $conn->prepare("SELECT id FROM users WHERE email = ? OR username = ?");
-$stmt->bind_param("ss", $email, $username);
-$stmt->execute();
-$result = $stmt->get_result();
 
-if ($result->num_rows > 0) {
-    $existingUser = $result->fetch_assoc();
-    $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    
-    if ($stmt->get_result()->num_rows > 0) {
-        jsonResponse([
-            'success' => false,
-            'message' => 'Bu e-posta adresi zaten kullanımda!'
-        ], 400);
-    } else {
-        jsonResponse([
-            'success' => false,
-            'message' => 'Bu kullanıcı adı zaten alınmış!'
-        ], 400);
-    }
-}
-$stmt = $conn->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
-$stmt->bind_param("sss", $username, $email, $password);
-
-if ($stmt->execute()) {
-    $newUserId = $conn->insert_id;
-    $_SESSION['user_id'] = $newUserId;
-    $_SESSION['username'] = $username;
-    $_SESSION['email'] = $email;
-    
-    jsonResponse([
-        'success' => true,
-        'message' => 'Kayıt başarılı!',
-        'user' => [
-            'id' => $newUserId,
-            'username' => $username,
-            'email' => $email
-        ]
-    ], 201);
-} else {
+if ($db->users->findOne(['email' => $email])) {
     jsonResponse([
         'success' => false,
-        'message' => 'Kayıt sırasında bir hata oluştu!'
-    ], 500);
+        'message' => 'Bu e-posta adresi zaten kullanımda!'
+    ], 400);
 }
+
+if ($db->users->findOne(['username' => $username])) {
+    jsonResponse([
+        'success' => false,
+        'message' => 'Bu kullanıcı adı zaten alınmış!'
+    ], 400);
+}
+
+$newUserId = nextSequence($db, 'users');
+$db->users->insertOne([
+    '_id' => $newUserId,
+    'username' => $username,
+    'email' => $email,
+    'password' => password_hash($password, PASSWORD_DEFAULT),
+    'bio' => null,
+    'avatar_url' => null,
+    'created_at' => new MongoDB\BSON\UTCDateTime(),
+    'updated_at' => new MongoDB\BSON\UTCDateTime(),
+]);
+
+$_SESSION['user_id'] = $newUserId;
+$_SESSION['username'] = $username;
+$_SESSION['email'] = $email;
+
+jsonResponse([
+    'success' => true,
+    'message' => 'Kayıt başarılı!',
+    'user' => [
+        'id' => $newUserId,
+        'username' => $username,
+        'email' => $email
+    ],
+    'csrf_token' => csrfToken()
+], 201);
 ?>

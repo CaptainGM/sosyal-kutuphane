@@ -2,19 +2,28 @@
 require_once 'config.php';
 requireLogin();
 
-$currentUserId = getCurrentUserId();
-$stmt = $conn->prepare("
-    SELECT u.id, u.username, u.email, u.bio, u.avatar_url
-    FROM follows
-    JOIN users u ON follows.following_id = u.id
-    WHERE follows.follower_id = ?
-    ORDER BY u.username
-");
-$stmt->bind_param("i", $currentUserId);
-$stmt->execute();
-$result = $stmt->get_result();
-$following = $result->fetch_all(MYSQLI_ASSOC);
+$currentUserId = (int)getCurrentUserId();
+
+$follows = $db->follows->find(['follower_id' => $currentUserId]);
+$followingIds = [];
+foreach ($follows as $follow) {
+    $followingIds[] = $follow->following_id;
+}
+
+$following = [];
+if ($followingIds) {
+    $users = $db->users->find(['_id' => ['$in' => $followingIds]]);
+    foreach ($users as $user) {
+        $following[] = [
+            'id' => $user->_id,
+            'username' => $user->username,
+            'email' => $user->email,
+            'bio' => $user->bio ?? null,
+            'avatar_url' => $user->avatar_url ?? null,
+        ];
+    }
+    usort($following, fn($a, $b) => strcmp($a['username'], $b['username']));
+}
 
 jsonResponse(['success' => true, 'following' => $following]);
 ?>
-

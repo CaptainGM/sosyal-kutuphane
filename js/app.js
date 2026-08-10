@@ -22,15 +22,34 @@ class SocialLibraryApp {
 
             if (data.success && data.user) {
                 this.currentUser = data.user;
+                this.csrfToken = data.csrf_token || null;
                 console.log('✅ User logged in:', this.currentUser.username);
             } else {
                 this.currentUser = null;
+                this.csrfToken = null;
                 console.log('Not authenticated');
             }
         } catch (error) {
             console.error('Auth check failed:', error);
             this.currentUser = null;
+            this.csrfToken = null;
         }
+    }
+
+    // Durum değiştiren (POST/PUT/DELETE) isteklere eklenecek ortak başlıklar.
+    authHeaders(extra = {}) {
+        return { 'Content-Type': 'application/json', 'X-CSRF-Token': this.csrfToken || '', ...extra };
+    }
+
+    // Kullanıcıdan gelen metni innerHTML'e basmadan önce kaçış yapmak için kullan.
+    escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 
     async searchMovies(query, page = 1) {
@@ -132,7 +151,7 @@ class SocialLibraryApp {
         try {
             const response = await fetch(`${API_BASE_URL}/save-content-status.php`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: this.authHeaders(),
                 credentials: 'include',
                 body: JSON.stringify({
                     user_id: this.currentUser.id,
@@ -163,7 +182,7 @@ class SocialLibraryApp {
         try {
             const response = await fetch(`${API_BASE_URL}/comments.php`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: this.authHeaders(),
                 credentials: 'include',
                 body: JSON.stringify({
                     action: 'add',
@@ -192,7 +211,7 @@ class SocialLibraryApp {
         try {
             const response = await fetch(`${API_BASE_URL}/comments.php`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: this.authHeaders(),
                 credentials: 'include',
                 body: JSON.stringify({
                     action: 'delete',
@@ -217,7 +236,7 @@ class SocialLibraryApp {
         try {
             const response = await fetch(`${API_BASE_URL}/like-comment.php`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: this.authHeaders(),
                 credentials: 'include',
                 body: JSON.stringify({
                     comment_id: commentId,
@@ -254,11 +273,10 @@ class SocialLibraryApp {
         try {
             const response = await fetch(`${API_BASE_URL}/follow.php`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: this.authHeaders(),
                 credentials: 'include',
                 body: JSON.stringify({
-                    follower_id: this.currentUser.id,
-                    followed_id: targetUserId
+                    target_user_id: targetUserId
                 })
             });
 
@@ -274,13 +292,11 @@ class SocialLibraryApp {
 
         try {
             const response = await fetch(`${API_BASE_URL}/follow.php`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                method: 'DELETE',
+                headers: this.authHeaders(),
                 credentials: 'include',
                 body: JSON.stringify({
-                    action: 'unfollow',
-                    follower_id: this.currentUser.id,
-                    followed_id: targetUserId
+                    target_user_id: targetUserId
                 })
             });
 

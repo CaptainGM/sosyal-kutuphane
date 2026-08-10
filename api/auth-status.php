@@ -3,15 +3,22 @@ require_once 'config.php';
 
 if (isLoggedIn()) {
     $userId = $_SESSION['user_id'];
-    $stmt = $conn->prepare("SELECT id, username, email, bio, avatar_url FROM users WHERE id = ?");
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $user = $stmt->get_result()->fetch_assoc();
-    
+    $user = $db->users->findOne(
+        ['_id' => $userId],
+        ['projection' => ['username' => 1, 'email' => 1, 'bio' => 1, 'avatar_url' => 1]]
+    );
+
     if ($user) {
         jsonResponse([
             'success' => true,
-            'user' => $user
+            'user' => [
+                'id' => $user->_id,
+                'username' => $user->username,
+                'email' => $user->email,
+                'bio' => $user->bio ?? null,
+                'avatar_url' => $user->avatar_url ?? null,
+            ],
+            'csrf_token' => csrfToken()
         ]);
     } else {
         jsonResponse([
