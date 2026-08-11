@@ -22,6 +22,12 @@ function tmdbFetch(string $url) {
     return json_decode($response, true);
 }
 
+// TMDB hata yanıtları {"success":false,...} şeklinde döner — bunları önbelleğe
+// yazmıyoruz, yoksa geçici bir hata TTL süresince herkese aynı şekilde dönmeye devam eder.
+function isTmdbError($data) {
+    return isset($data['success']) && $data['success'] === false;
+}
+
 if ($endpoint === 'search') {
     $query = trim($_GET['query'] ?? '');
     $page = max(1, min(20, (int) ($_GET['page'] ?? 1)));
@@ -40,7 +46,9 @@ if ($endpoint === 'search') {
     if ($data === null) {
         jsonResponse(['results' => []]);
     }
-    cacheSet($db, $cacheKey, $data, 3600); // 1 saat — arama sonuçları sık değişmez
+    if (!isTmdbError($data)) {
+        cacheSet($db, $cacheKey, $data, 3600); // 1 saat — arama sonuçları sık değişmez
+    }
     jsonResponse($data);
 
 } elseif ($endpoint === 'detail') {
@@ -60,7 +68,9 @@ if ($endpoint === 'search') {
     if ($data === null) {
         jsonResponse(['success' => false, 'message' => 'İçerik alınamadı'], 502);
     }
-    cacheSet($db, $cacheKey, $data, 86400); // 24 saat — detay bilgisi nadiren değişir
+    if (!isTmdbError($data)) {
+        cacheSet($db, $cacheKey, $data, 86400); // 24 saat — detay bilgisi nadiren değişir
+    }
     jsonResponse($data);
 
 } elseif ($endpoint === 'list') {
@@ -81,7 +91,9 @@ if ($endpoint === 'search') {
     if ($data === null) {
         jsonResponse(['results' => []]);
     }
-    cacheSet($db, $cacheKey, $data, 21600); // 6 saat — popüler/en yüksek puanlı listeler yavaş değişir
+    if (!isTmdbError($data)) {
+        cacheSet($db, $cacheKey, $data, 21600); // 6 saat — popüler/en yüksek puanlı listeler yavaş değişir
+    }
     jsonResponse($data);
 
 } else {

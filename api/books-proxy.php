@@ -45,7 +45,11 @@ if ($action === 'search') {
     if ($data === null) {
         jsonResponse(['items' => []]);
     }
-    cacheSet($db, $cacheKey, $data, 3600); // 1 saat
+    // Google'ın geçici hata yanıtlarını (kota/503 vb.) önbelleğe yazmıyoruz —
+    // yoksa TTL süresince herkese aynı hata dönmeye devam eder.
+    if (!isset($data['error'])) {
+        cacheSet($db, $cacheKey, $data, 3600); // 1 saat
+    }
     jsonResponse($data);
 
 } elseif ($action === 'detail') {
@@ -65,7 +69,9 @@ if ($action === 'search') {
     if ($data === null) {
         jsonResponse(['success' => false, 'message' => 'Kitap alınamadı'], 502);
     }
-    cacheSet($db, $cacheKey, $data, 86400); // 24 saat
+    if (!isset($data['error'])) {
+        cacheSet($db, $cacheKey, $data, 86400); // 24 saat
+    }
     jsonResponse($data);
 
 } else {

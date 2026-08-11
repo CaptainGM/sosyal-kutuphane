@@ -107,14 +107,18 @@ PHP + MongoDB (`mongodb/mongodb` composer paketi) + vanilla HTML/CSS/JS. PHPMail
 
 ## 🧪 Testler
 
+**Dikkat:** Testler gerçek HTTP istekleriyle çalışan bir sunucuya karşı koşar. Eğer o sunucu `.env`'deki üretim `MONGO_URI`/`MONGO_DB`'yi (ör. Atlas) kullanıyorsa, testler **canlı veritabanını sahte kullanıcı/film/dizi kayıtlarıyla kirletir** (bir kez böyle oldu, temizlendi — bkz. `tests/bootstrap.php`'deki not). Bu yüzden testler için ayrı bir port + ayrı bir veritabanı adıyla ikinci bir sunucu başlatılmalı:
+
 ```bash
 composer install    # phpunit/phpunit dahil (dev bağımlılık)
-php -S localhost:8000 &
-vendor/bin/phpunit --testdox   # API entegrasyon testleri (çalışan sunucu + MongoDB gerektirir)
+MONGO_DB=social_library_test php -S localhost:8001 &
+TEST_BASE_URL=http://localhost:8001 vendor/bin/phpunit --testdox
 node --test tests/escape-html.test.mjs   # XSS-kaçış birim testleri
 ```
 
-`master`/`main`'e her push'ta ve her PR'da GitHub Actions aynı testleri kendi MongoDB servis konteynerine karşı otomatik çalıştırır (bkz. `.github/workflows/ci.yml`).
+(Windows PowerShell'de: `$env:MONGO_DB='social_library_test'; $env:TEST_BASE_URL='http://localhost:8001'` şeklinde ayrı satırlarda ayarlanır.) `social_library_test` veritabanı aynı cluster içinde otomatik oluşur, üretim verisiyle hiç karışmaz.
+
+`master`/`main`'e her push'ta ve her PR'da GitHub Actions aynı testleri kendi MongoDB servis konteynerine karşı otomatik çalıştırır (bkz. `.github/workflows/ci.yml`) — orada zaten izole bir konteyner olduğu için bu risk yok.
 
 ## ⚠️ Sorun Giderme
 
