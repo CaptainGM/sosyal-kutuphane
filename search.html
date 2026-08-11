@@ -55,12 +55,22 @@
             border-radius: 25px;
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.3s;
+            transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(var(--color-accent-rgb), 0.25);
+        }
+
+        .tab-btn:active {
+            transform: translateY(0) scale(0.98);
         }
 
         .tab-btn.active {
             background: var(--color-accent);
             color: white;
+            box-shadow: 0 4px 14px rgba(var(--color-accent-rgb), 0.4);
         }
 
         input[type="text"],
@@ -92,11 +102,18 @@
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s;
+            box-shadow: 0 3px 10px rgba(var(--color-accent-rgb), 0.35);
+            transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.15s ease;
         }
 
         button.search-btn:hover {
             transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(var(--color-accent-rgb), 0.45);
+        }
+
+        button.search-btn:active {
+            transform: translateY(0) scale(0.98);
+            filter: brightness(0.94);
         }
 
         /* ✅ DÜZELTME 4: Filtreleme alanları */
@@ -150,12 +167,22 @@
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.3s;
+            transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .sort-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(var(--color-accent-rgb), 0.25);
+        }
+
+        .sort-btn:active {
+            transform: translateY(0) scale(0.98);
         }
 
         .sort-btn.active {
             background: var(--color-accent);
             color: white;
+            box-shadow: 0 3px 10px rgba(var(--color-accent-rgb), 0.35);
         }
 
         /* ✅ Pagination */

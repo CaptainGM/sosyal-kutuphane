@@ -203,16 +203,22 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.3s;
+            transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
         }
 
         .action-btn.active {
             background: var(--color-accent);
             color: white;
+            box-shadow: 0 4px 14px rgba(var(--color-accent-rgb), 0.4);
         }
 
         .action-btn:hover {
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(var(--color-accent-rgb), 0.25);
+        }
+
+        .action-btn:active {
+            transform: translateY(0) scale(0.98);
         }
 
         .rating-input {
@@ -246,20 +252,26 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.15s ease;
             text-decoration: none;
             display: inline-block;
             text-align: center;
         }
 
+        .btn:active {
+            transform: translateY(0) scale(0.98);
+            filter: brightness(0.94);
+        }
+
         .btn-primary {
             background: var(--color-accent-gradient);
             color: white;
+            box-shadow: 0 3px 10px rgba(var(--color-accent-rgb), 0.35);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 18px rgba(var(--color-accent-rgb), 0.45);
         }
 
         .comments-section {
@@ -612,7 +624,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 
         .modal-btn-save:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(var(--color-accent-rgb), 0.4);
         }
     </style>
 </head>
@@ -654,7 +666,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                             <div class="rating-count" id="ratingCount">API Puanı</div>
                         </div>
                         <div class="platform-rating" id="userPlatformRating"
-                            style="margin-top: 10px; background: rgba(102, 126, 234, 0.3);">
+                            style="margin-top: 10px; background: rgba(var(--color-accent-rgb), 0.3);">
                             <div class="rating-score" id="userRatingScore">-/-</div>
                             <div class="rating-count" id="userRatingCount">👥 Kullanıcı Puanı</div>
                         </div>

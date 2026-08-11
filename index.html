@@ -91,7 +91,7 @@
         input:focus {
             outline: none;
             border-color: var(--color-accent);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb), 0.1);
         }
 
         button {
@@ -104,13 +104,19 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s;
+            box-shadow: 0 3px 10px rgba(var(--color-accent-rgb), 0.3);
+            transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.15s ease;
             margin-top: 10px;
         }
 
         button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 18px rgba(var(--color-accent-rgb), 0.4);
+        }
+
+        button:active {
+            transform: translateY(0) scale(0.98);
+            filter: brightness(0.94);
         }
 
         .switch-btn {

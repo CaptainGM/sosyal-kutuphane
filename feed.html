@@ -198,13 +198,17 @@
             gap: 6px;
             padding: 8px 15px;
             border-radius: 8px;
-            transition: all 0.3s;
+            transition: transform 0.1s ease, background-color 0.2s ease, color 0.2s ease;
             font-size: 14px;
         }
 
         .footer-btn:hover {
             background: var(--color-surface-2);
             color: var(--color-accent);
+        }
+
+        .footer-btn:active {
+            transform: scale(0.95);
         }
 
         .footer-btn.liked {
@@ -258,12 +262,18 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 3px 12px rgba(var(--color-accent-rgb), 0.35);
+            transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.15s ease;
         }
 
         .load-more-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 20px rgba(var(--color-accent-rgb), 0.45);
+        }
+
+        .load-more-btn:active {
+            transform: translateY(0) scale(0.98);
+            filter: brightness(0.94);
         }
 
         .load-more-btn:disabled {

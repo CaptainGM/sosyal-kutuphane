@@ -285,20 +285,26 @@
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.15s ease;
             text-decoration: none;
             display: inline-block;
             text-align: center;
         }
 
+        .btn:active {
+            transform: translateY(0) scale(0.98);
+            filter: brightness(0.94);
+        }
+
         .btn-primary {
             background: var(--color-accent-gradient);
             color: white;
+            box-shadow: 0 3px 10px rgba(var(--color-accent-rgb), 0.35);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 18px rgba(var(--color-accent-rgb), 0.45);
         }
 
         @media (max-width: 768px) {
