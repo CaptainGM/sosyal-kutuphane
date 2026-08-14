@@ -384,7 +384,15 @@
     <script>
         let displayedComments = [];
 
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', async function () {
+            if (typeof app !== 'undefined' && app.initPromise) {
+                await app.initPromise;
+            }
+            if (!app?.currentUser) {
+                window.location.href = 'index.html';
+                return;
+            }
+
             loadFeed();
             loadAllComments();
             loadFollowing();

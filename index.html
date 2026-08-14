@@ -272,7 +272,27 @@
             </form>
         </div>
 
-        
+        <div class="form-container" id="registerVerifyForm">
+            <h2>📧 E-postanı Doğrula</h2>
+            <p style="text-align:center;color:var(--color-text-muted);margin-bottom:20px;font-size:14px;">
+                <span id="registerVerifyEmailText">E-posta adresine</span> gönderdiğimiz 6 haneli kodu gir.
+            </p>
+
+            <div class="error-message" id="registerVerifyError"></div>
+            <div class="success-message" id="registerVerifySuccess"></div>
+
+            <form onsubmit="handleVerifyRegistration(event)">
+                <div class="form-group">
+                    <label for="registerVerifyCode">Kod</label>
+                    <input type="text" id="registerVerifyCode" placeholder="000000" autocomplete="one-time-code" required>
+                </div>
+                <button type="submit">Doğrula ve Hesabı Oluştur</button>
+                <button type="button" class="switch-btn" style="width: 100%; margin-top: 10px;"
+                    onclick="handleResendRegistrationCode()">Kodu Tekrar Gönder</button>
+            </form>
+        </div>
+
+
         <div class="form-container" id="forgotPasswordForm">
             <h2>🔑 Şifre Sıfırlama</h2>
 
@@ -312,38 +332,44 @@
     </div>
 
     <script>
-        function showRegister() {
-            document.getElementById('loginForm').classList.remove('active');
-            document.getElementById('registerForm').classList.add('active');
-            document.getElementById('forgotPasswordForm').classList.remove('active');
+        function hideAllForms() {
+            ['loginForm', 'registerForm', 'registerVerifyForm', 'forgotPasswordForm', 'twoFactorForm'].forEach(id => {
+                document.getElementById(id).classList.remove('active');
+            });
             document.getElementById('loginPanel').style.display = 'none';
+            document.getElementById('registerPanel').style.display = 'none';
+        }
+
+        function showRegister() {
+            hideAllForms();
+            document.getElementById('registerForm').classList.add('active');
             document.getElementById('registerPanel').style.display = 'block';
         }
 
         function showLogin() {
+            hideAllForms();
             document.getElementById('loginForm').classList.add('active');
-            document.getElementById('registerForm').classList.remove('active');
-            document.getElementById('forgotPasswordForm').classList.remove('active');
             document.getElementById('loginPanel').style.display = 'block';
-            document.getElementById('registerPanel').style.display = 'none';
         }
 
         function showForgotPassword() {
-            document.getElementById('loginForm').classList.remove('active');
-            document.getElementById('registerForm').classList.remove('active');
+            hideAllForms();
             document.getElementById('forgotPasswordForm').classList.add('active');
-            document.getElementById('loginPanel').style.display = 'none';
-            document.getElementById('registerPanel').style.display = 'none';
         }
 
         function showTwoFactor() {
-            document.getElementById('loginForm').classList.remove('active');
-            document.getElementById('registerForm').classList.remove('active');
-            document.getElementById('forgotPasswordForm').classList.remove('active');
+            hideAllForms();
             document.getElementById('twoFactorForm').classList.add('active');
-            document.getElementById('loginPanel').style.display = 'none';
-            document.getElementById('registerPanel').style.display = 'none';
             document.getElementById('twoFactorCode').focus();
+        }
+
+        let pendingRegisterEmail = '';
+        function showRegisterVerify(email) {
+            pendingRegisterEmail = email;
+            hideAllForms();
+            document.getElementById('registerVerifyEmailText').textContent = `${email} adresine`;
+            document.getElementById('registerVerifyForm').classList.add('active');
+            document.getElementById('registerVerifyCode').focus();
         }
 
         function showError(elementId, message) {
@@ -386,7 +412,9 @@
 
                 const data = await response.json();
 
-                if (data.success) {
+                if (data.success && data.pending_verification) {
+                    showRegisterVerify(data.email);
+                } else if (data.success) {
                     showSuccess('registerSuccess', 'Kayıt başarılı! Yönlendiriliyorsunuz...');
                     setTimeout(() => {
                         window.location.href = 'search.html';
@@ -396,6 +424,52 @@
                 }
             } catch (error) {
                 showError('registerError', 'Bağlantı hatası: ' + error.message);
+            }
+        }
+
+        async function handleVerifyRegistration(e) {
+            e.preventDefault();
+            const code = document.getElementById('registerVerifyCode').value.trim();
+
+            try {
+                const response = await fetch('/api/register.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ action: 'verify', email: pendingRegisterEmail, code })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccess('registerVerifySuccess', 'Hesabın oluşturuldu! Yönlendiriliyorsun...');
+                    setTimeout(() => {
+                        window.location.href = 'search.html';
+                    }, 1000);
+                } else {
+                    showError('registerVerifyError', data.message || 'Kod hatalı!');
+                }
+            } catch (error) {
+                showError('registerVerifyError', 'Bağlantı hatası: ' + error.message);
+            }
+        }
+
+        async function handleResendRegistrationCode() {
+            try {
+                const response = await fetch('/api/register.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ action: 'resend', email: pendingRegisterEmail })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess('registerVerifySuccess', 'Yeni kod gönderildi!');
+                } else {
+                    showError('registerVerifyError', data.message || 'Kod gönderilemedi!');
+                }
+            } catch (error) {
+                showError('registerVerifyError', 'Bağlantı hatası: ' + error.message);
             }
         }
 

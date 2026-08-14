@@ -77,8 +77,23 @@ class ApiClient
 
     public function register(string $username, string $email, string $password): array
     {
+        $initial = $this->post('/api/register.php', ['username' => $username, 'email' => $email, 'password' => $password]);
+        if (!($initial['data']['pending_verification'] ?? false)) {
+            return $initial;
+        }
+
+        // Doğrulama kodu gerçek bir posta kutusuna gitmiyor — bekleyen kayıttan
+        // doğrudan Mongo üzerinden okunuyor (bkz. api/register.php pending_registrations).
+        $pending = (new \MongoDB\Client(TEST_MONGO_URI))
+            ->selectDatabase(TEST_MONGO_DB)
+            ->pending_registrations
+            ->findOne(['email' => $email]);
+        if (!$pending) {
+            throw new \RuntimeException('Bekleyen kayıt bulunamadı: ' . $email);
+        }
+
         // csrf_token, request() içinde otomatik yakalanır.
-        return $this->post('/api/register.php', ['username' => $username, 'email' => $email, 'password' => $password]);
+        return $this->post('/api/register.php', ['action' => 'verify', 'email' => $email, 'code' => $pending->code]);
     }
 
     public function login(string $email, string $password): array

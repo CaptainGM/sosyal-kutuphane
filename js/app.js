@@ -699,14 +699,22 @@ document.addEventListener('DOMContentLoaded', () => {
     wireNavToggle();
 
     // Bazı sayfalar giriş yapmadan da gezilebiliyor — çıkış yapmamış birine
-    // "Çıkış Yap" göstermek yerine giriş sayfasına yönlendiren bir link göster.
+    // hesap gerektiren nav ögelerini (Akış/Sosyal/Profilim/Mesajlar/bildirim)
+    // göstermenin anlamı yok, sadece Keşfet + tema + Giriş Yap kalsın.
+    const LOGIN_REQUIRED_NAV_HREFS = ['feed.html', 'social.html', 'profile.html', 'messages.html'];
     app.initPromise.then(() => {
         if (app.currentUser) return;
+
         document.querySelectorAll('.logout-btn').forEach(btn => {
             btn.textContent = 'Giriş Yap';
             btn.onclick = null;
             btn.addEventListener('click', () => { window.location.href = 'index.html'; });
         });
+
+        LOGIN_REQUIRED_NAV_HREFS.forEach(href => {
+            document.querySelectorAll(`.nav-link[href="${href}"]`).forEach(el => el.style.display = 'none');
+        });
+        document.querySelectorAll('.nav-icon-wrap').forEach(el => el.style.display = 'none');
     });
 });
 

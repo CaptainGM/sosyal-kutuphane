@@ -57,6 +57,11 @@ $indexPlans = [
         ['key' => ['email' => 1]],
         ['key' => ['expires_at' => 1], 'expireAfterSeconds' => 0],
     ],
+    'pending_registrations' => [
+        ['key' => ['email' => 1], 'unique' => true],
+        ['key' => ['username' => 1]],
+        ['key' => ['expires_at' => 1], 'expireAfterSeconds' => 0],
+    ],
     'custom_lists' => [
         ['key' => ['user_id' => 1]],
     ],

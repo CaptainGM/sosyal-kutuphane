@@ -557,19 +557,27 @@ body {
 
 .password-toggle-btn {
     position: absolute;
-    right: 4px;
+    right: 6px;
     top: 50%;
     transform: translateY(-50%);
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: none;
     border: none;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 16px;
-    padding: 8px;
+    font-size: 14px;
+    padding: 0;
     color: var(--color-text-faint);
     line-height: 1;
+    transition: background-color 0.15s, color 0.15s;
 }
 
 .password-toggle-btn:hover {
+    background: var(--color-surface-2);
     color: var(--color-text-muted);
 }
 

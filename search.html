@@ -399,11 +399,7 @@
             </div>
         </div>
 
-        <div id="resultsContainer">
-            <div class="no-results">
-                👆 Yukarıdan arama yaparak film, dizi veya kitap bulabilirsiniz
-            </div>
-        </div>
+        <div id="resultsContainer"></div>
 
 
         <div class="pagination" id="pagination" style="display: none;"></div>
@@ -582,7 +578,7 @@
             input.placeholder = tab === 'movie' ? 'Film ara...' : tab === 'series' ? 'Dizi ara...' : 'Kitap ara...';
             input.value = '';
 
-            document.getElementById('resultsContainer').innerHTML = '<div class="no-results">👆 Yukarıdan arama yapın</div>';
+            document.getElementById('resultsContainer').innerHTML = '';
             document.getElementById('pagination').style.display = 'none';
             const filterSection = document.getElementById('filterSection');
             const filterGrid = document.getElementById('filterGrid');
@@ -690,7 +686,7 @@
             const allMoviesSection = document.getElementById('allMoviesSection');
 
             if (!query && !hasBookCategory) {
-                resultsContainer.innerHTML = '<div class="no-results">👆 Yukarıdan arama yapın</div>';
+                resultsContainer.innerHTML = '';
                 const showsShowcase = currentTab === 'movie' || currentTab === 'series';
                 topRatedSection.style.display = showsShowcase ? 'block' : 'none';
                 popularSection.style.display = showsShowcase ? 'block' : 'none';
@@ -791,7 +787,7 @@
 
             if (currentTab === 'book') {
                 if (!query && !currentFilters.category) {
-                    document.getElementById('resultsContainer').innerHTML = '<div class="no-results">👆 Yukarıdan arama yapın veya bir kategori seçin</div>';
+                    document.getElementById('resultsContainer').innerHTML = '';
                     return;
                 }
                 performSearch();

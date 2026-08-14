@@ -596,6 +596,10 @@
             } catch (error) {
                 console.error('❌ initPage error:', error);
             } finally {
+                if (typeof app === 'undefined' || !app.currentUser) {
+                    window.location.href = 'index.html';
+                    return;
+                }
                 loadProfile();
             }
         }
@@ -605,16 +609,11 @@
             initPage();
         }
         function loadProfile() {
-            const user = (typeof app !== 'undefined' && app.currentUser) ? app.currentUser : { username: 'Ziyaretçi', id: null };
-
             try {
-                displayProfile(user);
-
-                if (typeof app !== 'undefined' && app.currentUser) {
-                    if (typeof loadLibrary === 'function') loadLibrary().catch(e => console.error('❌ loadLibrary hata:', e));
-                    if (typeof loadActivities === 'function') loadActivities().catch(e => console.error('❌ loadActivities hata:', e));
-                    if (typeof loadCustomLists === 'function') loadCustomLists().catch(e => console.error('❌ loadCustomLists hata:', e));
-                }
+                displayProfile(app.currentUser);
+                if (typeof loadLibrary === 'function') loadLibrary().catch(e => console.error('❌ loadLibrary hata:', e));
+                if (typeof loadActivities === 'function') loadActivities().catch(e => console.error('❌ loadActivities hata:', e));
+                if (typeof loadCustomLists === 'function') loadCustomLists().catch(e => console.error('❌ loadCustomLists hata:', e));
             } catch (error) {
                 console.error('❌ Profil yükleme hatası:', error);
                 const loadingDiv = document.getElementById('loadingProfile');
