@@ -15,4 +15,4 @@ RUN composer install --no-dev --no-interaction --optimize-autoloader
 
 COPY . .
 EXPOSE 8000
-CMD php api/setup-db.php && php -S 0.0.0.0:8000
+CMD php api/setup-db.php && php -S 0.0.0.0:${PORT:-8000}

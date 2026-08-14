@@ -1,9 +1,7 @@
 <?php
-// Bu blok sadece <head>'deki Open Graph/Twitter meta etiketlerini ve <title>'ı
-// sunucu tarafında doldurmak için var — sayfanın geri kalanı (JS ile TMDB/Google
-// Books'tan veri çeken kısım) tamamen değişmeden aynı kalıyor. api/config.php
-// KASITLI OLARAK kullanılmıyor: o dosya JSON Content-Type/CORS/session başlıkları
-// set ediyor, bu da bu HTML sayfasını bozardı.
+// Sadece <head>'deki OG/Twitter meta etiketlerini sunucu tarafında dolduruyor,
+// geri kalan sayfa JS ile client-side çalışmaya devam ediyor. api/config.php
+// bilerek kullanılmıyor (CORS/JSON header'ları HTML sayfayı bozar).
 $ogTitle = 'Sosyal Kütüphane';
 $ogDescription = 'Film ve kitap sosyal ağı — izlediklerini, okuduklarını paylaş, keşfet.';
 $ogImage = null;
@@ -71,6 +69,9 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <title><?= htmlspecialchars($pageTitle) ?></title>
 
     <meta property="og:type" content="website">
@@ -632,24 +633,27 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 <body>
 
     <nav class="navbar">
-        <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
-        <div class="nav-links">
-            <a href="search.html" class="nav-link">🔍 Keşfet</a>
-            <a href="feed.html" class="nav-link">📰 Akış</a>
-            <a href="messages.html" class="nav-link">💬 Mesajlar</a>
-            <a href="profile.html" class="nav-link">👤 Profilim</a>
-            <div class="nav-icon-wrap">
-                <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
-                    🔔
-                    <span class="nav-badge" id="notifBadge"></span>
-                </button>
-                <div class="nav-panel" id="notifPanel">
-                    <div class="nav-panel-header">Bildirimler</div>
-                    <div class="nav-panel-empty">Yükleniyor...</div>
+        <div class="navbar-inner">
+            <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
+            <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false">☰</button>
+            <div class="nav-links">
+                <a href="search.html" class="nav-link">🔍 Keşfet</a>
+                <a href="feed.html" class="nav-link">📰 Akış</a>
+                <a href="messages.html" class="nav-link">💬 Mesajlar</a>
+                <a href="profile.html" class="nav-link">👤 Profilim</a>
+                <div class="nav-icon-wrap">
+                    <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
+                        🔔
+                        <span class="nav-badge" id="notifBadge"></span>
+                    </button>
+                    <div class="nav-panel" id="notifPanel">
+                        <div class="nav-panel-header">Bildirimler</div>
+                        <div class="nav-panel-empty">Yükleniyor...</div>
+                    </div>
                 </div>
+                <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
+                <button class="logout-btn" onclick="logout()">Çıkış</button>
             </div>
-            <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
-            <button class="logout-btn" onclick="logout()">Çıkış</button>
         </div>
     </nav>
 
@@ -746,12 +750,20 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 
             <div class="comment-form">
                 <textarea id="commentText" placeholder="Yorumunuzu yazın..."></textarea>
+                <label class="spoiler-checkbox-label">
+                    <input type="checkbox" id="commentSpoiler"> 🙈 Bu yorum spoiler içeriyor
+                </label>
                 <button onclick="submitComment()">✍️ Yorum Gönder</button>
             </div>
 
             <div id="comments-section">
                 <p style="text-align: center; color: var(--color-text-faint);">Henüz yorum yapılmamış...</p>
             </div>
+        </div>
+
+        <div class="reco-section" id="similarSection" style="display:none;">
+            <h2 class="reco-title">🎯 Benzer İçerikler</h2>
+            <div class="reco-scroll" id="similarScroll"></div>
         </div>
     </div>
 
@@ -801,10 +813,65 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             };
         }
 
+        function goToDetail(type, id) {
+            window.location.href = `detail.php?type=${type}&id=${id}`;
+        }
+
+        // Film/dizi: TMDB'nin similar uç noktası. Kitap: Google Books'ta eşdeğeri
+        // yok, o yüzden kitabın ilk kategorisiyle arama yapıp kendisini çıkarıyoruz.
+        async function loadSimilarContent(type, id, content) {
+            const section = document.getElementById('similarSection');
+            const scroll = document.getElementById('similarScroll');
+            if (!section || !scroll) return;
+
+            try {
+                let items = [];
+
+                if (type === 'movie' || type === 'series') {
+                    const response = await fetch(`${TMDB_PROXY_URL}?endpoint=similar&type=${type}&id=${id}`);
+                    const data = await response.json();
+                    items = (data.results || []).slice(0, 12).map(item => ({
+                        id: item.id,
+                        title: item.title || item.name || 'Bilinmiyor',
+                        poster: item.poster_path ? `https://image.tmdb.org/t/p/w200${item.poster_path}` : 'https://placehold.co/110x160?text=Yok',
+                        type
+                    }));
+                } else {
+                    const category = content?.volumeInfo?.categories?.[0];
+                    if (category) {
+                        const query = `subject:"${category}"`;
+                        const response = await fetch(`${BOOKS_PROXY_URL}?action=search&q=${encodeURIComponent(query)}&maxResults=13`);
+                        const data = await response.json();
+                        items = (data.items || [])
+                            .filter(b => b.id !== id)
+                            .slice(0, 12)
+                            .map(b => ({
+                                id: b.id,
+                                title: b.volumeInfo?.title || 'Bilinmiyor',
+                                poster: b.volumeInfo?.imageLinks?.thumbnail
+                                    ? b.volumeInfo.imageLinks.thumbnail.replace('http://', 'https://')
+                                    : 'https://placehold.co/110x160?text=Kitap',
+                                type: 'book'
+                            }));
+                    }
+                }
+
+                if (items.length === 0) return;
+
+                scroll.innerHTML = items.map(item => `
+                    <div class="reco-card" onclick="goToDetail('${item.type}', '${item.id}')">
+                        <img src="${item.poster}" alt="${app.escapeHtml(item.title)}" loading="lazy" onerror="this.src='https://placehold.co/110x160?text=Yok'">
+                        <div class="reco-card-title">${app.escapeHtml(item.title)}</div>
+                    </div>
+                `).join('');
+                section.style.display = 'block';
+            } catch (error) {
+                console.error('Benzer içerik yükleme hatası:', error);
+            }
+        }
+
         async function loadContentDetail() {
             const { type, id } = getUrlParams();
-
-            console.log('Loading content:', type, id);
 
             if (!type || !id) {
                 showError('Geçersiz içerik!');
@@ -826,9 +893,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 } else if (type === 'series') {
                     content = await app.getSeriesDetail(id);
                 } else {
-                    console.log('Fetching book detail for ID:', id);
                     content = await app.getBookDetail(id);
-                    console.log('Book API response:', content);
                 }
 
                 if (content) {
@@ -837,6 +902,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                     loadUserInteractions();
                     loadComments();
                     loadPlatformUserRating();
+                    loadSimilarContent(type, id, content);
                 } else {
                     console.error('Content is null for:', type, id);
                     showError('İçerik bulunamadı!');
@@ -1303,6 +1369,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             }
 
             try {
+                const hasSpoiler = document.getElementById('commentSpoiler')?.checked || false;
                 const response = await fetch('/api/comments.php', {
                     method: 'POST',
                     headers: app.authHeaders(),
@@ -1311,13 +1378,15 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                         content_type: currentContentType,
                         content_id: currentContentId,
                         comment_text: commentText,
-                        parent_comment_id: null
+                        parent_comment_id: null,
+                        has_spoiler: hasSpoiler
                     })
                 });
 
                 const data = await response.json();
                 if (data.success) {
                     document.getElementById('commentText').value = '';
+                    document.getElementById('commentSpoiler').checked = false;
                     loadComments();
                     app.toast('Yorumunuz gönderildi!', 'success');
                 } else {
@@ -1348,9 +1417,20 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                         const timeAgo = (typeof app !== 'undefined') ? app.getTimeAgo(comment.created_at) : comment.created_at;
                         const safeUsername = app.escapeHtml(comment.username);
                         const safeText = app.escapeHtml(comment.comment_text);
-                        // Düzenleme modalının orijinal metne erişebilmesi için ham metni bir haritada
-                        // tutuyoruz — onclick içine gömmüyoruz (tırnak kaçışı/JS enjeksiyonu riski).
+                        // Ham metni onclick'e gömmek yerine haritada tutuyoruz (kaçış/enjeksiyon riski).
                         commentTextById[comment.id] = comment.comment_text;
+
+                        const commentBodyInner = safeText.length > 200 ? `
+                                <span id="short-${comment.id}">${safeText.substring(0, 200)}...</span>
+                                <span id="full-${comment.id}" style="display: none;">${safeText}</span>
+                                <button onclick="toggleCommentText(${comment.id})" style="background: none; border: none; color: var(--color-accent); cursor: pointer; padding: 0; margin-left: 5px;">Daha Fazla</button>
+                            ` : safeText;
+                        const commentBodyHtml = comment.has_spoiler ? `
+                            <div class="spoiler-wrap" id="spoiler-${comment.id}">
+                                <button type="button" class="spoiler-reveal-btn" onclick="document.getElementById('spoiler-${comment.id}').classList.add('spoiler-revealed')">🙈 Spoiler içeriyor — göstermek için dokun</button>
+                                <div class="spoiler-content">${commentBodyInner}</div>
+                            </div>
+                        ` : commentBodyInner;
 
                         html += `
                     <div class="comment-item" id="comment-${comment.id}" style="background: var(--color-surface); padding: 20px; border-radius: 10px; border-left: 4px solid var(--color-accent);">
@@ -1362,11 +1442,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                         </div>
 
                         <div id="comment-text-${comment.id}" style="margin: 10px 0; color: var(--color-text-muted);">
-                            ${safeText.length > 200 ? `
-                                <span id="short-${comment.id}">${safeText.substring(0, 200)}...</span>
-                                <span id="full-${comment.id}" style="display: none;">${safeText}</span>
-                                <button onclick="toggleCommentText(${comment.id})" style="background: none; border: none; color: var(--color-accent); cursor: pointer; padding: 0; margin-left: 5px;">Daha Fazla</button>
-                            ` : `${safeText}`}
+                            ${commentBodyHtml}
                         </div>
 
                         <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px;">
@@ -1383,15 +1459,22 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                                 <button onclick="deleteComment(${comment.id})" style="background: none; border: none; color: var(--color-danger); cursor: pointer;">
                                     🗑️ Sil
                                 </button>
-                            ` : ''}
+                            ` : `
+                                <button onclick="showReportModal(${comment.id})" style="background: none; border: none; color: var(--color-text-faint); cursor: pointer;">
+                                    🚩 Şikayet Et
+                                </button>
+                            `}
                         </div>
 
 
                         <div id="reply-form-${comment.id}" style="display: none; margin-top: 15px; padding: 15px; background: var(--color-surface-2); border-radius: 8px;">
                             <textarea id="reply-text-${comment.id}" placeholder="@${safeUsername} kullanıcısına yanıt yazın..." style="width: 100%; padding: 10px; border: 1px solid var(--color-border); border-radius: 5px; min-height: 80px; font-family: inherit;"></textarea>
+                            <label class="spoiler-checkbox-label">
+                                <input type="checkbox" id="reply-spoiler-${comment.id}"> 🙈 Bu yanıt spoiler içeriyor
+                            </label>
                             <div style="display: flex; gap: 10px; margin-top: 10px;">
-                                <button onclick="submitReply(${comment.id})" style="background: var(--color-accent); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">Yanıtla</button>
-                                <button onclick="hideReplyForm(${comment.id})" style="background: #ccc; color: #333; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">İptal</button>
+                                <button onclick="submitReply(${comment.id})" class="btn btn-primary" style="padding: 8px 15px;">Yanıtla</button>
+                                <button onclick="hideReplyForm(${comment.id})" class="btn btn-secondary" style="padding: 8px 15px;">İptal</button>
                             </div>
                         </div>
 
@@ -1403,13 +1486,19 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                             const replyTimeAgo = (typeof app !== 'undefined') ? app.getTimeAgo(reply.created_at) : reply.created_at;
                             const safeReplyUsername = app.escapeHtml(reply.username);
                             const safeReplyText = app.escapeHtml(reply.comment_text);
+                            const replyBodyHtml = reply.has_spoiler ? `
+                                <div class="spoiler-wrap" id="spoiler-reply-${reply.id}">
+                                    <button type="button" class="spoiler-reveal-btn" onclick="document.getElementById('spoiler-reply-${reply.id}').classList.add('spoiler-revealed')">🙈 Spoiler içeriyor — göstermek için dokun</button>
+                                    <div class="spoiler-content">${safeReplyText}</div>
+                                </div>
+                            ` : safeReplyText;
                             return `
                                         <div style="background: var(--color-surface-2); padding: 12px; border-radius: 8px; margin-bottom: 10px;">
                                             <div style="margin-bottom: 8px;">
                                                 <strong style="color: var(--color-accent); font-size: 14px;">${safeReplyUsername}</strong>
                                                 <span style="color: var(--color-text-faint); font-size: 11px; margin-left: 8px;">${replyTimeAgo}</span>
                                             </div>
-                                            <p style="margin: 0; color: var(--color-text-muted); font-size: 14px;">${safeReplyText}</p>
+                                            <div style="margin: 0; color: var(--color-text-muted); font-size: 14px;">${replyBodyHtml}</div>
                                             <div style="display: flex; gap: 10px; margin-top: 8px;">
                                                 <button onclick="likeComment(${reply.id})" style="background: none; border: none; color: ${reply.liked_by_me ? 'var(--color-danger)' : 'var(--color-accent)'}; cursor: pointer; font-size: 12px;">
                                                     ${reply.liked_by_me ? '❤️' : '🤍'} ${reply.likes_count || 0}
@@ -1454,6 +1543,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             }
 
             try {
+                const hasSpoiler = document.getElementById(`reply-spoiler-${parentCommentId}`)?.checked || false;
                 const response = await fetch('/api/comments.php', {
                     method: 'POST',
                     headers: app.authHeaders(),
@@ -1462,7 +1552,8 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                         content_type: currentContentType,
                         content_id: currentContentId,
                         comment_text: replyText,
-                        parent_comment_id: parentCommentId
+                        parent_comment_id: parentCommentId,
+                        has_spoiler: hasSpoiler
                     })
                 });
 
@@ -1517,6 +1608,53 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 shortSpan.style.display = 'inline';
                 fullSpan.style.display = 'none';
                 btn.textContent = 'Daha Fazla';
+            }
+        }
+
+        function showReportModal(commentId) {
+            const html = `
+                <div class="modal-overlay" id="reportModal" onclick="if(event.target===this) closeReportModal()">
+                    <div class="modal-box" style="max-width: 420px;">
+                        <h3 style="margin-bottom: 15px;">🚩 Yorumu Şikayet Et</h3>
+                        <textarea id="reportReason" class="form-control" placeholder="Neden şikayet ediyorsunuz?" style="min-height: 80px; margin-bottom: 15px; font-family: inherit;"></textarea>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn btn-primary" style="flex: 1;" onclick="submitReport(${commentId})">Gönder</button>
+                            <button class="btn btn-secondary" style="flex: 1;" onclick="closeReportModal()">İptal</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', html);
+        }
+
+        function closeReportModal() {
+            document.getElementById('reportModal')?.remove();
+        }
+
+        async function submitReport(commentId) {
+            const reason = document.getElementById('reportReason').value.trim();
+            if (!reason) {
+                app.toast('Lütfen bir neden yazın', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/report-comment.php', {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ comment_id: commentId, reason })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    app.toast('Şikayetiniz alındı, incelenecek', 'success');
+                    closeReportModal();
+                } else {
+                    app.toast(data.message || 'Hata oluştu', 'error');
+                }
+            } catch (error) {
+                console.error('Şikayet gönderme hatası:', error);
+                app.toast('Bağlantı hatası', 'error');
             }
         }
 
@@ -1615,7 +1753,6 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 });
 
                 const data = await response.json();
-                console.log('Like response:', data);
 
                 if (data.success) {
                     const likeCountSpan = document.getElementById(`like-count-${commentId}`);

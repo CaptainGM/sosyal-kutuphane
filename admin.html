@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <title>Moderasyon - Sosyal Kütüphane</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .admin-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px 20px 60px;
+        }
+
+        .admin-container h1 {
+            margin-bottom: 20px;
+        }
+
+        .report-card {
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .report-meta {
+            font-size: 12px;
+            color: var(--color-text-faint);
+            margin-bottom: 10px;
+        }
+
+        .report-comment-text {
+            background: var(--color-surface-2);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            color: var(--color-text-muted);
+        }
+
+        .report-reason {
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .report-actions {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
+            <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false">☰</button>
+            <div class="nav-links">
+                <a href="search.html" class="nav-link">🔍 Keşfet</a>
+                <a href="feed.html" class="nav-link">📰 Akış</a>
+                <a href="profile.html" class="nav-link">👤 Profilim</a>
+                <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
+                <button class="logout-btn" onclick="logout()">Çıkış</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <h1>🛡️ Moderasyon Kuyruğu</h1>
+        <div id="adminContent">
+            <div class="loading">⏳ Yükleniyor...</div>
+        </div>
+    </div>
+
+    <script src="js/escape-html.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await app.initPromise;
+            } catch (e) { }
+
+            if (!app.currentUser || !app.currentUser.is_admin) {
+                document.getElementById('adminContent').innerHTML =
+                    '<div class="no-results">🚫 Bu sayfayı görüntüleme yetkiniz yok</div>';
+                return;
+            }
+
+            loadReports();
+        });
+
+        async function loadReports() {
+            const container = document.getElementById('adminContent');
+            try {
+                const response = await fetch('/api/report-comment.php', { credentials: 'include' });
+                const data = await response.json();
+
+                if (!data.success) {
+                    container.innerHTML = `<div class="no-results">${app.escapeHtml(data.message || 'Yüklenemedi')}</div>`;
+                    return;
+                }
+
+                const reports = data.reports || [];
+                if (reports.length === 0) {
+                    container.innerHTML = '<div class="no-results">✅ Bekleyen şikayet yok</div>';
+                    return;
+                }
+
+                container.innerHTML = reports.map(r => `
+                    <div class="report-card" id="report-${r.id}">
+                        <div class="report-meta">
+                            🚩 <strong>${app.escapeHtml(r.reporter_username)}</strong> şikayet etti · ${app.formatDate(r.created_at)}
+                        </div>
+                        <div class="report-comment-text">
+                            <strong>${app.escapeHtml(r.comment_author)}</strong>: ${app.escapeHtml(r.comment_text)}
+                        </div>
+                        <div class="report-reason"><strong>Neden:</strong> ${app.escapeHtml(r.reason)}</div>
+                        <div class="report-actions">
+                            <button class="btn btn-danger" onclick="resolveReport(${r.id}, 'delete_comment')">🗑️ Yorumu Sil</button>
+                            <button class="btn btn-secondary" onclick="resolveReport(${r.id}, 'dismiss')">✅ Şikayeti Reddet</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Şikayetler yüklenemedi:', error);
+                container.innerHTML = '<div class="no-results">❌ Bağlantı hatası</div>';
+            }
+        }
+
+        async function resolveReport(reportId, action) {
+            try {
+                const response = await fetch('/api/report-comment.php', {
+                    method: 'PUT',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ id: reportId, action })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    app.toast(action === 'delete_comment' ? 'Yorum silindi' : 'Şikayet reddedildi', 'success');
+                    document.getElementById(`report-${reportId}`)?.remove();
+                } else {
+                    app.toast(data.message || 'İşlem başarısız oldu', 'error');
+                }
+            } catch (error) {
+                console.error('Şikayet çözme hatası:', error);
+                app.toast('Bağlantı hatası', 'error');
+            }
+        }
+    </script>
+</body>
+
+</html>

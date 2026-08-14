@@ -17,6 +17,14 @@ if ($currentUserId === $targetUserId) {
 }
 
 if ($method === 'POST') {
+    $blocked = $db->blocks->findOne(['$or' => [
+        ['blocker_id' => $currentUserId, 'blocked_id' => $targetUserId],
+        ['blocker_id' => $targetUserId, 'blocked_id' => $currentUserId],
+    ]]);
+    if ($blocked) {
+        jsonResponse(['success' => false, 'message' => 'Bu kullanıcıyı takip edemezsiniz'], 403);
+    }
+
     $db->follows->updateOne(
         ['follower_id' => $currentUserId, 'following_id' => $targetUserId],
         ['$setOnInsert' => [

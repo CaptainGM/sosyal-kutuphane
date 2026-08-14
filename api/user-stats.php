@@ -1,8 +1,11 @@
 <?php
 require_once 'config.php';
-requireLogin();
 
-$userId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : (int)getCurrentUserId();
+$userId = isset($_GET['user_id']) ? (int) $_GET['user_id'] : null;
+if ($userId === null) {
+    requireLogin();
+    $userId = (int) getCurrentUserId();
+}
 
 $userData = $db->users->findOne(['_id' => $userId]);
 
@@ -72,6 +75,32 @@ $stats = [
 ];
 
 $stats['total_reviews'] = $db->comments->countDocuments(['user_id' => $userId, 'parent_comment_id' => null]);
+
+function ratingCounts($db, string $statusCollectionName, int $userId): array {
+    $pipeline = [
+        ['$match' => ['user_id' => $userId, 'rating' => ['$ne' => null]]],
+        ['$group' => ['_id' => '$rating', 'count' => ['$sum' => 1]]],
+    ];
+    $counts = [];
+    foreach ($db->$statusCollectionName->aggregate($pipeline) as $row) {
+        $counts[(int) $row->_id] = $row->count;
+    }
+    return $counts;
+}
+
+$histogram = array_fill(1, 10, 0);
+foreach ([
+    ratingCounts($db, 'user_movie_status', $userId),
+    ratingCounts($db, 'user_series_status', $userId),
+    ratingCounts($db, 'user_book_status', $userId),
+] as $counts) {
+    foreach ($counts as $rating => $count) {
+        if ($rating >= 1 && $rating <= 10) {
+            $histogram[$rating] += $count;
+        }
+    }
+}
+$stats['rating_distribution'] = $histogram;
 
 jsonResponse([
     'success' => true,

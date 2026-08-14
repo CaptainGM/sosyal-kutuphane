@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <title>Sosyal Akış - Sosyal Kütüphane</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
@@ -171,6 +174,38 @@
             font-weight: bold;
         }
 
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) .badge-movie {
+                background: rgba(25, 118, 210, 0.25);
+                color: #8ab4f8;
+            }
+
+            :root:not([data-theme="light"]) .badge-book {
+                background: rgba(56, 142, 60, 0.25);
+                color: #81c995;
+            }
+
+            :root:not([data-theme="light"]) .badge-series {
+                background: rgba(142, 36, 170, 0.25);
+                color: #d7aefb;
+            }
+        }
+
+        :root[data-theme="dark"] .badge-movie {
+            background: rgba(25, 118, 210, 0.25);
+            color: #8ab4f8;
+        }
+
+        :root[data-theme="dark"] .badge-book {
+            background: rgba(56, 142, 60, 0.25);
+            color: #81c995;
+        }
+
+        :root[data-theme="dark"] .badge-series {
+            background: rgba(142, 36, 170, 0.25);
+            color: #d7aefb;
+        }
+
         .comment-preview {
             color: var(--color-text-muted);
             font-style: italic;
@@ -308,73 +343,33 @@
             }
         }
 
-        .reco-section {
-            margin-bottom: 25px;
-        }
-
-        .reco-title {
-            font-size: 18px;
-            margin-bottom: 12px;
-            color: var(--color-text);
-        }
-
-        .reco-scroll {
-            display: flex;
-            gap: 12px;
-            overflow-x: auto;
-            padding-bottom: 6px;
-        }
-
-        .reco-card {
-            flex: 0 0 auto;
-            width: 110px;
-            cursor: pointer;
-            text-align: center;
-        }
-
-        .reco-card img {
-            width: 110px;
-            height: 160px;
-            object-fit: cover;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 6px;
-            background: var(--color-surface-2);
-        }
-
-        .reco-card .reco-card-title {
-            font-size: 12px;
-            color: var(--color-text-muted);
-            line-height: 1.3;
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-        }
     </style>
 </head>
 
 <body>
     
     <nav class="navbar">
-        <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
-        <div class="nav-links">
-            <a href="search.html" class="nav-link">🔍 Keşfet</a>
-            <a href="feed.html" class="nav-link active">📰 Akış</a>
-            <a href="profile.html" class="nav-link">👤 Profilim</a>
-            <a href="messages.html" class="nav-link">💬 Mesajlar</a>
-            <div class="nav-icon-wrap">
-                <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
-                    🔔
-                    <span class="nav-badge" id="notifBadge"></span>
-                </button>
-                <div class="nav-panel" id="notifPanel">
-                    <div class="nav-panel-header">Bildirimler</div>
-                    <div class="nav-panel-empty">Yükleniyor...</div>
+        <div class="navbar-inner">
+            <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
+            <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false">☰</button>
+            <div class="nav-links">
+                <a href="search.html" class="nav-link">🔍 Keşfet</a>
+                <a href="feed.html" class="nav-link active">📰 Akış</a>
+                <a href="profile.html" class="nav-link">👤 Profilim</a>
+                <a href="messages.html" class="nav-link">💬 Mesajlar</a>
+                <div class="nav-icon-wrap">
+                    <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
+                        🔔
+                        <span class="nav-badge" id="notifBadge"></span>
+                    </button>
+                    <div class="nav-panel" id="notifPanel">
+                        <div class="nav-panel-header">Bildirimler</div>
+                        <div class="nav-panel-empty">Yükleniyor...</div>
+                    </div>
                 </div>
+                <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
+                <button class="logout-btn" onclick="logout()">Çıkış</button>
             </div>
-            <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
-            <button class="logout-btn" onclick="logout()">Çıkış</button>
         </div>
     </nav>
 

@@ -4,7 +4,7 @@
 
 Film, Dizi ve Kitap Sosyal Ağı Uygulaması
 
-![Giriş ekranı](screenshot.png)
+![Giriş ekranı](screenshot.webp)
 
 Karanlık mod + tür filtreleme:
 ![Karanlık mod](screenshot-dark.png)
@@ -28,6 +28,21 @@ docker compose up
 ```
 
 `http://localhost:8000/index.html` adresinde açılır, veritabanı ve demo hesaplar otomatik oluşturulur (aşağıdaki demo hesaplarla giriş yapabilirsiniz).
+
+## 🌐 Ücretsiz Herkese Açık Deploy (Render)
+
+Domain almadan, `START.bat` çalıştırmaya gerek kalmadan her an test edebileceğin bir link için [Render](https://render.com) öneriliyor — repodaki `Dockerfile`'ı doğrudan kullanır, ücretsiz bir `*.onrender.com` linki verir.
+
+1. Bu repoyu GitHub'a push'la (zaten `origin` bağlı).
+2. [render.com](https://render.com)'da GitHub ile giriş yap, **New +** → **Web Service** → bu repoyu seç.
+3. **Runtime**: Docker (otomatik algılanır) — build/start komutu değiştirmene gerek yok.
+4. **Environment** sekmesinde şu değişkenleri ekle (değerler `.env` dosyandakiyle aynı):
+   - `MONGO_URI`, `MONGO_DB` — mevcut Atlas cluster'ın (ayrı bir veritabanına ihtiyaç yok)
+   - `SITE_URL` — Render sana verdiği `https://<servis-adı>.onrender.com` linki (ilk deploy'dan sonra öğrenip buraya girip yeniden deploy et — CORS bu değere göre çalışıyor)
+   - `TMDB_API_KEY`, `GOOGLE_BOOKS_API_KEY` (opsiyonel)
+5. Deploy'a bas. İlk açılışta `api/setup-db.php` otomatik çalışıp indeksleri/demo hesapları oluşturur.
+
+**Not:** Ücretsiz plan birkaç dakika hareketsizlikten sonra "uyuyor", ilk istek biraz yavaş açılabilir — kişisel test için sorun değil. Yüklenen avatar dosyaları (uploads/) kalıcı disk olmadığı için her redeploy'da sıfırlanır.
 
 ## 🚀 Manuel Kurulum
 

@@ -1,5 +1,5 @@
 <?php
-// .env dosyasını yükle (varsa) — basit satır bazlı parser, ekstra bağımlılık gerektirmez.
+// .env yükleyici (basit satır parser, harici paket yok)
 $envPath = __DIR__ . '/../.env';
 if (file_exists($envPath)) {
     foreach (file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
@@ -35,10 +35,7 @@ ini_set('log_errors', 1);
 
 define('SITE_URL', rtrim(getenv('SITE_URL') ?: 'http://localhost:8000', '/'));
 
-// CORS: yalnızca kendi sitemizin origin'ine izin ver. Eskiden istekteki Origin
-// başlığı koşulsuz yansıtılıyordu (+ Allow-Credentials: true) — bu, herhangi bir
-// sitenin oturum çerezleriyle kimlik doğrulamalı istek atıp yanıtı okuyabilmesine
-// izin veren bir güvenlik açığıydı. Şimdi yalnızca SITE_URL ile eşleşen origin kabul ediliyor.
+// Sadece kendi origin'imize CORS izni ver (önceden her origin yansıtılıyordu, açıktı).
 $origin = $_SERVER['HTTP_ORIGIN'] ?? SITE_URL;
 if (rtrim($origin, '/') === SITE_URL) {
     header("Access-Control-Allow-Origin: $origin");
@@ -85,9 +82,15 @@ function isLoggedIn() {
     return isset($_SESSION['user_id']);
 }
 
-// MySQL AUTO_INCREMENT'ın yerini tutan sıralı tamsayı id üreteci.
-// Mongo'nun varsayılan ObjectId'si yerine bunu kullanıyoruz çünkü frontend
-// (onclick içine gömülen id'ler, parseInt() ile karşılaştırmalar) tamsayı id varsayıyor.
+function requireAdmin($db) {
+    requireLogin();
+    $user = $db->users->findOne(['_id' => getCurrentUserId()], ['projection' => ['is_admin' => 1]]);
+    if (empty($user->is_admin)) {
+        jsonResponse(['success' => false, 'message' => 'Yetkiniz yok'], 403);
+    }
+}
+
+// AUTO_INCREMENT yerine geçen sayaç — frontend tamsayı id bekliyor, ObjectId değil.
 function nextSequence($db, $name) {
     $result = $db->counters->findOneAndUpdate(
         ['_id' => $name],
@@ -104,7 +107,7 @@ function csrfToken() {
     return $_SESSION['csrf_token'];
 }
 
-// Oturum açmış kullanıcının durum değiştiren (POST/PUT/DELETE) isteklerinde çağrılır.
+// POST/PUT/DELETE isteklerinde çağrılır.
 function requireCsrf() {
     $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
     if (!in_array($method, ['POST', 'PUT', 'DELETE'], true)) {
@@ -117,7 +120,7 @@ function requireCsrf() {
     }
 }
 
-// Basit login hız sınırlama: IP+email başına deneme sayacı, Mongo'da TTL indeksiyle otomatik temizlenir.
+// IP+email başına login deneme sayacı (TTL indeksle otomatik temizlenir).
 function checkLoginRateLimit($db, string $email) {
     $key = ($_SERVER['REMOTE_ADDR'] ?? 'unknown') . '|' . strtolower($email);
     $windowStart = new MongoDB\BSON\UTCDateTime((time() - 600) * 1000); // 10 dakikalık pencere
@@ -148,11 +151,7 @@ function clearLoginAttempts($db, string $email) {
     $db->login_attempts->deleteOne(['_id' => $key]);
 }
 
-// TMDB/Google Books gibi dış API'lerin yanıtlarını Atlas'ta önbelleklemek için.
-// Amaç: her ziyaretçi sayfayı her açtığında aynı verinin (en popüler/en yüksek
-// puanlı listeler, arama sonuçları, içerik detayları) TMDB'den tekrar tekrar
-// çekilmesini önlemek — özellikle yavaş internetli kullanıcılar için maliyetli.
-// Anahtar başına TTL süresi cacheSet() çağrısında belirlenir (bkz. tmdb-proxy.php).
+// TMDB/Google Books yanıtları için Atlas önbelleği — TTL cacheSet() çağrısında belirlenir.
 function cacheGet($db, string $key) {
     $doc = $db->api_cache->findOne(['_id' => $key]);
     if (!$doc || $doc->expires_at->toDateTime()->getTimestamp() < time()) {

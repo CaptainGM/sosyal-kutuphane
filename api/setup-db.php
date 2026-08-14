@@ -41,6 +41,14 @@ $indexPlans = [
         ['key' => ['follower_id' => 1, 'following_id' => 1], 'unique' => true],
         ['key' => ['following_id' => 1]],
     ],
+    'blocks' => [
+        ['key' => ['blocker_id' => 1, 'blocked_id' => 1], 'unique' => true],
+        ['key' => ['blocked_id' => 1]],
+    ],
+    'comment_reports' => [
+        ['key' => ['comment_id' => 1, 'reporter_id' => 1], 'unique' => true],
+        ['key' => ['status' => 1, 'created_at' => -1]],
+    ],
     'notifications' => [
         ['key' => ['user_id' => 1, 'created_at' => -1]],
     ],
@@ -62,8 +70,7 @@ $indexPlans = [
         ['key' => ['created_at' => 1], 'expireAfterSeconds' => 3600],
     ],
     'conversations' => [
-        // participant_a < participant_b her zaman (sıralı ikili) — dizi alanında unique index
-        // multikey semantiğiyle beklenmedik şekilde davrandığı için iki ayrı skaler alan kullanıyoruz.
+        // participant_a < participant_b her zaman sıralı — iki skaler alan, tek dizi değil.
         ['key' => ['participant_a' => 1, 'participant_b' => 1], 'unique' => true],
         ['key' => ['last_message_at' => -1]],
     ],
@@ -71,9 +78,7 @@ $indexPlans = [
         ['key' => ['conversation_id' => 1, 'created_at' => 1]],
     ],
     'api_cache' => [
-        // Gerçek geçerlilik süresi cacheGet()'te expires_at ile kontrol edilir;
-        // bu indeks sadece uzun süre hiç kullanılmayan anahtarları temizleyen bir güvenlik ağı.
-        ['key' => ['cached_at' => 1], 'expireAfterSeconds' => 259200], // 3 gün
+        ['key' => ['cached_at' => 1], 'expireAfterSeconds' => 259200], // 3 gün — yedek temizlik, asıl TTL cacheGet()'te
     ],
 ];
 
@@ -101,9 +106,15 @@ $demoUsers = [
 ];
 
 foreach ($demoUsers as [$username, $email, $bio]) {
+    $isAdmin = $username === 'admin';
     $existing = $db->users->findOne(['email' => $email]);
     if ($existing) {
-        echo "⏭️ Zaten var: $username<br>";
+        if ($isAdmin && empty($existing->is_admin)) {
+            $db->users->updateOne(['_id' => $existing->_id], ['$set' => ['is_admin' => true]]);
+            echo "🛡️ Admin yetkisi verildi: $username<br>";
+        } else {
+            echo "⏭️ Zaten var: $username<br>";
+        }
         continue;
     }
     $id = nextSequence($db, 'users');
@@ -114,6 +125,7 @@ foreach ($demoUsers as [$username, $email, $bio]) {
         'password' => password_hash('123456', PASSWORD_DEFAULT),
         'bio' => $bio,
         'avatar_url' => null,
+        'is_admin' => $isAdmin,
         'created_at' => new MongoDB\BSON\UTCDateTime(),
         'updated_at' => new MongoDB\BSON\UTCDateTime(),
     ]);

@@ -1,6 +1,4 @@
-// Kullanıcıdan gelen metni innerHTML'e basmadan önce kaçış yapmak için kullanılır.
-// Hem tarayıcıda <script> ile hem Node'da require/import ile çalışacak şekilde yazıldı
-// (bkz. tests/escape-html.test.mjs) — mantık tek bir yerde, iki ortamda da test edilebilir.
+// Tarayıcıda ve Node'da (tests/escape-html.test.mjs) ortak kullanılır.
 function escapeHtml(str) {
     if (str === null || str === undefined) return '';
     return String(str)

@@ -1,9 +1,7 @@
 <?php
 require_once 'config.php';
 
-// Tarayıcı artık TMDB'ye doğrudan gitmiyor — bu uç nokta üzerinden geçiyor ki
-// (a) aynı veri tüm ziyaretçiler arasında Atlas'ta paylaşılan bir önbellekten
-// sunulsun, (b) TMDB anahtarı istemci tarafında görünmesin.
+// TMDB istekleri tarayıcıdan değil buradan geçer: ortak önbellek + gizli API anahtarı.
 $endpoint = $_GET['endpoint'] ?? null;
 $type = ($_GET['type'] ?? 'movie') === 'series' ? 'series' : 'movie';
 $tmdbType = $type === 'series' ? 'tv' : 'movie';
@@ -22,8 +20,7 @@ function tmdbFetch(string $url) {
     return json_decode($response, true);
 }
 
-// TMDB hata yanıtları {"success":false,...} şeklinde döner — bunları önbelleğe
-// yazmıyoruz, yoksa geçici bir hata TTL süresince herkese aynı şekilde dönmeye devam eder.
+// Hata yanıtlarını önbelleğe yazma, yoksa geçici bir hata TTL boyunca herkese döner.
 function isTmdbError($data) {
     return isset($data['success']) && $data['success'] === false;
 }
@@ -73,12 +70,32 @@ if ($endpoint === 'search') {
     }
     jsonResponse($data);
 
+} elseif ($endpoint === 'similar') {
+    // Detay sayfasındaki "Benzer İçerikler" şeridi.
+    $id = (int) ($_GET['id'] ?? 0);
+    if (!$id) {
+        jsonResponse(['success' => false, 'message' => 'id gerekli'], 400);
+    }
+
+    $cacheKey = "tmdb:$type:similar:$id";
+    $cached = cacheGet($db, $cacheKey);
+    if ($cached !== null) {
+        jsonResponse($cached);
+    }
+
+    $url = "https://api.themoviedb.org/3/$tmdbType/$id/similar?api_key=$apiKey&language=tr-TR&page=1";
+    $data = tmdbFetch($url);
+    if ($data === null) {
+        jsonResponse(['results' => []]);
+    }
+    if (!isTmdbError($data)) {
+        cacheSet($db, $cacheKey, $data, 86400); // 24 saat
+    }
+    jsonResponse($data);
+
 } elseif ($endpoint === 'list') {
     $list = in_array($_GET['list'] ?? '', ['top_rated', 'popular'], true) ? $_GET['list'] : 'popular';
-    // "Tüm Filmler/Diziler" bölümü bu uç noktayı birkaç sayfa için çağırır —
-    // eskiden istemci tarafında 100 sayfa (≈2000 içerik) çekiliyordu, burada
-    // sabit bir üst sınırla (5 sayfa ≈ 100 içerik) sınırlandırıldı.
-    $page = max(1, min(5, (int) ($_GET['page'] ?? 1)));
+    $page = max(1, min(5, (int) ($_GET['page'] ?? 1))); // en fazla 5 sayfa (~100 içerik)
 
     $cacheKey = "tmdb:$type:$list:$page";
     $cached = cacheGet($db, $cacheKey);

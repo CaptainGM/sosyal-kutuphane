@@ -1,15 +1,11 @@
 <?php
 require_once 'config.php';
 
-// tmdb-proxy.php ile aynı gerekçe: Google Books istekleri artık tarayıcıdan
-// değil bu uç noktadan geçiyor ki aynı arama/kategori sonuçları Atlas'ta
-// önbelleklenip tüm ziyaretçiler arasında paylaşılsın.
+// tmdb-proxy.php ile aynı mantık: Google Books istekleri buradan geçip önbelleklenir.
 $action = $_GET['action'] ?? null;
 
 function googleBooksFetch(string $url) {
-    // Anahtarsız istekler Google'ın paylaşımlı/anonim günlük kotasına tabi ve bu
-    // kota oldukça düşük — GOOGLE_BOOKS_API_KEY .env'de tanımlıysa istekleri güçlendirir
-    // (Google Cloud Console'dan ücretsiz alınabilir, Books API'yi etkinleştirip anahtar oluşturmak yeterli).
+    // Anahtarsız istekler düşük anonim kotaya tabi; GOOGLE_BOOKS_API_KEY tanımlıysa kullan.
     $apiKey = getenv('GOOGLE_BOOKS_API_KEY');
     if ($apiKey) {
         $url .= '&key=' . urlencode($apiKey);
@@ -45,8 +41,7 @@ if ($action === 'search') {
     if ($data === null) {
         jsonResponse(['items' => []]);
     }
-    // Google'ın geçici hata yanıtlarını (kota/503 vb.) önbelleğe yazmıyoruz —
-    // yoksa TTL süresince herkese aynı hata dönmeye devam eder.
+    // Hata yanıtlarını (kota/503) önbelleğe yazma.
     if (!isset($data['error'])) {
         cacheSet($db, $cacheKey, $data, 3600); // 1 saat
     }

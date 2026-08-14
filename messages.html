@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <title>Mesajlar - Sosyal Kütüphane</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
@@ -183,6 +186,14 @@
             padding: 20px;
         }
 
+        .typing-indicator {
+            display: none;
+            padding: 0 16px 8px;
+            font-size: 12px;
+            font-style: italic;
+            color: var(--color-text-faint);
+        }
+
         @media (max-width: 768px) {
             .messages-layout {
                 grid-template-columns: 1fr;
@@ -216,24 +227,27 @@
 
 <body>
     <nav class="navbar">
-        <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
-        <div class="nav-links">
-            <a href="search.html" class="nav-link">🔍 Keşfet</a>
-            <a href="feed.html" class="nav-link">📰 Akış</a>
-            <a href="messages.html" class="nav-link active">💬 Mesajlar</a>
-            <a href="profile.html" class="nav-link">👤 Profilim</a>
-            <div class="nav-icon-wrap">
-                <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
-                    🔔
-                    <span class="nav-badge" id="notifBadge"></span>
-                </button>
-                <div class="nav-panel" id="notifPanel">
-                    <div class="nav-panel-header">Bildirimler</div>
-                    <div class="nav-panel-empty">Yükleniyor...</div>
+        <div class="navbar-inner">
+            <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
+            <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false">☰</button>
+            <div class="nav-links">
+                <a href="search.html" class="nav-link">🔍 Keşfet</a>
+                <a href="feed.html" class="nav-link">📰 Akış</a>
+                <a href="messages.html" class="nav-link active">💬 Mesajlar</a>
+                <a href="profile.html" class="nav-link">👤 Profilim</a>
+                <div class="nav-icon-wrap">
+                    <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
+                        🔔
+                        <span class="nav-badge" id="notifBadge"></span>
+                    </button>
+                    <div class="nav-panel" id="notifPanel">
+                        <div class="nav-panel-header">Bildirimler</div>
+                        <div class="nav-panel-empty">Yükleniyor...</div>
+                    </div>
                 </div>
+                <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
+                <button class="logout-btn" onclick="logout()">Çıkış</button>
             </div>
-            <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
-            <button class="logout-btn" onclick="logout()">Çıkış</button>
         </div>
     </nav>
 
@@ -254,6 +268,7 @@
         let activeConversationId = null;
         let activeOtherUser = null;
         let pollTimer = null;
+        let typingPollTimer = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
             if (app.initPromise) await app.initPromise;
@@ -278,7 +293,40 @@
                 loadConversations();
                 if (activeConversationId) loadThread(activeConversationId, false);
             }, 5000);
+
+            typingPollTimer = setInterval(pollTypingStatus, 2000);
         });
+
+        let typingSendCooldown = null;
+
+        // En fazla 2 saniyede bir "yazıyor" damgası gönder (her tuşta değil).
+        function handleComposerInput() {
+            if (!activeConversationId || typingSendCooldown) return;
+            typingSendCooldown = setTimeout(() => { typingSendCooldown = null; }, 2000);
+            fetch('/api/typing-status.php', {
+                method: 'POST',
+                headers: app.authHeaders(),
+                credentials: 'include',
+                body: JSON.stringify({ conversation_id: activeConversationId })
+            }).catch(() => { });
+        }
+
+        async function pollTypingStatus() {
+            const indicator = document.getElementById('typingIndicator');
+            if (!indicator || !activeConversationId) return;
+
+            try {
+                const res = await fetch(`/api/typing-status.php?conversation_id=${activeConversationId}`, { credentials: 'include' });
+                const data = await res.json();
+                if (data.success && data.typing) {
+                    const name = activeOtherUser?.username ? app.escapeHtml(activeOtherUser.username) : 'Kullanıcı';
+                    indicator.textContent = `${name} yazıyor...`;
+                    indicator.style.display = 'block';
+                } else {
+                    indicator.style.display = 'none';
+                }
+            } catch (error) { }
+        }
 
         async function loadConversations() {
             try {
@@ -337,7 +385,7 @@
         function renderEmptyThreadForNewUser(otherUserId) {
             const panel = document.getElementById('threadPanel');
             panel.innerHTML = `
-                <div class="thread-header"><button class="back-to-list" onclick="closeThreadMobile()">←</button> Yeni mesaj</div>
+                <div class="thread-header"><button class="back-to-list" onclick="closeThreadMobile()" aria-label="Konuşma listesine dön">←</button> Yeni mesaj</div>
                 <div class="thread-body" id="threadBody"><div class="empty-thread">İlk mesajını gönder</div></div>
                 <div class="thread-composer">
                     <textarea id="messageInput" placeholder="Bir mesaj yaz..." onkeydown="handleComposerKey(event)"></textarea>
@@ -350,6 +398,8 @@
             activeConversationId = conversationId;
             activeOtherUser = { id: otherUserId, username: otherUsername };
             document.querySelectorAll('.conv-item').forEach(el => el.classList.remove('active'));
+            const existingIndicator = document.getElementById('typingIndicator');
+            if (existingIndicator) existingIndicator.style.display = 'none';
 
             document.getElementById('convList').classList.add('hidden-mobile');
             document.getElementById('threadPanel').classList.remove('hidden-mobile');
@@ -369,10 +419,11 @@
 
                 if (showComposer || !document.getElementById('messageInput')) {
                     panel.innerHTML = `
-                        <div class="thread-header"><button class="back-to-list" onclick="closeThreadMobile()">←</button> ${headerName}</div>
+                        <div class="thread-header"><button class="back-to-list" onclick="closeThreadMobile()" aria-label="Konuşma listesine dön">←</button> ${headerName}</div>
                         <div class="thread-body" id="threadBody"></div>
+                        <div class="typing-indicator" id="typingIndicator"></div>
                         <div class="thread-composer">
-                            <textarea id="messageInput" placeholder="Bir mesaj yaz..." onkeydown="handleComposerKey(event)"></textarea>
+                            <textarea id="messageInput" placeholder="Bir mesaj yaz..." onkeydown="handleComposerKey(event)" oninput="handleComposerInput()"></textarea>
                             <button class="btn btn-primary" onclick="sendMessage()">Gönder</button>
                         </div>
                     `;

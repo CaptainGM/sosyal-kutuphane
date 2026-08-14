@@ -137,6 +137,14 @@ if ($method === 'GET') {
         }
     }
 
+    $blocked = $db->blocks->findOne(['$or' => [
+        ['blocker_id' => $userId, 'blocked_id' => $toUserId],
+        ['blocker_id' => $toUserId, 'blocked_id' => $userId],
+    ]]);
+    if ($blocked) {
+        jsonResponse(['success' => false, 'message' => 'Bu kullanıcıya mesaj gönderilemiyor'], 403);
+    }
+
     $now = new MongoDB\BSON\UTCDateTime();
     $messageId = nextSequence($db, 'messages');
     $db->messages->insertOne([

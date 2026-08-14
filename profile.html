@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <title>Profil - Sosyal Kütüphane</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -19,15 +22,6 @@
             background: var(--color-bg);
             color: var(--color-text);
             line-height: 1.6;
-        }
-
-        .navbar .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
 
         .logout-btn {
@@ -330,8 +324,9 @@
 
 <body>
     <nav class="navbar">
-        <div class="container">
+        <div class="navbar-inner">
             <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
+            <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false">☰</button>
             <div class="nav-links">
                 <a href="search.html" class="nav-link">🔍 Keşfet</a>
                 <a href="feed.html" class="nav-link">📰 Akış</a>
@@ -362,6 +357,7 @@
                         <div class="avatar" id="profileAvatar">👤</div>
                         <div class="profile-actions" id="profileActions">
                             <button class="edit-profile-btn" onclick="editProfile()">Profili Düzenle</button>
+                            <a href="wrapped.html" class="edit-profile-btn" style="text-decoration:none;">🎉 Yıllık Özet</a>
                         </div>
                     </div>
                     <div class="profile-details">
@@ -385,6 +381,11 @@
                                 <span class="stat-label">Kitap</span>
                             </div>
                         </div>
+
+                        <div class="rating-histogram on-gradient" id="ratingHistogram" style="display:none; max-width: 320px;">
+                            <div class="rating-histogram-title">⭐ Puan Dağılımı</div>
+                            <div class="rating-histogram-bars" id="ratingHistogramBars"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -394,9 +395,18 @@
     <div class="container">
         <div class="tab-navigation">
             <button class="tab-btn active" onclick="switchTab('library')">📚 Kütüphanem</button>
+            <button class="tab-btn" onclick="switchTab('diary')">📔 Günlük</button>
             <button class="tab-btn" onclick="switchTab('activity')">📊 Aktiviteler</button>
             <button class="tab-btn" onclick="switchTab('lists')">📁 Listelerim</button>
             <button class="tab-btn" onclick="switchTab('settings')">⚙️ Hesap Ayarları</button>
+        </div>
+
+        <div id="diaryTab" class="tab-content">
+            <div class="tab-inner">
+                <div id="diaryList">
+                    <div class="loading">⏳ Günlük yükleniyor...</div>
+                </div>
+            </div>
         </div>
 
         <div id="libraryTab" class="tab-content active">
@@ -448,6 +458,12 @@
         </div>
 
         <div id="settingsTab" class="tab-content">
+            <div class="card" id="adminLinkCard" style="padding:25px; margin-bottom:20px; display:none;">
+                <h3 style="margin-bottom:10px;">🛡️ Moderasyon</h3>
+                <p style="color:var(--color-text-muted);font-size:14px;margin-bottom:15px;">Bekleyen yorum şikayetlerini incele.</p>
+                <a href="admin.html" class="btn btn-outline">Moderasyon Kuyruğuna Git</a>
+            </div>
+
             <div class="card" style="padding:25px; margin-bottom:20px;">
                 <h3 style="margin-bottom:20px;">🖼️ Avatar</h3>
                 <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
@@ -551,6 +567,20 @@
                 <p style="color:var(--color-text-muted);font-size:14px;margin-bottom:20px;">İzlediklerin, okuduklarım, listelerin ve yorumların tek bir JSON dosyası olarak indirilir.</p>
                 <a href="/api/export-library.php" class="btn btn-outline">İndir (.json)</a>
             </div>
+
+            <div class="card" style="padding:25px;">
+                <h3 style="margin-bottom:10px;">📥 Kütüphaneni İçe Aktar</h3>
+                <p style="color:var(--color-text-muted);font-size:14px;margin-bottom:20px;">Daha önce "Dışa Aktar" ile indirdiğin .json dosyasını yükleyerek puanlarını, izleme durumlarını ve listelerini geri yükle. Yorumlar içe aktarılmaz.</p>
+                <input type="file" id="importFileInput" accept="application/json,.json" style="display:none;" onchange="handleImportFile(this.files[0])">
+                <button type="button" class="btn btn-outline" onclick="document.getElementById('importFileInput').click()">📁 Dosya Seç ve İçe Aktar</button>
+                <div id="importStatus" style="margin-top:12px;font-size:13px;color:var(--color-text-muted);"></div>
+            </div>
+
+            <div class="card" style="padding:25px;">
+                <h3 style="margin-bottom:10px;">🚫 Engellenen Kullanıcılar</h3>
+                <p style="color:var(--color-text-muted);font-size:14px;margin-bottom:20px;">Engellediğin kullanıcılar seni takip edemez, sana mesaj gönderemez.</p>
+                <div id="blockedUsersList" style="color:var(--color-text-faint);font-size:14px;">Yükleniyor...</div>
+            </div>
         </div>
     </div>
 
@@ -566,7 +596,6 @@
             } catch (error) {
                 console.error('❌ initPage error:', error);
             } finally {
-                console.log('✅ App init done (or failed), loading profile...');
                 loadProfile();
             }
         }
@@ -576,19 +605,15 @@
             initPage();
         }
         function loadProfile() {
-            console.log('📢 loadProfile çalıştı');
             const user = (typeof app !== 'undefined' && app.currentUser) ? app.currentUser : { username: 'Ziyaretçi', id: null };
 
             try {
                 displayProfile(user);
 
                 if (typeof app !== 'undefined' && app.currentUser) {
-                    console.log('✅ Login detected - loadLibrary çağrılıyor');
                     if (typeof loadLibrary === 'function') loadLibrary().catch(e => console.error('❌ loadLibrary hata:', e));
                     if (typeof loadActivities === 'function') loadActivities().catch(e => console.error('❌ loadActivities hata:', e));
                     if (typeof loadCustomLists === 'function') loadCustomLists().catch(e => console.error('❌ loadCustomLists hata:', e));
-                } else {
-                    console.warn('⚠️ Login yok, library yüklenmeyecek');
                 }
             } catch (error) {
                 console.error('❌ Profil yükleme hatası:', error);
@@ -607,7 +632,6 @@
             document.getElementById('profileUsername').textContent = user.username;
             document.getElementById('profileBio').textContent = user.bio || '📚 Film ve kitap tutkunu • 🎬 Favori tür: Bilim Kurgu • 📖 Son okuduğum: Harry Potter';
 
-            console.log('🎯 displayProfile sonrası - app.currentUser:', app?.currentUser);
             const avatarEl = document.getElementById('profileAvatar');
             const savedAvatar = user.avatar_url || user.avatar || '👨‍💼';
             avatarEl.textContent = savedAvatar;
@@ -622,18 +646,16 @@
             const avatars = ['👨‍🦱', '👩‍🦰', '👨‍🦲', '👩‍🦱', '👨‍💼', '👩‍💼', '👨‍🎓', '👩‍🎓', '🧔', '👩', '👨‍⚕️', '👩‍⚕️', '👨‍🍳', '👩‍🍳', '👨‍✈️', '👩‍✈️', '🧑‍💻', '👨‍🎨', '👩‍🎨', '👨‍🎭'];
 
             let html = `
-        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 10000; max-width: 500px; width: 90%;">
-            <h2 style="margin-bottom: 20px; color: #333; text-align: center;">Avatar Seç</h2>
-            
+        <div class="modal-overlay" id="avatarPickerModal" onclick="if(event.target===this) closeAvatarModal()">
+            <div class="modal-box" style="max-width: 500px;">
+            <h2 style="margin-bottom: 20px; text-align: center;">Avatar Seç</h2>
+
             <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px; max-height: 300px; overflow-y: auto;">
     `;
 
             avatars.forEach(avatar => {
                 html += `
-            <div style="font-size: 40px; cursor: pointer; padding: 10px; text-align: center; border-radius: 8px; transition: all 0.3s; border: 2px solid transparent;" 
-                 onmouseover="this.style.background='#f0f0f0'; this.style.border='2px solid #667eea';" 
-                 onmouseout="this.style.background='white'; this.style.border='2px solid transparent';"
-                 onclick="saveAvatar('${avatar}')">${avatar}</div>
+            <div class="avatar-option" onclick="saveAvatar('${avatar}')">${avatar}</div>
         `;
             });
 
@@ -641,10 +663,10 @@
             </div>
 
             <div style="display: flex; gap: 10px;">
-                <button onclick="closeAvatarModal()" style="flex: 1; background: #ccc; color: #333; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600;">✕ İptal</button>
+                <button onclick="closeAvatarModal()" class="btn btn-secondary" style="flex: 1;">✕ İptal</button>
+            </div>
             </div>
         </div>
-        <div onclick="closeAvatarModal()" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999;"></div>
     `;
 
             document.body.insertAdjacentHTML('beforeend', html);
@@ -680,11 +702,7 @@
         }
 
         function closeAvatarModal() {
-            const modal = document.querySelector('[style*="position: fixed"][style*="top: 50%"]');
-            const overlay = document.querySelector('[style*="position: fixed"][style*="top: 0"][style*="background: rgba"]');
-
-            if (modal) modal.remove();
-            if (overlay) overlay.remove();
+            document.getElementById('avatarPickerModal')?.remove();
         }
 
         async function updateStats() {
@@ -731,6 +749,20 @@
             if (document.getElementById('reviewsCount')) document.getElementById('reviewsCount').textContent = reviewsCount;
             if (document.getElementById('moviesCount')) document.getElementById('moviesCount').textContent = moviesCount;
             if (document.getElementById('booksCount')) document.getElementById('booksCount').textContent = booksCount;
+
+            try {
+                const statsResponse = await fetch('/api/user-stats.php', { credentials: 'include' });
+                const statsData = await statsResponse.json();
+                if (statsData.success && statsData.stats.rating_distribution) {
+                    const hasRatings = Object.values(statsData.stats.rating_distribution).some(c => c > 0);
+                    if (hasRatings) {
+                        app.renderRatingHistogram(document.getElementById('ratingHistogramBars'), statsData.stats.rating_distribution);
+                        document.getElementById('ratingHistogram').style.display = 'block';
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Puan dağılımı alınamadı:', error);
+            }
         }
         async function getContentTitle(type, id) {
             if (contentCache[`${type}_${id}`]) {
@@ -767,6 +799,42 @@
             event.target.classList.add('active');
 
             if (tabName === 'settings') initSettingsTab();
+            if (tabName === 'diary') loadDiary();
+        }
+
+        let diaryLoaded = false;
+        async function loadDiary() {
+            if (diaryLoaded || !app.currentUser) return;
+            diaryLoaded = true;
+
+            const container = document.getElementById('diaryList');
+            try {
+                const response = await fetch(`/api/diary.php`, { credentials: 'include' });
+                const data = await response.json();
+                const entries = data.entries || [];
+
+                if (!data.success || entries.length === 0) {
+                    container.innerHTML = '<div class="no-results">📔 Günlüğün henüz boş — film/dizi izleyip kitap okudukça burada birikecek</div>';
+                    return;
+                }
+
+                container.innerHTML = entries.map(entry => {
+                    const icon = entry.type === 'movie' ? '🎬' : entry.type === 'series' ? '📺' : '📚';
+                    const dateStr = new Date(entry.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+                    return `
+                        <div class="activity-item" onclick="goToDetail('${entry.type}', '${entry.id}')" style="cursor:pointer;">
+                            <div class="activity-header">
+                                <span class="activity-type">${icon} ${app.escapeHtml(entry.title)}</span>
+                                <span style="color: var(--color-text-faint); font-size: 14px;">${dateStr}</span>
+                            </div>
+                            ${entry.rating ? `<div style="line-height: 1.5;">⭐ ${entry.rating}/10 puan verdin</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Günlük yüklenirken hata:', error);
+                container.innerHTML = '<div class="no-results">❌ Günlük yüklenemedi</div>';
+            }
         }
 
         let settingsTabInitialized = false;
@@ -777,6 +845,53 @@
             document.getElementById('currentEmailDisplay').textContent = app.currentUser.email;
             renderAvatarPreview(app.currentUser.avatar_url, app.currentUser.username);
             renderTwoFactorStatus(app.currentUser.totp_enabled);
+            loadBlockedUsers();
+            if (app.currentUser.is_admin) {
+                document.getElementById('adminLinkCard').style.display = 'block';
+            }
+        }
+
+        async function loadBlockedUsers() {
+            const container = document.getElementById('blockedUsersList');
+            try {
+                const response = await fetch('/api/block.php', { credentials: 'include' });
+                const data = await response.json();
+                const blocked = data.blocked || [];
+
+                if (blocked.length === 0) {
+                    container.innerHTML = 'Henüz kimseyi engellemedin.';
+                    return;
+                }
+
+                container.innerHTML = blocked.map(user => `
+                    <div class="user-card" style="display:flex;justify-content:space-between;align-items:center;background:var(--color-surface-2);padding:12px 15px;border-radius:8px;margin-bottom:10px;">
+                        <span>${app.escapeHtml(user.username)}</span>
+                        <button class="btn btn-outline" style="padding:6px 14px;" onclick="unblockUser(${user.id})">Engeli Kaldır</button>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Engellenenler yüklenemedi:', error);
+                container.innerHTML = 'Yüklenirken hata oluştu.';
+            }
+        }
+
+        async function unblockUser(targetUserId) {
+            try {
+                const response = await fetch('/api/block.php', {
+                    method: 'DELETE',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ target_user_id: targetUserId })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    app.toast('Engel kaldırıldı', 'success');
+                    loadBlockedUsers();
+                }
+            } catch (error) {
+                console.error('Engel kaldırma hatası:', error);
+                app.toast('Bağlantı hatası', 'error');
+            }
         }
 
         function renderTwoFactorStatus(enabled) {
@@ -873,7 +988,7 @@
         function renderAvatarPreview(avatarUrl, username) {
             const preview = document.getElementById('avatarPreview');
             if (avatarUrl) {
-                preview.innerHTML = `<img src="${app.escapeHtml(avatarUrl)}" style="width:100%;height:100%;object-fit:cover;">`;
+                preview.innerHTML = `<img src="${app.escapeHtml(avatarUrl)}" alt="${app.escapeHtml(username || 'Avatar')}" style="width:100%;height:100%;object-fit:cover;">`;
             } else {
                 preview.textContent = (username || '?').charAt(0).toUpperCase();
             }
@@ -912,6 +1027,58 @@
                 app.toast('Bağlantı hatası', 'error');
             } finally {
                 event.target.value = '';
+            }
+        }
+
+        async function handleImportFile(file) {
+            if (!file) return;
+            const statusEl = document.getElementById('importStatus');
+            const input = document.getElementById('importFileInput');
+
+            if (file.size > 5 * 1024 * 1024) {
+                app.toast('Dosya çok büyük (maks. 5MB)', 'error');
+                input.value = '';
+                return;
+            }
+
+            statusEl.textContent = '⏳ Dosya okunuyor...';
+
+            try {
+                const text = await file.text();
+                let parsed;
+                try {
+                    parsed = JSON.parse(text);
+                } catch (e) {
+                    app.toast('Geçersiz JSON dosyası', 'error');
+                    statusEl.textContent = '';
+                    return;
+                }
+
+                statusEl.textContent = '⏳ İçe aktarılıyor...';
+                const response = await fetch('/api/import-library.php', {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify(parsed)
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    const s = data.imported || {};
+                    statusEl.textContent = `✅ ${s.movies || 0} film, ${s.series || 0} dizi, ${s.books || 0} kitap, ${s.lists || 0} liste içe aktarıldı`;
+                    app.toast('Kütüphane içe aktarıldı!', 'success');
+                    loadLibrary();
+                    loadCustomLists();
+                } else {
+                    statusEl.textContent = '';
+                    app.toast(data.message || 'İçe aktarma başarısız oldu', 'error');
+                }
+            } catch (error) {
+                console.error('İçe aktarma hatası:', error);
+                statusEl.textContent = '';
+                app.toast('Bağlantı hatası', 'error');
+            } finally {
+                input.value = '';
             }
         }
 
@@ -1031,30 +1198,20 @@
                 const watchedResponse = await fetch(`/api/get-user-content.php?type=movie&status=watched`, { credentials: 'include' });
                 if (!watchedResponse.ok) throw new Error('Film API hatası: ' + watchedResponse.status);
                 const watchedData = await watchedResponse.json();
-                console.log('✅ İzlenen filmler:', watchedData);
                 const moviesWatched = watchedData.success ? watchedData.content : [];
                 const watchlistResponse = await fetch(`/api/get-user-content.php?type=movie&status=watchlist`, { credentials: 'include' });
                 if (!watchlistResponse.ok) throw new Error('Watchlist API hatası: ' + watchlistResponse.status);
                 const watchlistData = await watchlistResponse.json();
-                console.log('✅ İzlenecekler:', watchlistData);
                 const moviesWatchlist = watchlistData.success ? watchlistData.content : [];
                 const readResponse = await fetch(`/api/get-user-content.php?type=book&status=read`, { credentials: 'include' });
                 if (!readResponse.ok) throw new Error('Kitap API hatası: ' + readResponse.status);
                 const readData = await readResponse.json();
-                console.log('✅ Okunan kitaplar:', readData);
                 const booksRead = readData.success ? readData.content : [];
                 const toReadResponse = await fetch(`/api/get-user-content.php?type=book&status=to_read`, { credentials: 'include' });
                 if (!toReadResponse.ok) throw new Error('Okunacaklar API hatası: ' + toReadResponse.status);
                 const toReadData = await toReadResponse.json();
-                console.log('✅ Okunacaklar:', toReadData);
                 const booksReadinglist = toReadData.success ? toReadData.content : [];
 
-                console.log('🎯 displayLibrary çağrılıyor:', {
-                    watched: moviesWatched.length,
-                    watchlist: moviesWatchlist.length,
-                    read: booksRead.length,
-                    toRead: booksReadinglist.length
-                });
                 displayLibrary(moviesWatched, moviesWatchlist, booksRead, booksReadinglist);
             } catch (error) {
                 console.error('❌ Kütüphane yükleme hatası:', error);
@@ -1253,7 +1410,7 @@
                 container.innerHTML = `
                     <div class="no-results">
                         📝 Henüz aktiviteniz yok<br>
-                        <small style="color: #999;">Film izleyip kitap okuyarak aktivitelerinizi burada görebilirsiniz</small>
+                        <small style="color: var(--color-text-faint);">Film izleyip kitap okuyarak aktivitelerinizi burada görebilirsiniz</small>
                     </div>
                 `;
                 return;
@@ -1263,7 +1420,7 @@
                 <div class="activity-item">
                     <div class="activity-header">
                         <span class="activity-type">${getActivityTypeText(activity.type)}</span>
-                        <span style="color: #999; font-size: 14px;">${app.formatDate(activity.date)}</span>
+                        <span style="color: var(--color-text-faint); font-size: 14px;">${app.formatDate(activity.date)}</span>
                     </div>
                     <div style="line-height: 1.5;">${activity.content}</div>
                 </div>
@@ -1300,7 +1457,7 @@
                 container.innerHTML = `
                     <div class="no-results">
                         📁 Henüz özel listeniz yok<br>
-                        <small style="color: #999;">"Yeni Liste Oluştur" butonuna tıklayarak özel listeler oluşturabilirsiniz</small>
+                        <small style="color: var(--color-text-faint);">"Yeni Liste Oluştur" butonuna tıklayarak özel listeler oluşturabilirsiniz</small>
                     </div>
                 `;
                 return;
@@ -1310,10 +1467,10 @@
                 <div class="list-card">
                     <h3>${app.escapeHtml(list.name)}</h3>
                     <div class="list-stats">${list.item_count || 0} içerik</div>
-                    <p style="color: #666; margin-bottom: 15px; line-height: 1.4;">${app.escapeHtml(list.description) || 'Açıklama bulunmuyor'}</p>
+                    <p style="color: var(--color-text-muted); margin-bottom: 15px; line-height: 1.4;">${app.escapeHtml(list.description) || 'Açıklama bulunmuyor'}</p>
                     <div style="display: flex; gap: 10px;">
                         <button class="btn btn-primary" onclick="viewList('${list.id}')">📋 Listeyi Görüntüle</button>
-                        <button class="btn" style="background: #6c757d; color: white;" onclick="editList('${list.id}')">✏️ Düzenle</button>
+                        <button class="btn btn-secondary" onclick="editList('${list.id}')">✏️ Düzenle</button>
                     </div>
                 </div>
             `).join('');
@@ -1324,20 +1481,21 @@
             const currentBio = document.getElementById('profileBio').textContent;
 
             const editMenu = `
-        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 10000; min-width: 400px;">
-            <h2 style="margin-bottom: 20px; color: #333;">Profili Düzenle</h2>
-            
+        <div class="modal-overlay" id="editProfileModal" onclick="if(event.target===this) closeEditModal()">
+            <div class="modal-box" style="min-width: 400px; max-width: 90vw;">
+            <h2 style="margin-bottom: 20px;">Profili Düzenle</h2>
+
             <div style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Biyografi:</label>
-                <textarea id="editBio" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: inherit; min-height: 100px;">${app.escapeHtml(currentBio)}</textarea>
+                <label class="form-label">Biyografi:</label>
+                <textarea id="editBio" class="form-control" style="font-family: inherit; min-height: 100px;">${app.escapeHtml(currentBio)}</textarea>
             </div>
 
             <div style="display: flex; gap: 10px;">
-                <button onclick="saveProfile()" style="flex: 1; background: #667eea; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600;">💾 Kaydet</button>
-                <button onclick="closeEditModal()" style="flex: 1; background: #ccc; color: #333; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600;">✕ İptal</button>
+                <button onclick="saveProfile()" class="btn btn-primary" style="flex: 1;">💾 Kaydet</button>
+                <button onclick="closeEditModal()" class="btn btn-secondary" style="flex: 1;">✕ İptal</button>
+            </div>
             </div>
         </div>
-        <div onclick="closeEditModal()" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999;"></div>
     `;
 
             document.body.insertAdjacentHTML('beforeend', editMenu);
@@ -1365,11 +1523,7 @@
         }
 
         function closeEditModal() {
-            const modal = document.querySelector('[style*="position: fixed"][style*="top: 50%"]');
-            const overlay = document.querySelector('[style*="position: fixed"][style*="top: 0"][style*="background: rgba"]');
-
-            if (modal) modal.remove();
-            if (overlay) overlay.remove();
+            document.getElementById('editProfileModal')?.remove();
         }
         async function createNewList() {
             const listName = prompt('Liste adını girin:');
@@ -1468,13 +1622,13 @@
         }
         function displaySearchResults(listId, results, contentType) {
             let html = `
-                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 10000;" id="searchResultsModal">
-                    <div style="background: white; padding: 30px; border-radius: 15px; max-width: 700px; width: 90%; max-height: 80vh; overflow-y: auto;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                            <h2 style="margin: 0;">📌 ${contentType === 'movie' ? 'Film' : 'Kitap'} Seçin</h2>
-                            <button onclick="closeSearchModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">✕</button>
+                <div class="modal-overlay" id="searchResultsModal" onclick="if(event.target===this) closeSearchModal()">
+                    <div class="modal-box" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
+                        <div class="modal-box-header">
+                            <h2>📌 ${contentType === 'movie' ? 'Film' : 'Kitap'} Seçin</h2>
+                            <button onclick="closeSearchModal()" class="modal-close-btn" aria-label="Kapat">✕</button>
                         </div>
-                        
+
                         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px;">
             `;
 
@@ -1486,10 +1640,10 @@
                     const title = item.title || 'Bilinmiyor';
 
                     html += `
-                        <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer;" onclick="selectContentForList('${listId}', 'movie', '${item.id}', '${encodeURIComponent(title)}')">
+                        <div class="pick-card" onclick="selectContentForList('${listId}', 'movie', '${item.id}', '${encodeURIComponent(title)}')">
                             <img src="${posterUrl}" alt="${app.escapeHtml(title)}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 5px; margin-bottom: 8px;">
                             <div style="font-size: 12px; font-weight: 600; word-break: break-word;">${app.escapeHtml(title)}</div>
-                            <div style="font-size: 11px; color: #999;">⭐ ${item.vote_average?.toFixed(1) || 'N/A'}</div>
+                            <div style="margin-top: 4px;">${app.ratingPillHtml(item.vote_average)}</div>
                         </div>
                     `;
                 } else {
@@ -1500,10 +1654,10 @@
                     const title = volumeInfo.title || 'Bilinmiyor';
 
                     html += `
-                        <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer;" onclick="selectContentForList('${listId}', 'book', '${item.id}', '${encodeURIComponent(title)}')">
+                        <div class="pick-card" onclick="selectContentForList('${listId}', 'book', '${item.id}', '${encodeURIComponent(title)}')">
                             <img src="${coverUrl}" alt="${app.escapeHtml(title)}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 5px; margin-bottom: 8px;">
                             <div style="font-size: 12px; font-weight: 600; word-break: break-word;">${app.escapeHtml(title)}</div>
-                            <div style="font-size: 11px; color: #999;">✍️ ${app.escapeHtml(volumeInfo.authors ? volumeInfo.authors[0] : 'Bilinmiyor')}</div>
+                            <div style="font-size: 11px; color: var(--color-text-faint);">✍️ ${app.escapeHtml(volumeInfo.authors ? volumeInfo.authors[0] : 'Bilinmiyor')}</div>
                         </div>
                     `;
                 }
@@ -1512,7 +1666,7 @@
             html += `
                         </div>
                         <div style="margin-top: 20px; text-align: center;">
-                            <button onclick="closeSearchModal()" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;">Kapat</button>
+                            <button onclick="closeSearchModal()" class="btn btn-secondary">Kapat</button>
                         </div>
                     </div>
                 </div>
@@ -1568,38 +1722,46 @@
                 const items = list.items || [];
 
                 let html = `
-                    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 9999;" id="listModal">
-                        <div style="background: white; padding: 30px; border-radius: 15px; max-width: 800px; width: 90%; max-height: 80vh; overflow-y: auto;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                                <h2 style="margin: 0;">${app.escapeHtml(list.name)}</h2>
-                                <button onclick="closeListModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">✕</button>
+                    <div class="modal-overlay" id="listModal" onclick="if(event.target===this) closeListModal()">
+                        <div class="modal-box" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
+                            <div class="modal-box-header">
+                                <h2>${app.escapeHtml(list.name)}</h2>
+                                <button onclick="closeListModal()" class="modal-close-btn" aria-label="Kapat">✕</button>
                             </div>
 
-                            <p style="color: #666; margin-bottom: 20px;">${app.escapeHtml(list.description) || 'Açıklama bulunmuyor'}</p>
+                            <p style="color: var(--color-text-muted); margin-bottom: 20px;">${app.escapeHtml(list.description) || 'Açıklama bulunmuyor'}</p>
+
+                            <div class="modal-bordered-panel" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+                                <label class="spoiler-checkbox-label" style="margin: 0;">
+                                    <input type="checkbox" id="listPublicToggle" ${list.is_public ? 'checked' : ''} onchange="toggleListPublic('${listId}', this.checked)">
+                                    🔗 Herkese açık (link ile paylaşılabilir)
+                                </label>
+                                <button type="button" class="btn btn-outline" id="copyListLinkBtn" style="padding: 6px 14px; display: ${list.is_public ? 'inline-block' : 'none'};" onclick="copyListLink('${listId}')">Bağlantıyı Kopyala</button>
+                            </div>
 
                             <h3 style="margin-bottom: 15px;">📚 Listedeki İçerikler (${items.length})</h3>
 
-                            <div id="listItems" style="margin-bottom: 20px; max-height: 400px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px;">
+                            <div id="listItems" class="modal-bordered-panel" style="margin-bottom: 20px; max-height: 400px; overflow-y: auto;">
                                 ${items.length > 0 ? `
                                     <div id="listItemsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px;">
                                         ${items.map(item => `
-                                            <div id="item-${item.id}" style="background: #f8f9fa; padding: 10px; border-radius: 8px; text-align: center; display: flex; flex-direction: column; gap: 8px;">
+                                            <div id="item-${item.id}" class="pick-card" style="cursor: default; display: flex; flex-direction: column; gap: 8px;">
                                                 <img src="https://placehold.co/140x200?text=Yükleniyor" alt="${app.escapeHtml(item.content_title)}" class="item-poster" data-item-id="${item.content_id}" data-item-type="${item.content_type}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 5px;">
                                                 <div style="font-size: 12px; font-weight: 600; word-break: break-word; line-height: 1.3;">${app.escapeHtml(item.content_title)}</div>
-                                                <button onclick="removeFromList('${listId}', '${item.id}')" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;">🗑️ Çıkar</button>
+                                                <button onclick="removeFromList('${listId}', '${item.id}')" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;">🗑️ Çıkar</button>
                                             </div>
                                         `).join('')}
                                     </div>
                                 ` : `
-                                    <div style="text-align: center; color: #999; padding: 20px;">
+                                    <div style="text-align: center; color: var(--color-text-faint); padding: 20px;">
                                         📭 Listeye henüz içerik eklenmemiş
                                     </div>
                                 `}
                             </div>
-                            
+
                             <div style="display: flex; gap: 10px;">
-                                <button onclick="addItemToList('${listId}')" style="flex: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600;">➕ İçerik Ekle</button>
-                                <button onclick="closeListModal()" style="flex: 1; background: #6c757d; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600;">Kapat</button>
+                                <button onclick="addItemToList('${listId}')" class="btn btn-primary" style="flex: 1;">➕ İçerik Ekle</button>
+                                <button onclick="closeListModal()" class="btn btn-secondary" style="flex: 1;">Kapat</button>
                             </div>
                         </div>
                     </div>
@@ -1611,6 +1773,34 @@
                 console.error('Liste yüklenirken hata:', error);
                 app.toast('Liste yüklenirken hata oluştu!', 'error');
             }
+        }
+        async function toggleListPublic(listId, isPublic) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/custom-lists.php`, {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ action: 'toggle_public', list_id: listId, is_public: isPublic })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('copyListLinkBtn').style.display = isPublic ? 'inline-block' : 'none';
+                    app.toast(isPublic ? 'Liste artık herkese açık' : 'Liste artık gizli', 'success');
+                } else {
+                    app.toast(data.message || 'İşlem başarısız oldu', 'error');
+                }
+            } catch (error) {
+                console.error('Paylaşım durumu değiştirme hatası:', error);
+                app.toast('Bağlantı hatası', 'error');
+            }
+        }
+        function copyListLink(listId) {
+            const url = `${window.location.origin}/shared-list.html?id=${listId}`;
+            navigator.clipboard.writeText(url).then(() => {
+                app.toast('Bağlantı kopyalandı!', 'success');
+            }).catch(() => {
+                app.toast(url, 'info', 6000);
+            });
         }
         async function loadListItemPosters(items) {
             for (const item of items) {

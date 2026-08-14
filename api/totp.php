@@ -61,7 +61,7 @@ function totpCodeAt(string $base32Secret, int $unixTime, int $timeStep = 30, int
     return str_pad((string) ($truncated % (10 ** $digits)), $digits, '0', STR_PAD_LEFT);
 }
 
-// $window: kabul edilen zaman kayması (1 = önceki/şu anki/sonraki 30sn'lik dilim — saat senkron sorunlarına tolerans).
+// $window: saat kaymasına tolerans (1 = önceki/şimdiki/sonraki 30sn dilimi).
 function verifyTotp(string $base32Secret, string $code, int $window = 1, ?int $now = null): bool
 {
     $now ??= time();

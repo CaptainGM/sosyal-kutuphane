@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <title>Sosyal - Sosyal Kütüphane</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
@@ -303,24 +306,27 @@
 <body>
     
     <nav class="navbar">
-        <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
-        <div class="nav-links">
-            <a href="search.html" class="nav-link">🔍 Keşfet</a>
-            <a href="feed.html" class="nav-link">📰 Akış</a>
-            <a href="profile.html" class="nav-link">👤 Profilim</a>
-            <a href="messages.html" class="nav-link">💬 Mesajlar</a>
-            <div class="nav-icon-wrap">
-                <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
-                    🔔
-                    <span class="nav-badge" id="notifBadge"></span>
-                </button>
-                <div class="nav-panel" id="notifPanel">
-                    <div class="nav-panel-header">Bildirimler</div>
-                    <div class="nav-panel-empty">Yükleniyor...</div>
+        <div class="navbar-inner">
+            <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
+            <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false">☰</button>
+            <div class="nav-links">
+                <a href="search.html" class="nav-link">🔍 Keşfet</a>
+                <a href="feed.html" class="nav-link">📰 Akış</a>
+                <a href="profile.html" class="nav-link">👤 Profilim</a>
+                <a href="messages.html" class="nav-link">💬 Mesajlar</a>
+                <div class="nav-icon-wrap">
+                    <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
+                        🔔
+                        <span class="nav-badge" id="notifBadge"></span>
+                    </button>
+                    <div class="nav-panel" id="notifPanel">
+                        <div class="nav-panel-header">Bildirimler</div>
+                        <div class="nav-panel-empty">Yükleniyor...</div>
+                    </div>
                 </div>
+                <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
+                <button class="logout-btn" onclick="logout()">Çıkış</button>
             </div>
-            <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
-            <button class="logout-btn" onclick="logout()">Çıkış</button>
         </div>
     </nav>
 
@@ -334,6 +340,11 @@
                     <button onclick="searchUsers()">🔍</button>
                 </div>
                 <div id="searchResults"></div>
+
+                <div style="margin-top: 24px;">
+                    <h3>🤝 Tanıyor Olabileceğiniz Kişiler</h3>
+                    <div id="suggestedUsers"></div>
+                </div>
             </div>
 
             
@@ -371,11 +382,59 @@
     <script src="js/escape-html.js"></script>
     <script src="js/app.js"></script>
     <script>
+        let displayedComments = [];
+
         document.addEventListener('DOMContentLoaded', function () {
             loadFeed();
             loadAllComments();
             loadFollowing();
+            loadSuggestedUsers();
         });
+
+        async function loadSuggestedUsers() {
+            const container = document.getElementById('suggestedUsers');
+            if (!container) return;
+
+            try {
+                const response = await fetch('/api/suggested-users.php?limit=6', { credentials: 'include' });
+                const data = await response.json();
+                const suggestions = data.suggestions || [];
+
+                if (!data.success || suggestions.length === 0) {
+                    container.innerHTML = '<div class="empty-state" style="padding: 15px; font-size: 12px;">Şu an öneri yok</div>';
+                    return;
+                }
+
+                container.innerHTML = suggestions.map(user => `
+                    <div class="user-card">
+                        <div class="user-info" onclick="window.location.href='user-profile.html?id=${user.id}'" style="cursor: pointer;">
+                            <h4>${app.escapeHtml(user.username)}</h4>
+                            <p>${user.mutual_count > 0 ? `👥 ${user.mutual_count} ortak takip` : '✨ Popüler kullanıcı'}</p>
+                        </div>
+                        <button class="follow-btn" onclick="event.stopPropagation(); followSuggested(${user.id})">+ Takip</button>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Öneri yükleme hatası:', error);
+            }
+        }
+
+        async function followSuggested(targetUserId) {
+            try {
+                await fetch('/api/follow.php', {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ target_user_id: targetUserId })
+                });
+                app.toast('Kullanıcı takip edildi!', 'success');
+                loadSuggestedUsers();
+                loadFollowing();
+            } catch (error) {
+                console.error('Takip işlemi hatası:', error);
+                app.toast('Takip işlemi başarısız oldu', 'error');
+            }
+        }
 
         async function searchUsers() {
             const query = document.getElementById('userSearchInput').value.trim();
@@ -507,7 +566,7 @@
                         </div>
                         <div class="comment-text">${app.escapeHtml(activity.text)}</div>
                         <div class="comment-actions">
-                            <button class="action-btn" onclick="likeFeedItem(${idx})">
+                            <button class="action-btn" data-likes="${activity.likes}" onclick="likeFeedItem(this)">
                                 ❤️ Beğen (${activity.likes})
                             </button>
                         </div>
@@ -518,8 +577,18 @@
             container.innerHTML = html;
         }
 
-        function likeFeedItem(idx) {
-            console.log(`Feed öğesi ${idx} beğenildi`);
+        function likeFeedItem(btn) {
+            btn.classList.toggle('liked');
+            let currentLikes = parseInt(btn.dataset.likes) || 0;
+
+            if (btn.classList.contains('liked')) {
+                currentLikes++;
+                btn.innerHTML = `❤️ Beğenildi (${currentLikes})`;
+            } else {
+                currentLikes = Math.max(0, currentLikes - 1);
+                btn.innerHTML = `❤️ Beğen (${currentLikes})`;
+            }
+            btn.dataset.likes = currentLikes;
         }
 
         async function loadAllComments() {
@@ -530,6 +599,7 @@
 
                 if (data.comments && Array.isArray(data.comments)) {
                     allComments = data.comments.map(comment => ({
+                        id: comment.id,
                         username: comment.username,
                         text: comment.comment_text || comment.text,
                         date: comment.created_at || new Date().toISOString(),
@@ -546,6 +616,7 @@
         }
 
         function displayComments(comments) {
+            displayedComments = comments;
             const container = document.getElementById('commentsContainer');
 
             if (comments.length === 0) {
@@ -591,8 +662,24 @@
             }
         }
 
-        function likeComment(idx) {
-            console.log(`Yorum ${idx} beğenildi`);
+        async function likeComment(idx) {
+            const comment = displayedComments[idx];
+            if (!comment || !comment.id) return;
+
+            try {
+                const response = await fetch('/api/like-comment.php', {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ comment_id: comment.id })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    loadAllComments();
+                }
+            } catch (error) {
+                console.error('Beğenme hatası:', error);
+            }
         }
 
         async function loadFollowing() {
@@ -620,7 +707,7 @@
 
                     let avatarContent;
                     if (avatar && avatar.startsWith('http')) {
-                        avatarContent = `<img src="${app.escapeHtml(avatar)}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                        avatarContent = `<img src="${app.escapeHtml(avatar)}" alt="${safeUsername}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
                     } else if (avatar && avatar.trim() !== '') {
                         avatarContent = `<span style="font-size: 36px;">${app.escapeHtml(avatar)}</span>`;
                     } else {

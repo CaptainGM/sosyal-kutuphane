@@ -1,7 +1,10 @@
 <?php
 require_once 'config.php';
-requireLogin();
-$userId = isset($_GET['user_id']) ? intval($_GET['user_id']) : getCurrentUserId();
+$userId = isset($_GET['user_id']) ? intval($_GET['user_id']) : null;
+if ($userId === null) {
+    requireLogin();
+    $userId = getCurrentUserId();
+}
 $contentType = $_GET['type'] ?? null;
 if ($contentType === null) {
     $watchedRows = iterator_to_array($db->user_movie_status->find(

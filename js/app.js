@@ -1,19 +1,13 @@
 
 const API_BASE_URL = '/api';
-// TMDB ve Google Books istekleri artık doğrudan bu dış servislere değil, kendi
-// sunucumuzdaki önbellekli vekil (proxy) uçlarına gidiyor — bkz. api/tmdb-proxy.php
-// ve api/books-proxy.php. Böylece aynı popüler/en yüksek puanlı liste tüm
-// ziyaretçiler arasında paylaşılan bir önbellekten sunuluyor (yavaş internetli
-// kullanıcılar her sayfa açılışında aynı veriyi baştan indirmek zorunda kalmıyor)
-// ve TMDB anahtarı istemci tarafında görünmüyor.
+// TMDB/Google Books istekleri kendi proxy uçlarımızdan geçer (ortak önbellek + gizli API anahtarı).
 const TMDB_PROXY_URL = `${API_BASE_URL}/tmdb-proxy.php`;
 const BOOKS_PROXY_URL = `${API_BASE_URL}/books-proxy.php`;
 const fetchOptions = {
     credentials: 'include'
 };
 
-// Tema, sayfa çizilmeden önce (henüz DOMContentLoaded olmadan) uygulanır ki
-// koyu modda kısa süreliğine beyaz bir "flash" görünmesin.
+// Tema, beyaz flaş olmasın diye DOMContentLoaded'dan önce uygulanır.
 (function applyStoredTheme() {
     const saved = localStorage.getItem('theme');
     if (saved === 'dark' || saved === 'light') {
@@ -37,11 +31,9 @@ class SocialLibraryApp {
             if (data.success && data.user) {
                 this.currentUser = data.user;
                 this.csrfToken = data.csrf_token || null;
-                console.log('✅ User logged in:', this.currentUser.username);
             } else {
                 this.currentUser = null;
                 this.csrfToken = null;
-                console.log('Not authenticated');
             }
         } catch (error) {
             console.error('Auth check failed:', error);
@@ -55,8 +47,7 @@ class SocialLibraryApp {
         return { 'Content-Type': 'application/json', 'X-CSRF-Token': this.csrfToken || '', ...extra };
     }
 
-    // Kullanıcıdan gelen metni innerHTML'e basmadan önce kaçış yapmak için kullan.
-    // Gerçek mantık js/escape-html.js'te (tarayıcı + Node testlerinde ortak kullanılsın diye).
+    // Kullanıcı metnini innerHTML'e basmadan önce kaçış yap. Mantık js/escape-html.js'te.
     escapeHtml(str) {
         return escapeHtml(str);
     }
@@ -166,7 +157,7 @@ class SocialLibraryApp {
         root.querySelectorAll('input[type="password"]').forEach(input => this.wirePasswordToggle(input));
     }
 
-    // --- Bildirim zili (nav'da id="notifBellBtn"/"notifBadge"/"notifPanel" varsa çalışır) ---
+    // --- Bildirim zili ---
     async initNotifications() {
         const bellBtn = document.getElementById('notifBellBtn');
         const badge = document.getElementById('notifBadge');
@@ -207,6 +198,14 @@ class SocialLibraryApp {
             } else {
                 badge.classList.remove('visible');
             }
+
+            // Sayaç arttıysa zile pop animasyonu ver.
+            if (this._lastUnreadCount !== undefined && unreadCount > this._lastUnreadCount) {
+                badge.classList.remove('nav-badge-pulse');
+                void badge.offsetWidth;
+                badge.classList.add('nav-badge-pulse');
+            }
+            this._lastUnreadCount = unreadCount;
 
             if (renderList) this._renderNotifications(panel, items);
         } catch (error) {
@@ -306,7 +305,7 @@ class SocialLibraryApp {
         }
     }
 
-    // --- Diziler (TMDB /tv) — filmlerle aynı desen, sadece uç nokta ve alan adları farklı (name/first_air_date) ---
+    // --- Diziler (TMDB /tv) — filmlerle aynı desen ---
     async searchSeries(query, page = 1) {
         try {
             const response = await fetch(
@@ -412,11 +411,7 @@ class SocialLibraryApp {
             });
 
             const data = await response.json();
-            if (data.success) {
-                console.log('✅ İçerik kaydedildi');
-                return true;
-            }
-            return false;
+            return data.success === true;
         } catch (error) {
             console.error('İçerik kaydetme hatası:', error);
             return false;
@@ -444,11 +439,7 @@ class SocialLibraryApp {
             });
 
             const data = await response.json();
-            if (data.success) {
-                console.log('✅ Yorum eklendi');
-                return true;
-            }
-            return false;
+            return data.success === true;
         } catch (error) {
             console.error('Yorum ekleme hatası:', error);
             return false;
@@ -621,6 +612,32 @@ class SocialLibraryApp {
         }
     }
 
+    // Renk kodlu puan rozeti: 7+ yeşil, 5-7 turuncu, altı kırmızı.
+    ratingPillHtml(score) {
+        const n = parseFloat(score);
+        if (isNaN(n)) return '<span class="rating-pill">☆ N/A</span>';
+        const cls = n >= 7 ? 'rating-high' : n >= 5 ? 'rating-mid' : 'rating-low';
+        return `<span class="rating-pill ${cls}">⭐ ${n.toFixed(1)}</span>`;
+    }
+
+    // 1-10 arası puan dağılımını basit bir CSS bar grafiğine çevirir.
+    renderRatingHistogram(containerEl, distribution) {
+        const counts = Object.values(distribution);
+        const max = Math.max(1, ...counts);
+        containerEl.innerHTML = Object.keys(distribution)
+            .sort((a, b) => a - b)
+            .map(rating => {
+                const count = distribution[rating] || 0;
+                const heightPct = count > 0 ? Math.max(6, Math.round((count / max) * 100)) : 0;
+                return `
+                    <div class="rating-bar-col" title="${count} puan">
+                        <div class="rating-bar" style="height: ${heightPct}%;"></div>
+                        <div class="rating-bar-label">${rating}</div>
+                    </div>
+                `;
+            }).join('');
+    }
+
     ratingToStars(rating) {
         const stars = Math.round(rating / 2);
         return '⭐'.repeat(stars);
@@ -639,6 +656,39 @@ async function logout() {
     window.location.href = 'index.html';
 }
 
+// --- Mobil hamburger menü ---
+function wireNavToggle() {
+    document.querySelectorAll('.nav-toggle-btn').forEach(btn => {
+        const links = btn.parentElement?.querySelector('.nav-links');
+        if (!links || btn.dataset.navToggleWired) return;
+        btn.dataset.navToggleWired = '1';
+
+        const setOpen = (open) => {
+            links.classList.toggle('nav-links-open', open);
+            btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        };
+
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            setOpen(!links.classList.contains('nav-links-open'));
+        });
+
+        links.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => setOpen(false));
+        });
+
+        document.addEventListener('click', (e) => {
+            if (links.classList.contains('nav-links-open') && !links.contains(e.target) && !btn.contains(e.target)) {
+                setOpen(false);
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) setOpen(false);
+        });
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     app.wireAllPasswordToggles();
     document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
@@ -646,5 +696,26 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => app.toggleTheme());
     });
     app.initNotifications();
+    wireNavToggle();
+
+    // Bazı sayfalar giriş yapmadan da gezilebiliyor — çıkış yapmamış birine
+    // "Çıkış Yap" göstermek yerine giriş sayfasına yönlendiren bir link göster.
+    app.initPromise.then(() => {
+        if (app.currentUser) return;
+        document.querySelectorAll('.logout-btn').forEach(btn => {
+            btn.textContent = 'Giriş Yap';
+            btn.onclick = null;
+            btn.addEventListener('click', () => { window.location.href = 'index.html'; });
+        });
+    });
 });
+
+// PWA service worker kaydı — bkz. sw.js.
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(err => {
+            console.error('Service worker kayıt hatası:', err);
+        });
+    });
+}
 

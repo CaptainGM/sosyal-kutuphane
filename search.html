@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <title>Arama & Keşfet - Sosyal Kütüphane</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
@@ -338,25 +341,28 @@
 
 <body>
     <nav class="navbar">
-        <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
-        <div class="nav-links">
-            <a href="search.html" class="nav-link active">🔍 Keşfet</a>
-            <a href="feed.html" class="nav-link">📰 Akış</a>
-            <a href="social.html" class="nav-link">👥 Sosyal</a>
-            <a href="profile.html" class="nav-link">👤 Profilim</a>
-            <a href="messages.html" class="nav-link">💬 Mesajlar</a>
-            <div class="nav-icon-wrap">
-                <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
-                    🔔
-                    <span class="nav-badge" id="notifBadge"></span>
-                </button>
-                <div class="nav-panel" id="notifPanel">
-                    <div class="nav-panel-header">Bildirimler</div>
-                    <div class="nav-panel-empty">Yükleniyor...</div>
+        <div class="navbar-inner">
+            <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
+            <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false">☰</button>
+            <div class="nav-links">
+                <a href="search.html" class="nav-link active">🔍 Keşfet</a>
+                <a href="feed.html" class="nav-link">📰 Akış</a>
+                <a href="social.html" class="nav-link">👥 Sosyal</a>
+                <a href="profile.html" class="nav-link">👤 Profilim</a>
+                <a href="messages.html" class="nav-link">💬 Mesajlar</a>
+                <div class="nav-icon-wrap">
+                    <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
+                        🔔
+                        <span class="nav-badge" id="notifBadge"></span>
+                    </button>
+                    <div class="nav-panel" id="notifPanel">
+                        <div class="nav-panel-header">Bildirimler</div>
+                        <div class="nav-panel-empty">Yükleniyor...</div>
+                    </div>
                 </div>
+                <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
+                <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
             </div>
-            <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
-            <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
         </div>
         <span id="userWelcome" style="display:none;"></span>
     </nav>
@@ -744,7 +750,6 @@
                         });
 
                         results = items;
-                        console.log('Kitap arama sonucu:', results.length, 'kitap bulundu');
                     } catch (err) {
                         console.error('Google Books API hatası:', err);
                         results = [];
@@ -988,7 +993,7 @@
                                  onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok'">
                             <div class="info">
                                 <h3>${item.title}</h3>
-                                <div class="meta">📅 ${year} | ⭐ ${item.vote_average?.toFixed(1) || 'N/A'}</div>
+                                <div class="meta">📅 ${year} | ${app.ratingPillHtml(item.vote_average)}</div>
                             </div>
                         </div>
                     `;
@@ -1005,7 +1010,7 @@
                                  onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok'">
                             <div class="info">
                                 <h3>${item.name}</h3>
-                                <div class="meta">📅 ${year} | ⭐ ${item.vote_average?.toFixed(1) || 'N/A'}</div>
+                                <div class="meta">📅 ${year} | ${app.ratingPillHtml(item.vote_average)}</div>
                             </div>
                         </div>
                     `;
@@ -1114,11 +1119,7 @@
             try {
                 let allMovies = [];
 
-                // Eskiden 100 sayfa (≈2000 film) çekilip hepsinin posteri aynı anda
-                // render ediliyordu — yavaş internetli ziyaretçiler için ağır bir
-                // yükti. Artık önbellekli vekil uç noktası üzerinden, en fazla 5
-                // sayfa (≈100 film) çekiliyor; resimler de lazy-loading ile sadece
-                // kullanıcı kaydırdıkça indiriliyor (bkz. displayShowcaseResults).
+                // En fazla 5 sayfa (~100 film) çekilir; posterler lazy-loading ile yüklenir.
                 for (let page = 1; page <= 5; page++) {
                     const response = await fetch(`${TMDB_PROXY_URL}?endpoint=list&type=movie&list=popular&page=${page}`);
                     const data = await response.json();
@@ -1358,7 +1359,7 @@
                              onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok'">
                         <div class="info">
                             <h3>${movie.title}</h3>
-                            <div class="meta">📅 ${year} | ⭐ ${movie.vote_average?.toFixed(1) || 'N/A'}</div>
+                            <div class="meta">📅 ${year} | ${app.ratingPillHtml(movie.vote_average)}</div>
                         </div>
                     </div>
                 `;
@@ -1404,7 +1405,7 @@
                              onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok'">
                         <div class="info">
                             <h3>${series.name}</h3>
-                            <div class="meta">📅 ${year} | ⭐ ${series.vote_average?.toFixed(1) || 'N/A'}</div>
+                            <div class="meta">📅 ${year} | ${app.ratingPillHtml(series.vote_average)}</div>
                         </div>
                     </div>
                 `;

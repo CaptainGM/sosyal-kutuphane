@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Çevrimdışı - Sosyal Kütüphane</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .offline-wrap {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .offline-wrap h1 {
+            font-size: 22px;
+            margin: 10px 0;
+        }
+
+        .offline-wrap p {
+            color: var(--color-text-muted);
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="offline-wrap">
+        <div style="font-size: 48px;">📡</div>
+        <h1>Çevrimdışısınız</h1>
+        <p>İnternet bağlantısı bulunamadı. Bağlantı geri geldiğinde otomatik olarak devam edebilirsiniz.</p>
+        <button class="btn btn-primary" onclick="location.reload()">🔄 Tekrar Dene</button>
+    </div>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

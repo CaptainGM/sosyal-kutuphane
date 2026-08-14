@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <title>Kullanıcı Profili - Sosyal Kütüphane</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
@@ -152,6 +155,25 @@
             background: var(--color-bg);
         }
 
+        .follow-btn.block-btn {
+            background: none;
+            color: var(--color-danger);
+            border: 2px solid var(--color-danger);
+        }
+
+        .follow-btn.block-btn:hover {
+            background: var(--color-danger-bg);
+        }
+
+        .follow-btn.block-btn.blocked {
+            background: var(--color-danger);
+            color: white;
+        }
+
+        .follow-btn.block-btn.blocked:hover {
+            filter: brightness(0.92);
+        }
+
         .profile-content {
             background: var(--color-surface);
             padding: 30px;
@@ -294,24 +316,27 @@
 <body>
 
     <nav class="navbar">
-        <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
-        <div class="nav-links">
-            <a href="search.html" class="nav-link">🔍 Keşfet</a>
-            <a href="feed.html" class="nav-link">📰 Akış</a>
-            <a href="profile.html" class="nav-link">👤 Profilim</a>
-            <a href="messages.html" class="nav-link">💬 Mesajlar</a>
-            <div class="nav-icon-wrap">
-                <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
-                    🔔
-                    <span class="nav-badge" id="notifBadge"></span>
-                </button>
-                <div class="nav-panel" id="notifPanel">
-                    <div class="nav-panel-header">Bildirimler</div>
-                    <div class="nav-panel-empty">Yükleniyor...</div>
+        <div class="navbar-inner">
+            <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
+            <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false">☰</button>
+            <div class="nav-links">
+                <a href="search.html" class="nav-link">🔍 Keşfet</a>
+                <a href="feed.html" class="nav-link">📰 Akış</a>
+                <a href="profile.html" class="nav-link">👤 Profilim</a>
+                <a href="messages.html" class="nav-link">💬 Mesajlar</a>
+                <div class="nav-icon-wrap">
+                    <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
+                        🔔
+                        <span class="nav-badge" id="notifBadge"></span>
+                    </button>
+                    <div class="nav-panel" id="notifPanel">
+                        <div class="nav-panel-header">Bildirimler</div>
+                        <div class="nav-panel-empty">Yükleniyor...</div>
+                    </div>
                 </div>
+                <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
+                <button class="logout-btn" onclick="logout()">Çıkış</button>
             </div>
-            <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
-            <button class="logout-btn" onclick="logout()">Çıkış</button>
         </div>
     </nav>
 
@@ -350,12 +375,24 @@
                     </div>
                 </div>
 
+                <div class="rating-histogram" id="ratingHistogram" style="display:none;">
+                    <div class="rating-histogram-title">⭐ Puan Dağılımı</div>
+                    <div class="rating-histogram-bars" id="ratingHistogramBars"></div>
+                </div>
+
+                <div id="compatibilityBadge" style="display: none; margin-top: 15px; padding: 12px; border-radius: var(--radius); background: var(--color-surface-2);">
+                    <div style="font-size: 22px; font-weight: 800; background: var(--color-accent-gradient); -webkit-background-clip: text; background-clip: text; color: transparent;" id="compatibilityScore"></div>
+                    <div style="font-size: 12px; color: var(--color-text-faint);" id="compatibilityDetail"></div>
+                </div>
 
                 <button id="followBtn" class="follow-btn" onclick="toggleFollow()" style="display: none;">
                     + Takip Et
                 </button>
                 <button id="messageBtn" class="follow-btn" onclick="goToMessages()" style="display: none; margin-top: 10px; background: var(--color-surface-2); color: var(--color-text); border: 2px solid var(--color-border);">
                     💬 Mesaj Gönder
+                </button>
+                <button id="blockBtn" class="follow-btn block-btn" onclick="toggleBlock()" style="display: none;">
+                    🚫 Engelle
                 </button>
             </div>
 
@@ -365,6 +402,7 @@
                     <button class="tab-btn active" onclick="switchTab('watched')">📽️ İzledikleri</button>
                     <button class="tab-btn" onclick="switchTab('read')">📚 Okuduğu Kitaplar</button>
                     <button class="tab-btn" onclick="switchTab('reviews')">✍️ Yazılan Yorumlar</button>
+                    <button class="tab-btn" onclick="switchTab('diary')">📔 Günlük</button>
                 </div>
 
 
@@ -387,6 +425,12 @@
                         <div class="no-content">Yorum bulunamadı</div>
                     </div>
                 </div>
+
+                <div id="diary" class="tab-content">
+                    <div id="diaryContent">
+                        <div class="no-content">⏳ Günlük yükleniyor...</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -405,8 +449,6 @@
             const urlParams = new URLSearchParams(window.location.search);
             profileUserId = urlParams.get('id');
 
-            console.log('URL profile ID:', profileUserId);
-            console.log('Current user:', app?.currentUser);
             if (!profileUserId) {
                 profileUserId = app?.currentUser?.id || 1;
                 isOwnProfile = true;
@@ -414,7 +456,6 @@
                 isOwnProfile = (parseInt(profileUserId) === app?.currentUser?.id);
             }
 
-            console.log('Loading profile for user ID:', profileUserId);
             await loadUserProfile();
         });
 
@@ -429,7 +470,6 @@
             try {
                 const response = await fetch(`/api/get-user-content.php?user_id=${userId}`, { credentials: 'include' });
                 const data = await response.json();
-                console.log('User content data:', data);
 
                 let userMovies = data.watched || [];
                 let userBooks = data.read || [];
@@ -528,7 +568,6 @@
 
         async function loadUserProfile() {
             const userId = profileUserId;
-            console.log('loadUserProfile called with userId:', userId);
 
             if (!userId) {
                 document.querySelector('.container').innerHTML = '<div class="no-content">Kullanıcı ID bulunamadı</div>';
@@ -538,7 +577,6 @@
             try {
                 const response = await fetch(`/api/user-profile.php?id=${userId}`, { credentials: 'include' });
                 const data = await response.json();
-                console.log('API response:', data);
 
                 if (!data.success) {
                     document.querySelector('.container').innerHTML = '<div class="no-content">Kullanıcı bulunamadı</div>';
@@ -547,8 +585,6 @@
 
                 const user = data.user;
                 const stats = data.stats;
-                console.log('User:', user);
-                console.log('Stats:', stats);
                 const pageTitle = document.getElementById('pageTitle');
                 const userAvatar = document.getElementById('userAvatar');
                 const userName = document.getElementById('userName');
@@ -558,24 +594,12 @@
                 const moviesCount = document.getElementById('moviesCount');
                 const booksCount = document.getElementById('booksCount');
 
-                console.log('DOM elements found:', {
-                    pageTitle: !!pageTitle,
-                    userAvatar: !!userAvatar,
-                    userName: !!userName,
-                    userEmail: !!userEmail,
-                    followersCount: !!followersCount,
-                    followingCount: !!followingCount,
-                    moviesCount: !!moviesCount,
-                    booksCount: !!booksCount
-                });
-
                 if (pageTitle) pageTitle.textContent = `${user.username} - Profil`;
                 if (userAvatar) {
                     const avatar = user.avatar_url || user.avatar;
-                    console.log('Avatar:', avatar);
 
                     if (avatar && avatar.startsWith('http')) {
-                        userAvatar.innerHTML = `<img src="${app.escapeHtml(avatar)}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                        userAvatar.innerHTML = `<img src="${app.escapeHtml(avatar)}" alt="${app.escapeHtml(user.username)}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
                     } else if (avatar && avatar.trim() !== '') {
                         userAvatar.innerHTML = `<span style="font-size: 60px;">${app.escapeHtml(avatar)}</span>`;
                     } else {
@@ -589,7 +613,6 @@
                 if (moviesCount) moviesCount.textContent = stats.movies_watched || 0;
                 if (booksCount) booksCount.textContent = stats.books_read || 0;
 
-                console.log('DOM updated successfully');
                 const followBtn = document.getElementById('followBtn');
                 if (followBtn && !isOwnProfile) {
                     followBtn.style.display = 'block';
@@ -599,6 +622,15 @@
                 if (messageBtn && !isOwnProfile) {
                     messageBtn.style.display = 'block';
                 }
+                const blockBtn = document.getElementById('blockBtn');
+                if (blockBtn && !isOwnProfile) {
+                    blockBtn.style.display = 'block';
+                    checkBlockStatus(userId);
+                }
+                if (!isOwnProfile && app.currentUser) {
+                    loadCompatibility(userId);
+                }
+                loadRatingHistogram(userId);
 
                 loadUserContent();
             } catch (error) {
@@ -668,6 +700,78 @@
 
             event.target.classList.add('active');
             document.getElementById(tabName).classList.add('active');
+
+            if (tabName === 'diary') loadDiary();
+        }
+
+        let diaryLoaded = false;
+        async function loadDiary() {
+            if (diaryLoaded) return;
+            diaryLoaded = true;
+
+            const container = document.getElementById('diaryContent');
+            try {
+                const response = await fetch(`/api/diary.php?user_id=${profileUserId}`, { credentials: 'include' });
+                const data = await response.json();
+                const entries = data.entries || [];
+
+                if (!data.success || entries.length === 0) {
+                    container.innerHTML = '<div class="no-content">📔 Günlük boş</div>';
+                    return;
+                }
+
+                container.innerHTML = entries.map(entry => {
+                    const icon = entry.type === 'movie' ? '🎬' : entry.type === 'series' ? '📺' : '📚';
+                    const dateStr = new Date(entry.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+                    return `
+                        <div class="review-item" onclick="window.location.href='detail.php?type=${entry.type}&id=${entry.id}'" style="cursor:pointer;">
+                            <div class="review-title">${icon} ${app.escapeHtml(entry.title)}</div>
+                            <div style="color: var(--color-text-faint); font-size: 12px;">${dateStr}</div>
+                            ${entry.rating ? `<div class="review-rating">⭐ ${entry.rating}/10</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Günlük yüklenirken hata:', error);
+                container.innerHTML = '<div class="no-content">❌ Günlük yüklenemedi</div>';
+            }
+        }
+
+        async function loadRatingHistogram(userId) {
+            try {
+                const response = await fetch(`/api/user-stats.php?user_id=${userId}`, { credentials: 'include' });
+                const data = await response.json();
+                const distribution = data.stats?.rating_distribution;
+                if (!data.success || !distribution) return;
+
+                const hasRatings = Object.values(distribution).some(c => c > 0);
+                if (hasRatings) {
+                    app.renderRatingHistogram(document.getElementById('ratingHistogramBars'), distribution);
+                    document.getElementById('ratingHistogram').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Puan dağılımı alınamadı:', error);
+            }
+        }
+
+        async function loadCompatibility(userId) {
+            const badge = document.getElementById('compatibilityBadge');
+            try {
+                const response = await fetch(`/api/compatibility.php?user_id=${userId}`, { credentials: 'include' });
+                const data = await response.json();
+                if (!data.success || data.score === null) return;
+
+                document.getElementById('compatibilityScore').textContent = `🎯 %${data.score} Zevk Uyumu`;
+                const detail = document.getElementById('compatibilityDetail');
+                if (data.basis === 'ratings') {
+                    detail.textContent = `${data.shared_rated_count} ortak puanlanmış içeriğe göre`;
+                } else {
+                    detail.textContent = 'Ortak tür ilgisine göre tahmini';
+                }
+                badge.style.display = 'block';
+            } catch (error) {
+                console.error('Uyumluluk hesaplama hatası:', error);
+            }
         }
 
         async function checkFollowStatus(userId) {
@@ -732,6 +836,60 @@
             } catch (error) {
                 console.error('Takip değişikliği hatası:', error);
                 app.toast('İşlem başarısız oldu!', 'error');
+            }
+        }
+
+        async function checkBlockStatus(userId) {
+            const btn = document.getElementById('blockBtn');
+            if (!app.currentUser) {
+                btn.style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/block.php?target_user_id=${userId}`, { credentials: 'include' });
+                const data = await response.json();
+                if (data.success && data.is_blocked) {
+                    btn.textContent = '✅ Engeli Kaldır';
+                    btn.classList.add('blocked');
+                } else {
+                    btn.textContent = '🚫 Engelle';
+                    btn.classList.remove('blocked');
+                }
+            } catch (error) {
+                console.error('Engel durumu kontrol hatası:', error);
+            }
+        }
+
+        async function toggleBlock() {
+            if (!app.currentUser) return;
+
+            const btn = document.getElementById('blockBtn');
+            const targetUserId = profileUserId;
+            const isBlocked = btn.classList.contains('blocked');
+
+            if (!isBlocked && !(await app.confirmDialog('Bu kullanıcıyı engellemek istediğinize emin misiniz? Birbirinizi takip edemez ve mesajlaşamazsınız.', { confirmText: 'Engelle' }))) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/block.php', {
+                    method: isBlocked ? 'DELETE' : 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ target_user_id: targetUserId })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    app.toast(isBlocked ? 'Engel kaldırıldı' : 'Kullanıcı engellendi', 'success');
+                    checkBlockStatus(targetUserId);
+                    if (!isBlocked) checkFollowStatus(targetUserId);
+                } else {
+                    app.toast(data.message || 'İşlem başarısız oldu', 'error');
+                }
+            } catch (error) {
+                console.error('Engelleme hatası:', error);
+                app.toast('Bağlantı hatası', 'error');
             }
         }
 

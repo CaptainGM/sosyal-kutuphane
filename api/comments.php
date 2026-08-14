@@ -1,8 +1,10 @@
 <?php
 require_once 'config.php';
-requireLogin();
 
 $method = $_SERVER['REQUEST_METHOD'];
+if ($method !== 'GET') {
+    requireLogin();
+}
 $input = json_decode(file_get_contents('php://input'), true);
 $userId = (int)getCurrentUserId();
 
@@ -88,6 +90,7 @@ if ($method === 'GET') {
             'avatar_url' => $u->avatar_url ?? null,
             'likes_count' => $likeCounts[$c->_id] ?? 0,
             'liked_by_me' => isset($likedByMe[$c->_id]) ? 1 : 0,
+            'has_spoiler' => !empty($c->has_spoiler),
         ];
 
         $row['replies'] = [];
@@ -106,6 +109,7 @@ if ($method === 'GET') {
                 'avatar_url' => $ru->avatar_url ?? null,
                 'likes_count' => $likeCounts[$r->_id] ?? 0,
                 'liked_by_me' => isset($likedByMe[$r->_id]) ? 1 : 0,
+                'has_spoiler' => !empty($r->has_spoiler),
             ];
         }
 
@@ -120,6 +124,7 @@ if ($method === 'GET') {
     $contentId = $input['content_id'] ?? null;
     $commentText = $input['comment_text'] ?? null;
     $parentCommentId = $input['parent_comment_id'] ?? null;
+    $hasSpoiler = !empty($input['has_spoiler']);
 
     if (!$contentType || !$contentId || !$commentText) {
         jsonResponse(['success' => false, 'message' => 'Gerekli alanlar eksik'], 400);
@@ -134,6 +139,7 @@ if ($method === 'GET') {
         'content_id' => (int)$contentId,
         'comment_text' => $commentText,
         'parent_comment_id' => $parentCommentId !== null ? (int)$parentCommentId : null,
+        'has_spoiler' => $hasSpoiler,
         'created_at' => $now,
         'updated_at' => $now,
     ]);
@@ -146,6 +152,7 @@ if ($method === 'GET') {
         'content_id' => (int)$contentId,
         'comment_text' => $commentText,
         'parent_comment_id' => $parentCommentId !== null ? (int)$parentCommentId : null,
+        'has_spoiler' => $hasSpoiler,
         'created_at' => $now->toDateTime()->format('Y-m-d H:i:s'),
         'updated_at' => $now->toDateTime()->format('Y-m-d H:i:s'),
         'username' => $user->username ?? null,

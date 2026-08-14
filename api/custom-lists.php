@@ -37,6 +37,7 @@ if ($method === 'GET') {
             'id' => $list->_id,
             'name' => $list->name,
             'description' => $list->description,
+            'is_public' => !empty($list->is_public),
             'created_at' => $list->created_at->toDateTime()->format('Y-m-d H:i:s'),
             'updated_at' => $list->updated_at->toDateTime()->format('Y-m-d H:i:s'),
             'items' => $itemRows,
@@ -111,8 +112,7 @@ if ($method === 'GET') {
             jsonResponse(['success' => false, 'message' => 'Gerekli alanlar eksik']);
         }
         $listId = (int)$listId;
-        // custom_list_items.content_id şemada VARCHAR(255) — eski koddaki "s" bind ile aynı tipte tut.
-        $contentId = (string)$contentId;
+        $contentId = (string)$contentId; // content_id şemada VARCHAR(255)
 
         $listOwner = $db->custom_lists->findOne(['_id' => $listId]);
 
@@ -138,6 +138,26 @@ if ($method === 'GET') {
         $db->custom_lists->updateOne(['_id' => $listId], ['$set' => ['updated_at' => new MongoDB\BSON\UTCDateTime()]]);
 
         jsonResponse(['success' => true, 'message' => 'Öğe listeye eklendi']);
+
+    } elseif ($action === 'toggle_public') {
+        $listId = $input['list_id'] ?? null;
+        $isPublic = !empty($input['is_public']);
+
+        if (!$listId) {
+            jsonResponse(['success' => false, 'message' => 'Liste ID gereklidir']);
+        }
+        $listId = (int)$listId;
+
+        $result = $db->custom_lists->updateOne(
+            ['_id' => $listId, 'user_id' => $userId],
+            ['$set' => ['is_public' => $isPublic]]
+        );
+
+        if ($result->getMatchedCount() === 0) {
+            jsonResponse(['success' => false, 'message' => 'Bu listeye erişim yetkiniz yok'], 403);
+        }
+
+        jsonResponse(['success' => true, 'is_public' => $isPublic]);
     }
 
 } elseif ($method === 'PUT') {
@@ -170,8 +190,7 @@ if ($method === 'GET') {
 
     if ($itemId) {
         $itemId = (int)$itemId;
-        // Öğe, gerçekten kullanıcının sahip olduğu bir listeye ait mi kontrol et
-        // (eski koddaki eksik bir yetki kontrolüydü — herkes başkasının liste öğesini silebiliyordu).
+        // Liste gerçekten bu kullanıcıya mı ait, kontrol et.
         $listOwner = $db->custom_lists->findOne(['_id' => $listId, 'user_id' => $userId]);
         if (!$listOwner) {
             jsonResponse(['success' => false, 'message' => 'Bu listeye erişim yetkiniz yok'], 403);
@@ -179,9 +198,7 @@ if ($method === 'GET') {
         $db->custom_list_items->deleteOne(['_id' => $itemId, 'list_id' => $listId]);
         jsonResponse(['success' => true, 'message' => 'Öğe listeden çıkarıldı']);
     } else {
-        // Eski MySQL şemasında custom_list_items -> custom_lists ON DELETE CASCADE vardı, Mongo'da yok.
-        // Yalnızca liste gerçekten silindiyse (yani gerçekten sahibiyse) öğeleri de temizle;
-        // aksi halde başka bir kullanıcının liste öğelerini yanlışlıkla silmiş oluruz.
+        // Mongo'da cascade delete yok — liste gerçekten silindiyse öğelerini de temizle.
         $deleteResult = $db->custom_lists->deleteOne(['_id' => $listId, 'user_id' => $userId]);
         if ($deleteResult->getDeletedCount() > 0) {
             $db->custom_list_items->deleteMany(['list_id' => $listId]);

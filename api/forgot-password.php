@@ -22,8 +22,7 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
 $user = $db->users->findOne(['email' => $email]);
 
-// Kullanıcı bulunamasa bile aynı mesajı döndürüyoruz — böylece bu uç nokta
-// hangi e-postaların kayıtlı olduğunu dışarıya sızdırmıyor (enumeration koruması).
+// Kullanıcı bulunamasa bile aynı mesajı dön (e-posta enumeration'a karşı).
 if ($user) {
     $token = bin2hex(random_bytes(32));
     $expiresAt = new MongoDB\BSON\UTCDateTime((time() + 3600) * 1000);
@@ -38,9 +37,7 @@ if ($user) {
 
     $resetLink = SITE_URL . '/reset-password.html?token=' . $token;
     sendPasswordResetEmail($email, $user->username, $resetLink);
-    // Not: mail gönderimi başarısız olsa bile linki API yanıtında döndürmüyoruz —
-    // bu, SMTP yapılandırılmamışken sıfırlama token'ının herkese açık sızmasını önler.
-    // Yerel geliştirme sırasında linke ihtiyacın olursa PHP hata loguna bakabilirsin.
+    // Link yanıtta dönmez (SMTP yoksa token sızmasın) — gerekirse PHP loguna bak.
 }
 
 jsonResponse([
