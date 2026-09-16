@@ -1,0 +1,1871 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <title>Profil - Sosyal Kütüphane</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .profile-header {
+            background: var(--color-accent-gradient);
+            color: white;
+            padding: 60px 0 40px;
+            margin-bottom: 40px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .profile-info {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .avatar-container {
+            text-align: center;
+        }
+
+        .avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 5px solid white;
+            object-fit: cover;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .profile-details h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .profile-bio {
+            font-size: 16px;
+            line-height: 1.6;
+            opacity: 0.9;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .profile-stats {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            display: block;
+            color: white;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.8;
+            color: white;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .edit-profile-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .edit-profile-btn:hover {
+            background: var(--color-surface);
+            color: var(--color-accent);
+        }
+
+        .tab-navigation {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--color-border);
+            padding-bottom: 10px;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 12px 25px;
+            border: none;
+            background: none;
+            color: var(--color-text-muted);
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            background: var(--color-accent);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .library-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .content-item {
+            background: var(--color-surface);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+
+        .content-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .content-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .content-item .info {
+            padding: 10px;
+        }
+
+        .content-item h4 {
+            font-size: 12px;
+            margin-bottom: 5px;
+            line-height: 1.3;
+            height: 32px;
+            overflow: hidden;
+        }
+
+        .activity-item {
+            background: var(--color-surface);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin-bottom: 15px;
+        }
+
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .activity-type {
+            background: var(--color-accent);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .lists-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .list-card {
+            background: var(--color-surface);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .list-card h3 {
+            margin-bottom: 10px;
+            color: var(--color-text);
+        }
+
+        .list-stats {
+            color: var(--color-text-muted);
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: var(--color-accent);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px;
+            font-size: 16px;
+            color: var(--color-text-faint);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.15s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn:active {
+            transform: translateY(0) scale(0.98);
+            filter: brightness(0.94);
+        }
+
+        .btn-primary {
+            background: var(--color-accent-gradient);
+            color: white;
+            box-shadow: 0 3px 10px rgba(var(--color-accent-rgb), 0.35);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(var(--color-accent-rgb), 0.45);
+        }
+
+        @media (max-width: 768px) {
+            .profile-info {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .profile-stats {
+                justify-content: center;
+            }
+
+            .tab-navigation {
+                flex-wrap: wrap;
+            }
+
+            .library-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
+            <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false">☰</button>
+            <div class="nav-links">
+                <a href="search.html" class="nav-link">🔍 Keşfet</a>
+                <a href="feed.html" class="nav-link">📰 Akış</a>
+                <a href="profile.html" class="nav-link active">👤 Profilim</a>
+                <a href="messages.html" class="nav-link">💬 Mesajlar</a>
+                <div class="nav-icon-wrap">
+                    <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
+                        🔔
+                        <span class="nav-badge" id="notifBadge"></span>
+                    </button>
+                    <div class="nav-panel" id="notifPanel">
+                        <div class="nav-panel-header">Bildirimler</div>
+                        <div class="nav-panel-empty">Yükleniyor...</div>
+                    </div>
+                </div>
+                <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
+                <button id="logoutBtn" class="logout-btn" onclick="logout()">Çıkış Yap</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="profile-header">
+        <div class="container">
+            <div id="loadingProfile" class="loading">👤 Profil yükleniyor...</div>
+            <div id="profileContent" style="display: none;">
+                <div class="profile-info">
+                    <div class="avatar-container">
+                        <div class="avatar" id="profileAvatar">👤</div>
+                        <div class="profile-actions" id="profileActions">
+                            <button class="edit-profile-btn" onclick="editProfile()">Profili Düzenle</button>
+                            <a href="wrapped.html" class="edit-profile-btn" style="text-decoration:none;">🎉 Yıllık Özet</a>
+                        </div>
+                    </div>
+                    <div class="profile-details">
+                        <h1 id="profileUsername"></h1>
+                        <div id="profileBio" class="profile-bio"></div>
+                        <div class="profile-stats">
+                            <div class="stat">
+                                <span class="stat-number" id="ratingsCount">0</span>
+                                <span class="stat-label">Puan</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number" id="reviewsCount">0</span>
+                                <span class="stat-label">Yorum</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number" id="moviesCount">0</span>
+                                <span class="stat-label">Film</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number" id="booksCount">0</span>
+                                <span class="stat-label">Kitap</span>
+                            </div>
+                        </div>
+
+                        <div class="rating-histogram on-gradient" id="ratingHistogram" style="display:none; max-width: 320px;">
+                            <div class="rating-histogram-title">⭐ Puan Dağılımı</div>
+                            <div class="rating-histogram-bars" id="ratingHistogramBars"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="tab-navigation">
+            <button class="tab-btn active" onclick="switchTab('library')">📚 Kütüphanem</button>
+            <button class="tab-btn" onclick="switchTab('diary')">📔 Günlük</button>
+            <button class="tab-btn" onclick="switchTab('activity')">📊 Aktiviteler</button>
+            <button class="tab-btn" onclick="switchTab('lists')">📁 Listelerim</button>
+            <button class="tab-btn" onclick="switchTab('settings')">⚙️ Hesap Ayarları</button>
+        </div>
+
+        <div id="diaryTab" class="tab-content">
+            <div class="tab-inner">
+                <div id="diaryList">
+                    <div class="loading">⏳ Günlük yükleniyor...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="libraryTab" class="tab-content active">
+            <div class="tab-inner">
+                <div class="tab-buttons" style="margin-bottom: 20px; display: flex; gap: 10px;">
+                    <button class="tab-btn small active" onclick="switchLibraryTab('movies', this)">🎬 Filmler</button>
+                    <button class="tab-btn small" onclick="switchLibraryTab('books', this)">📚 Kitaplar</button>
+                </div>
+
+                <div id="moviesLibrary">
+                    <h3 style="margin-bottom: 20px;">🎬 İzlediklerim</h3>
+                    <div id="watchedMovies" class="library-grid">
+                        <div class="loading">Filmler yükleniyor...</div>
+                    </div>
+
+                    <h3 style="margin-bottom: 20px; margin-top: 30px;">📋 İzlenecekler</h3>
+                    <div id="watchlistMovies" class="library-grid">
+                        <div class="loading">Filmler yükleniyor...</div>
+                    </div>
+                </div>
+
+                <div id="booksLibrary" style="display: none;">
+                    <h3 style="margin-bottom: 20px;">📖 Okuduklarım</h3>
+                    <div id="readBooks" class="library-grid">
+                        <div class="loading">Kitaplar yükleniyor...</div>
+                    </div>
+
+                    <h3 style="margin-bottom: 20px; margin-top: 30px;">📚 Okunacaklar</h3>
+                    <div id="readinglistBooks" class="library-grid">
+                        <div class="loading">Kitaplar yükleniyor...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="activityTab" class="tab-content">
+            <div id="activitiesList" class="activity-list">
+                <div class="loading">Aktiviteler yükleniyor...</div>
+            </div>
+        </div>
+
+        <div id="listsTab" class="tab-content">
+            <div style="margin-bottom: 20px;">
+                <button class="btn btn-primary" onclick="createNewList()">+ Yeni Liste Oluştur</button>
+            </div>
+            <div id="customLists" class="lists-grid">
+                <div class="loading">Listeler yükleniyor...</div>
+            </div>
+        </div>
+
+        <div id="settingsTab" class="tab-content">
+            <div class="card" id="adminLinkCard" style="padding:25px; margin-bottom:20px; display:none;">
+                <h3 style="margin-bottom:10px;">🛡️ Moderasyon</h3>
+                <p style="color:var(--color-text-muted);font-size:14px;margin-bottom:15px;">Bekleyen yorum şikayetlerini incele.</p>
+                <a href="admin.html" class="btn btn-outline">Moderasyon Kuyruğuna Git</a>
+            </div>
+
+            <div class="card" style="padding:25px; margin-bottom:20px;">
+                <h3 style="margin-bottom:20px;">🖼️ Avatar</h3>
+                <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+                    <div id="avatarPreview" style="width:80px;height:80px;border-radius:50%;overflow:hidden;background:var(--color-accent-gradient);display:flex;align-items:center;justify-content:center;color:white;font-size:32px;flex-shrink:0;"></div>
+                    <div>
+                        <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;" onchange="handleAvatarFileChange(event)">
+                        <button type="button" class="btn btn-outline" onclick="document.getElementById('avatarFileInput').click()">📁 Fotoğraf Seç</button>
+                        <div style="font-size:12px;color:var(--color-text-faint);margin-top:8px;">JPG, PNG, WEBP veya GIF — en fazla 2MB</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="padding:25px; margin-bottom:20px;">
+                <h3 style="margin-bottom:20px;">🔒 Şifre Değiştir</h3>
+                <form onsubmit="handleChangePassword(event)">
+                    <div class="form-group">
+                        <label class="form-label">Mevcut Şifre</label>
+                        <input type="password" id="currentPasswordInput" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Yeni Şifre</label>
+                        <input type="password" id="newPasswordInput" class="form-control" minlength="6" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Yeni Şifre (Tekrar)</label>
+                        <input type="password" id="newPasswordConfirmInput" class="form-control" minlength="6" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Şifreyi Güncelle</button>
+                </form>
+            </div>
+
+            <div class="card" style="padding:25px; margin-bottom:20px;" id="twoFactorCard">
+                <h3 style="margin-bottom:10px;">🔐 İki Adımlı Doğrulama</h3>
+                <p style="color:var(--color-text-muted);font-size:14px;margin-bottom:20px;" id="twoFactorStatusText">Durum kontrol ediliyor...</p>
+
+                <div id="twoFactorDisabledView" style="display:none;">
+                    <button type="button" class="btn btn-outline" onclick="startTwoFactorSetup()">Etkinleştir</button>
+                </div>
+
+                <div id="twoFactorSetupView" style="display:none;">
+                    <p style="margin-bottom:10px;font-size:14px;">Authenticator uygulamana (Google Authenticator, Authy, Microsoft Authenticator...) "elle giriş" seçeneğiyle aşağıdaki anahtarı ekle:</p>
+                    <div style="background:var(--color-surface-2);padding:14px;border-radius:8px;font-family:monospace;font-size:16px;letter-spacing:1px;text-align:center;margin-bottom:15px;user-select:all;" id="twoFactorSecretDisplay"></div>
+                    <div class="form-group">
+                        <label class="form-label">Uygulamanın gösterdiği 6 haneli kod</label>
+                        <input type="text" id="twoFactorConfirmCode" class="form-control" placeholder="000000">
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="confirmTwoFactorSetup()">Onayla ve Etkinleştir</button>
+                </div>
+
+                <div id="twoFactorBackupCodesView" style="display:none;">
+                    <p style="color:var(--color-danger);font-weight:600;margin-bottom:10px;">⚠️ Bu yedek kodları güvenli bir yere kaydet — bir daha gösterilmeyecek!</p>
+                    <div id="backupCodesList" style="background:var(--color-surface-2);padding:14px;border-radius:8px;font-family:monospace;font-size:14px;line-height:1.8;margin-bottom:15px;"></div>
+                    <button type="button" class="btn btn-primary" onclick="finishTwoFactorSetup()">Anladım, Bitir</button>
+                </div>
+
+                <div id="twoFactorEnabledView" style="display:none;">
+                    <p style="color:var(--color-success);font-weight:600;margin-bottom:15px;">✅ İki adımlı doğrulama etkin</p>
+                    <div class="form-group">
+                        <label class="form-label">Devre dışı bırakmak için şifreni gir</label>
+                        <input type="password" id="disableTwoFactorPassword" class="form-control">
+                    </div>
+                    <button type="button" class="btn btn-danger" onclick="disableTwoFactor()">Devre Dışı Bırak</button>
+                </div>
+            </div>
+
+            <div class="card" style="padding:25px; margin-bottom:20px;">
+                <h3 style="margin-bottom:10px;">📧 E-posta Değiştir</h3>
+                <p style="color:var(--color-text-muted);font-size:14px;margin-bottom:20px;">Mevcut e-postan: <strong id="currentEmailDisplay"></strong></p>
+
+                <div id="emailStep1">
+                    <button type="button" class="btn btn-outline" onclick="requestOldEmailCode()">Doğrulama Kodu Gönder</button>
+                </div>
+
+                <div id="emailStep2" style="display:none;">
+                    <div class="form-group">
+                        <label class="form-label">Mevcut e-postana gönderilen 6 haneli kod</label>
+                        <input type="text" id="oldCodeInput" class="form-control" maxlength="6" placeholder="000000">
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="verifyOldEmailCode()">Doğrula</button>
+                </div>
+
+                <div id="emailStep3" style="display:none;">
+                    <div class="form-group">
+                        <label class="form-label">Yeni e-posta adresi</label>
+                        <input type="email" id="newEmailInput" class="form-control" placeholder="yeni@email.com">
+                    </div>
+                    <button type="button" class="btn btn-outline" onclick="requestNewEmailCode()">Kod Gönder</button>
+                </div>
+
+                <div id="emailStep4" style="display:none;">
+                    <div class="form-group">
+                        <label class="form-label">Yeni e-postana gönderilen 6 haneli kod</label>
+                        <input type="text" id="newCodeInput" class="form-control" maxlength="6" placeholder="000000">
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="verifyNewEmailCode()">Onayla ve E-postayı Değiştir</button>
+                </div>
+            </div>
+
+            <div class="card" style="padding:25px;">
+                <h3 style="margin-bottom:10px;">📤 Kütüphaneni Dışa Aktar</h3>
+                <p style="color:var(--color-text-muted);font-size:14px;margin-bottom:20px;">İzlediklerin, okuduklarım, listelerin ve yorumların tek bir JSON dosyası olarak indirilir.</p>
+                <a href="/api/export-library.php" class="btn btn-outline">İndir (.json)</a>
+            </div>
+
+            <div class="card" style="padding:25px;">
+                <h3 style="margin-bottom:10px;">📥 Kütüphaneni İçe Aktar</h3>
+                <p style="color:var(--color-text-muted);font-size:14px;margin-bottom:20px;">Daha önce "Dışa Aktar" ile indirdiğin .json dosyasını yükleyerek puanlarını, izleme durumlarını ve listelerini geri yükle. Yorumlar içe aktarılmaz.</p>
+                <input type="file" id="importFileInput" accept="application/json,.json" style="display:none;" onchange="handleImportFile(this.files[0])">
+                <button type="button" class="btn btn-outline" onclick="document.getElementById('importFileInput').click()">📁 Dosya Seç ve İçe Aktar</button>
+                <div id="importStatus" style="margin-top:12px;font-size:13px;color:var(--color-text-muted);"></div>
+            </div>
+
+            <div class="card" style="padding:25px;">
+                <h3 style="margin-bottom:10px;">🚫 Engellenen Kullanıcılar</h3>
+                <p style="color:var(--color-text-muted);font-size:14px;margin-bottom:20px;">Engellediğin kullanıcılar seni takip edemez, sana mesaj gönderemez.</p>
+                <div id="blockedUsersList" style="color:var(--color-text-faint);font-size:14px;">Yükleniyor...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/escape-html.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        let contentCache = {};
+        async function initPage() {
+            try {
+                if (typeof app !== 'undefined' && app.initPromise) {
+                    await app.initPromise;
+                }
+            } catch (error) {
+                console.error('❌ initPage error:', error);
+            } finally {
+                if (typeof app === 'undefined' || !app.currentUser) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                loadProfile();
+            }
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initPage);
+        } else {
+            initPage();
+        }
+        function loadProfile() {
+            try {
+                displayProfile(app.currentUser);
+                if (typeof loadLibrary === 'function') loadLibrary().catch(e => console.error('❌ loadLibrary hata:', e));
+                if (typeof loadActivities === 'function') loadActivities().catch(e => console.error('❌ loadActivities hata:', e));
+                if (typeof loadCustomLists === 'function') loadCustomLists().catch(e => console.error('❌ loadCustomLists hata:', e));
+            } catch (error) {
+                console.error('❌ Profil yükleme hatası:', error);
+                const loadingDiv = document.getElementById('loadingProfile');
+                if (loadingDiv) loadingDiv.innerHTML = '<div style="color:red">Profil yüklenirken hata oluştu: ' + error.message + '</div>';
+            }
+        }
+
+        function displayProfile(user) {
+            const loadingDiv = document.getElementById('loadingProfile');
+            const contentDiv = document.getElementById('profileContent');
+
+            loadingDiv.style.display = 'none';
+            contentDiv.style.display = 'block';
+
+            document.getElementById('profileUsername').textContent = user.username;
+            document.getElementById('profileBio').textContent = user.bio || '📚 Film ve kitap tutkunu • 🎬 Favori tür: Bilim Kurgu • 📖 Son okuduğum: Harry Potter';
+
+            const avatarEl = document.getElementById('profileAvatar');
+            const savedAvatar = user.avatar_url || user.avatar || '👨‍💼';
+            avatarEl.textContent = savedAvatar;
+            avatarEl.style.fontSize = '60px';
+            avatarEl.style.cursor = 'pointer';
+            avatarEl.title = 'Avatar değiştirmek için tıkla';
+            avatarEl.onclick = () => showAvatarPicker();
+
+            updateStats().catch(e => console.error('❌ updateStats hata:', e));
+        }
+        function showAvatarPicker() {
+            const avatars = ['👨‍🦱', '👩‍🦰', '👨‍🦲', '👩‍🦱', '👨‍💼', '👩‍💼', '👨‍🎓', '👩‍🎓', '🧔', '👩', '👨‍⚕️', '👩‍⚕️', '👨‍🍳', '👩‍🍳', '👨‍✈️', '👩‍✈️', '🧑‍💻', '👨‍🎨', '👩‍🎨', '👨‍🎭'];
+
+            let html = `
+        <div class="modal-overlay" id="avatarPickerModal" onclick="if(event.target===this) closeAvatarModal()">
+            <div class="modal-box" style="max-width: 500px;">
+            <h2 style="margin-bottom: 20px; text-align: center;">Avatar Seç</h2>
+
+            <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px; max-height: 300px; overflow-y: auto;">
+    `;
+
+            avatars.forEach(avatar => {
+                html += `
+            <div class="avatar-option" onclick="saveAvatar('${avatar}')">${avatar}</div>
+        `;
+            });
+
+            html += `
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button onclick="closeAvatarModal()" class="btn btn-secondary" style="flex: 1;">✕ İptal</button>
+            </div>
+            </div>
+        </div>
+    `;
+
+            document.body.insertAdjacentHTML('beforeend', html);
+        }
+        async function saveAvatar(selectedAvatar) {
+            if (typeof app === 'undefined' || !app.currentUser) return;
+
+            try {
+                const response = await fetch('/api/user-profile.php', {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ avatar: selectedAvatar })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    app.currentUser.avatar = selectedAvatar;
+                    app.currentUser.avatar_url = selectedAvatar;
+                    const avatarEl = document.getElementById('profileAvatar');
+                    if (avatarEl) avatarEl.textContent = selectedAvatar;
+
+                    closeAvatarModal();
+                    app.toast('Avatar değiştirildi!', 'success');
+                } else {
+                    app.toast(data.message || 'Avatar değiştirilemedi', 'error');
+                }
+            } catch (error) {
+                console.error('Avatar kayıt hatası:', error);
+                app.toast('Avatar değiştirilirken hata oluştu!', 'error');
+            }
+        }
+
+        function closeAvatarModal() {
+            document.getElementById('avatarPickerModal')?.remove();
+        }
+
+        async function updateStats() {
+            if (typeof app === 'undefined' || !app.currentUser) return;
+
+            let ratingsCount = 0;
+            let reviewsCount = 0;
+            let moviesCount = 0;
+            let booksCount = 0;
+            try {
+                const response = await fetch(`/api/get-user-content.php?type=movie&status=watched`, { credentials: 'include' });
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                const data = await response.json();
+                if (data.success) {
+                    moviesCount = data.content ? data.content.length : 0;
+                    ratingsCount += data.content ? data.content.filter(m => m.rating).length : 0;
+                }
+            } catch (error) {
+                console.error('❌ Film sayısı alınamadı:', error);
+            }
+            try {
+                const response = await fetch(`/api/get-user-content.php?type=book&status=read`, { credentials: 'include' });
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                const data = await response.json();
+                if (data.success) {
+                    booksCount = data.content ? data.content.length : 0;
+                    ratingsCount += data.content ? data.content.filter(b => b.rating).length : 0;
+                }
+            } catch (error) {
+                console.error('❌ Kitap sayısı alınamadı:', error);
+            }
+            try {
+                const response = await fetch(`/api/comments.php`, { credentials: 'include' });
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                const data = await response.json();
+                if (data.success) {
+                    reviewsCount = data.comments ? data.comments.length : 0;
+                }
+            } catch (error) {
+                console.error('❌ Yorum sayısı alınamadı:', error);
+            }
+
+            if (document.getElementById('ratingsCount')) document.getElementById('ratingsCount').textContent = ratingsCount;
+            if (document.getElementById('reviewsCount')) document.getElementById('reviewsCount').textContent = reviewsCount;
+            if (document.getElementById('moviesCount')) document.getElementById('moviesCount').textContent = moviesCount;
+            if (document.getElementById('booksCount')) document.getElementById('booksCount').textContent = booksCount;
+
+            try {
+                const statsResponse = await fetch('/api/user-stats.php', { credentials: 'include' });
+                const statsData = await statsResponse.json();
+                if (statsData.success && statsData.stats.rating_distribution) {
+                    const hasRatings = Object.values(statsData.stats.rating_distribution).some(c => c > 0);
+                    if (hasRatings) {
+                        app.renderRatingHistogram(document.getElementById('ratingHistogramBars'), statsData.stats.rating_distribution);
+                        document.getElementById('ratingHistogram').style.display = 'block';
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Puan dağılımı alınamadı:', error);
+            }
+        }
+        async function getContentTitle(type, id) {
+            if (contentCache[`${type}_${id}`]) {
+                return contentCache[`${type}_${id}`];
+            }
+
+            try {
+                let title = '';
+                if (type === 'movie') {
+                    const movie = await app.getMovieDetail(id);
+                    title = movie?.title || `Film #${id}`;
+                } else {
+                    const book = await app.getBookDetail(id);
+                    title = book?.volumeInfo?.title || `Kitap #${id}`;
+                }
+
+                contentCache[`${type}_${id}`] = title;
+                return title;
+            } catch (error) {
+                console.error('İçerik başlığı çekme hatası:', error);
+                return type === 'movie' ? `Film #${id}` : `Kitap #${id}`;
+            }
+        }
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            document.querySelectorAll('.tab-navigation .tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'settings') initSettingsTab();
+            if (tabName === 'diary') loadDiary();
+        }
+
+        let diaryLoaded = false;
+        async function loadDiary() {
+            if (diaryLoaded || !app.currentUser) return;
+            diaryLoaded = true;
+
+            const container = document.getElementById('diaryList');
+            try {
+                const response = await fetch(`/api/diary.php`, { credentials: 'include' });
+                const data = await response.json();
+                const entries = data.entries || [];
+
+                if (!data.success || entries.length === 0) {
+                    container.innerHTML = '<div class="no-results">📔 Günlüğün henüz boş — film/dizi izleyip kitap okudukça burada birikecek</div>';
+                    return;
+                }
+
+                container.innerHTML = entries.map(entry => {
+                    const icon = entry.type === 'movie' ? '🎬' : entry.type === 'series' ? '📺' : '📚';
+                    const dateStr = new Date(entry.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+                    return `
+                        <div class="activity-item" onclick="goToDetail('${entry.type}', '${entry.id}')" style="cursor:pointer;">
+                            <div class="activity-header">
+                                <span class="activity-type">${icon} ${app.escapeHtml(entry.title)}</span>
+                                <span style="color: var(--color-text-faint); font-size: 14px;">${dateStr}</span>
+                            </div>
+                            ${entry.rating ? `<div style="line-height: 1.5;">⭐ ${entry.rating}/10 puan verdin</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Günlük yüklenirken hata:', error);
+                container.innerHTML = '<div class="no-results">❌ Günlük yüklenemedi</div>';
+            }
+        }
+
+        let settingsTabInitialized = false;
+        function initSettingsTab() {
+            if (settingsTabInitialized || !app.currentUser) return;
+            settingsTabInitialized = true;
+
+            document.getElementById('currentEmailDisplay').textContent = app.currentUser.email;
+            renderAvatarPreview(app.currentUser.avatar_url, app.currentUser.username);
+            renderTwoFactorStatus(app.currentUser.totp_enabled);
+            loadBlockedUsers();
+            if (app.currentUser.is_admin) {
+                document.getElementById('adminLinkCard').style.display = 'block';
+            }
+        }
+
+        async function loadBlockedUsers() {
+            const container = document.getElementById('blockedUsersList');
+            try {
+                const response = await fetch('/api/block.php', { credentials: 'include' });
+                const data = await response.json();
+                const blocked = data.blocked || [];
+
+                if (blocked.length === 0) {
+                    container.innerHTML = 'Henüz kimseyi engellemedin.';
+                    return;
+                }
+
+                container.innerHTML = blocked.map(user => `
+                    <div class="user-card" style="display:flex;justify-content:space-between;align-items:center;background:var(--color-surface-2);padding:12px 15px;border-radius:8px;margin-bottom:10px;">
+                        <span>${app.escapeHtml(user.username)}</span>
+                        <button class="btn btn-outline" style="padding:6px 14px;" onclick="unblockUser(${user.id})">Engeli Kaldır</button>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Engellenenler yüklenemedi:', error);
+                container.innerHTML = 'Yüklenirken hata oluştu.';
+            }
+        }
+
+        async function unblockUser(targetUserId) {
+            try {
+                const response = await fetch('/api/block.php', {
+                    method: 'DELETE',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ target_user_id: targetUserId })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    app.toast('Engel kaldırıldı', 'success');
+                    loadBlockedUsers();
+                }
+            } catch (error) {
+                console.error('Engel kaldırma hatası:', error);
+                app.toast('Bağlantı hatası', 'error');
+            }
+        }
+
+        function renderTwoFactorStatus(enabled) {
+            const views = ['twoFactorDisabledView', 'twoFactorSetupView', 'twoFactorBackupCodesView', 'twoFactorEnabledView'];
+            views.forEach(id => document.getElementById(id).style.display = 'none');
+
+            if (enabled) {
+                document.getElementById('twoFactorStatusText').textContent = 'Hesabın authenticator uygulamasıyla ek olarak korunuyor.';
+                document.getElementById('twoFactorEnabledView').style.display = 'block';
+            } else {
+                document.getElementById('twoFactorStatusText').textContent = 'Şu an kapalı. Hesabına ekstra bir güvenlik katmanı ekle.';
+                document.getElementById('twoFactorDisabledView').style.display = 'block';
+            }
+        }
+
+        async function startTwoFactorSetup() {
+            try {
+                const response = await fetch('/api/two-factor.php', {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ action: 'start' })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('twoFactorSecretDisplay').textContent = data.secret;
+                    document.getElementById('twoFactorDisabledView').style.display = 'none';
+                    document.getElementById('twoFactorSetupView').style.display = 'block';
+                } else {
+                    app.toast(data.message || 'Kurulum başlatılamadı', 'error');
+                }
+            } catch (error) {
+                console.error('2FA başlatma hatası:', error);
+                app.toast('Bağlantı hatası', 'error');
+            }
+        }
+
+        async function confirmTwoFactorSetup() {
+            const code = document.getElementById('twoFactorConfirmCode').value.trim();
+            try {
+                const response = await fetch('/api/two-factor.php', {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ action: 'confirm', code })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    app.currentUser.totp_enabled = true;
+                    document.getElementById('backupCodesList').innerHTML = data.backup_codes.map(c => app.escapeHtml(c)).join('<br>');
+                    document.getElementById('twoFactorSetupView').style.display = 'none';
+                    document.getElementById('twoFactorBackupCodesView').style.display = 'block';
+                } else {
+                    app.toast(data.message || 'Kod hatalı', 'error');
+                }
+            } catch (error) {
+                console.error('2FA onaylama hatası:', error);
+                app.toast('Bağlantı hatası', 'error');
+            }
+        }
+
+        function finishTwoFactorSetup() {
+            document.getElementById('twoFactorBackupCodesView').style.display = 'none';
+            renderTwoFactorStatus(true);
+            app.toast('İki adımlı doğrulama etkinleştirildi', 'success');
+        }
+
+        async function disableTwoFactor() {
+            const password = document.getElementById('disableTwoFactorPassword').value;
+            if (!(await app.confirmDialog('İki adımlı doğrulamayı devre dışı bırakmak istediğine emin misin?'))) return;
+
+            try {
+                const response = await fetch('/api/two-factor.php', {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ action: 'disable', current_password: password })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    app.currentUser.totp_enabled = false;
+                    document.getElementById('disableTwoFactorPassword').value = '';
+                    renderTwoFactorStatus(false);
+                    app.toast('İki adımlı doğrulama devre dışı bırakıldı', 'success');
+                } else {
+                    app.toast(data.message || 'İşlem başarısız', 'error');
+                }
+            } catch (error) {
+                console.error('2FA devre dışı bırakma hatası:', error);
+                app.toast('Bağlantı hatası', 'error');
+            }
+        }
+
+        function renderAvatarPreview(avatarUrl, username) {
+            const preview = document.getElementById('avatarPreview');
+            if (avatarUrl) {
+                preview.innerHTML = `<img src="${app.escapeHtml(avatarUrl)}" alt="${app.escapeHtml(username || 'Avatar')}" style="width:100%;height:100%;object-fit:cover;">`;
+            } else {
+                preview.textContent = (username || '?').charAt(0).toUpperCase();
+            }
+        }
+
+        async function handleAvatarFileChange(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 2 * 1024 * 1024) {
+                app.toast('Dosya çok büyük (maks. 2MB)', 'error');
+                event.target.value = '';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            try {
+                const response = await fetch('/api/upload-avatar.php', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-Token': app.csrfToken || '' },
+                    credentials: 'include',
+                    body: formData
+                });
+                const data = await response.json();
+                if (data.success) {
+                    app.currentUser.avatar_url = data.avatar_url;
+                    renderAvatarPreview(data.avatar_url, app.currentUser.username);
+                    app.toast('Avatar güncellendi', 'success');
+                } else {
+                    app.toast(data.message || 'Avatar yüklenemedi', 'error');
+                }
+            } catch (error) {
+                console.error('Avatar yükleme hatası:', error);
+                app.toast('Bağlantı hatası', 'error');
+            } finally {
+                event.target.value = '';
+            }
+        }
+
+        async function handleImportFile(file) {
+            if (!file) return;
+            const statusEl = document.getElementById('importStatus');
+            const input = document.getElementById('importFileInput');
+
+            if (file.size > 5 * 1024 * 1024) {
+                app.toast('Dosya çok büyük (maks. 5MB)', 'error');
+                input.value = '';
+                return;
+            }
+
+            statusEl.textContent = '⏳ Dosya okunuyor...';
+
+            try {
+                const text = await file.text();
+                let parsed;
+                try {
+                    parsed = JSON.parse(text);
+                } catch (e) {
+                    app.toast('Geçersiz JSON dosyası', 'error');
+                    statusEl.textContent = '';
+                    return;
+                }
+
+                statusEl.textContent = '⏳ İçe aktarılıyor...';
+                const response = await fetch('/api/import-library.php', {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify(parsed)
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    const s = data.imported || {};
+                    statusEl.textContent = `✅ ${s.movies || 0} film, ${s.series || 0} dizi, ${s.books || 0} kitap, ${s.lists || 0} liste içe aktarıldı`;
+                    app.toast('Kütüphane içe aktarıldı!', 'success');
+                    loadLibrary();
+                    loadCustomLists();
+                } else {
+                    statusEl.textContent = '';
+                    app.toast(data.message || 'İçe aktarma başarısız oldu', 'error');
+                }
+            } catch (error) {
+                console.error('İçe aktarma hatası:', error);
+                statusEl.textContent = '';
+                app.toast('Bağlantı hatası', 'error');
+            } finally {
+                input.value = '';
+            }
+        }
+
+        async function handleChangePassword(event) {
+            event.preventDefault();
+            const currentPassword = document.getElementById('currentPasswordInput').value;
+            const newPassword = document.getElementById('newPasswordInput').value;
+            const confirmPassword = document.getElementById('newPasswordConfirmInput').value;
+
+            if (newPassword !== confirmPassword) {
+                app.toast('Yeni şifreler eşleşmiyor', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/change-password.php', {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ current_password: currentPassword, new_password: newPassword })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    app.toast('Şifreniz güncellendi', 'success');
+                    event.target.reset();
+                } else {
+                    app.toast(data.message || 'Şifre güncellenemedi', 'error');
+                }
+            } catch (error) {
+                console.error('Şifre değiştirme hatası:', error);
+                app.toast('Bağlantı hatası', 'error');
+            }
+        }
+
+        async function changeEmailAction(action, body) {
+            try {
+                const response = await fetch('/api/change-email.php', {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ action, ...body })
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('E-posta değiştirme hatası:', error);
+                return { success: false, message: 'Bağlantı hatası' };
+            }
+        }
+
+        async function requestOldEmailCode() {
+            const data = await changeEmailAction('request_old_code', {});
+            app.toast(data.message, data.success ? 'success' : 'error');
+            if (data.success) {
+                document.getElementById('emailStep1').style.display = 'none';
+                document.getElementById('emailStep2').style.display = 'block';
+            }
+        }
+
+        async function verifyOldEmailCode() {
+            const code = document.getElementById('oldCodeInput').value.trim();
+            const data = await changeEmailAction('verify_old_code', { code });
+            app.toast(data.message, data.success ? 'success' : 'error');
+            if (data.success) {
+                document.getElementById('emailStep2').style.display = 'none';
+                document.getElementById('emailStep3').style.display = 'block';
+            }
+        }
+
+        async function requestNewEmailCode() {
+            const newEmail = document.getElementById('newEmailInput').value.trim();
+            const data = await changeEmailAction('request_new_code', { new_email: newEmail });
+            app.toast(data.message, data.success ? 'success' : 'error');
+            if (data.success) {
+                document.getElementById('emailStep3').style.display = 'none';
+                document.getElementById('emailStep4').style.display = 'block';
+            }
+        }
+
+        async function verifyNewEmailCode() {
+            const code = document.getElementById('newCodeInput').value.trim();
+            const data = await changeEmailAction('verify_new_code', { code });
+            app.toast(data.message, data.success ? 'success' : 'error');
+            if (data.success) {
+                document.getElementById('currentEmailDisplay').textContent = data.new_email;
+                app.currentUser.email = data.new_email;
+                ['emailStep1', 'emailStep2', 'emailStep3', 'emailStep4'].forEach(id => {
+                    document.getElementById(id).style.display = id === 'emailStep1' ? 'block' : 'none';
+                });
+                document.getElementById('oldCodeInput').value = '';
+                document.getElementById('newEmailInput').value = '';
+                document.getElementById('newCodeInput').value = '';
+            }
+        }
+
+        function switchLibraryTab(type, element) {
+            const moviesDiv = document.getElementById('moviesLibrary');
+            const booksDiv = document.getElementById('booksLibrary');
+
+            document.querySelectorAll('.tab-btn.small').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            element.classList.add('active');
+
+            if (type === 'movies') {
+                moviesDiv.style.display = 'block';
+                booksDiv.style.display = 'none';
+            } else {
+                moviesDiv.style.display = 'none';
+                booksDiv.style.display = 'block';
+            }
+        }
+
+        async function loadLibrary() {
+            if (!app.currentUser) return;
+
+            try {
+                const watchedResponse = await fetch(`/api/get-user-content.php?type=movie&status=watched`, { credentials: 'include' });
+                if (!watchedResponse.ok) throw new Error('Film API hatası: ' + watchedResponse.status);
+                const watchedData = await watchedResponse.json();
+                const moviesWatched = watchedData.success ? watchedData.content : [];
+                const watchlistResponse = await fetch(`/api/get-user-content.php?type=movie&status=watchlist`, { credentials: 'include' });
+                if (!watchlistResponse.ok) throw new Error('Watchlist API hatası: ' + watchlistResponse.status);
+                const watchlistData = await watchlistResponse.json();
+                const moviesWatchlist = watchlistData.success ? watchlistData.content : [];
+                const readResponse = await fetch(`/api/get-user-content.php?type=book&status=read`, { credentials: 'include' });
+                if (!readResponse.ok) throw new Error('Kitap API hatası: ' + readResponse.status);
+                const readData = await readResponse.json();
+                const booksRead = readData.success ? readData.content : [];
+                const toReadResponse = await fetch(`/api/get-user-content.php?type=book&status=to_read`, { credentials: 'include' });
+                if (!toReadResponse.ok) throw new Error('Okunacaklar API hatası: ' + toReadResponse.status);
+                const toReadData = await toReadResponse.json();
+                const booksReadinglist = toReadData.success ? toReadData.content : [];
+
+                displayLibrary(moviesWatched, moviesWatchlist, booksRead, booksReadinglist);
+            } catch (error) {
+                console.error('❌ Kütüphane yükleme hatası:', error);
+            }
+        }
+
+        function displayLibrary(moviesWatched, moviesWatchlist, booksRead, booksReadinglist) {
+            const tabInner = document.querySelector('.tab-inner');
+            if (!tabInner) return;
+
+            let html = `
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button class="tab-btn small active" onclick="switchLibraryTab('movies', this)">🎬 Filmler</button>
+            <button class="tab-btn small" onclick="switchLibraryTab('books', this)">📚 Kitaplar</button>
+        </div>
+
+        <div id="moviesLibrary">
+            <h3 style="margin-bottom: 20px;">🎬 İzlediklerim (${moviesWatched.length})</h3>
+            <div class="library-grid">
+                ${moviesWatched.length === 0 ? '<div class="no-results">Henüz film izlemedim</div>' : ''}
+                ${moviesWatched.map(m => {
+                const posterUrl = m.poster_path
+                    ? `https://image.tmdb.org/t/p/w300${m.poster_path}`
+                    : 'https://placehold.co/200x300?text=Poster+Yok';
+                return `
+                        <div class="content-item" onclick="goToDetail('movie', '${m.tmdb_id || m.id}')" style="cursor: pointer;">
+                            <img src="${posterUrl}" 
+                                 alt="${m.title}" 
+                                 style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;"
+                                 onerror="this.src='https://placehold.co/200x300?text=Poster+Yok'">
+                            <div class="info" style="padding: 10px;">
+                                <h4 style="font-size: 13px; text-align: center;">${m.title}</h4>
+                            </div>
+                        </div>
+                    `;
+            }).join('')}
+            </div>
+
+            <h3 style="margin-bottom: 20px; margin-top: 40px;">📋 İzlenecekler (${moviesWatchlist.length})</h3>
+            <div class="library-grid">
+                ${moviesWatchlist.length === 0 ? '<div class="no-results">Henüz film eklenemedim</div>' : ''}
+                ${moviesWatchlist.map(m => {
+                const posterUrl = m.poster_path
+                    ? `https://image.tmdb.org/t/p/w300${m.poster_path}`
+                    : 'https://placehold.co/200x300?text=Poster+Yok';
+                return `
+                        <div class="content-item" onclick="goToDetail('movie', '${m.tmdb_id || m.id}')" style="cursor: pointer;">
+                            <img src="${posterUrl}" 
+                                 alt="${m.title}" 
+                                 style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;"
+                                 onerror="this.src='https://placehold.co/200x300?text=Poster+Yok'">
+                            <div class="info" style="padding: 10px;">
+                                <h4 style="font-size: 13px; text-align: center;">${m.title}</h4>
+                            </div>
+                        </div>
+                    `;
+            }).join('')}
+            </div>
+        </div>
+
+        <div id="booksLibrary" style="display: none;">
+            <h3 style="margin-bottom: 20px;">📖 Okuduklarım (${booksRead.length})</h3>
+            <div class="library-grid">
+                ${booksRead.length === 0 ? '<div class="no-results">Henüz kitap okumadım</div>' : ''}
+                ${booksRead.map(b => {
+                const coverUrl = b.cover_url
+                    ? b.cover_url.replace('http://', 'https://')
+                    : 'https://placehold.co/200x300?text=Kapak+Yok';
+                return `
+                        <div class="content-item" onclick="goToDetail('book', '${b.google_books_id || b.id}')" style="cursor: pointer;">
+                            <img src="${coverUrl}" 
+                                 alt="${b.title}" 
+                                 style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;"
+                                 onerror="this.src='https://placehold.co/200x300?text=Kapak+Yok'">
+                            <div class="info" style="padding: 10px;">
+                                <h4 style="font-size: 13px; text-align: center;">${b.title}</h4>
+                            </div>
+                        </div>
+                    `;
+            }).join('')}
+            </div>
+
+            <h3 style="margin-bottom: 20px; margin-top: 40px;">📚 Okunacaklar (${booksReadinglist.length})</h3>
+            <div class="library-grid">
+                ${booksReadinglist.length === 0 ? '<div class="no-results">Henüz kitap eklenemedim</div>' : ''}
+                ${booksReadinglist.map(b => {
+                const coverUrl = b.cover_url
+                    ? b.cover_url.replace('http://', 'https://')
+                    : 'https://placehold.co/200x300?text=Kapak+Yok';
+                return `
+                        <div class="content-item" onclick="goToDetail('book', '${b.google_books_id || b.id}')" style="cursor: pointer;">
+                            <img src="${coverUrl}" 
+                                 alt="${b.title}" 
+                                 style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;"
+                                 onerror="this.src='https://placehold.co/200x300?text=Kapak+Yok'">
+                            <div class="info" style="padding: 10px;">
+                                <h4 style="font-size: 13px; text-align: center;">${b.title}</h4>
+                            </div>
+                        </div>
+                    `;
+            }).join('')}
+            </div>
+        </div>
+    `;
+
+            tabInner.innerHTML = html;
+        }
+
+        function goToDetail(type, id) {
+            window.location.href = `detail.php?type=${type}&id=${id}`;
+        }
+
+        async function loadActivities() {
+            const activities = [];
+
+            try {
+                const commentsResponse = await fetch('/api/comments.php');
+                if (commentsResponse.ok) {
+                    const commentsData = await commentsResponse.json();
+                    if (commentsData.success && commentsData.comments) {
+                        commentsData.comments.forEach(comment => {
+                            const safeText = app.escapeHtml(comment.comment_text);
+                            activities.push({
+                                type: 'comment',
+                                content: `💬 "${safeText.substring(0, 50)}${safeText.length > 50 ? '...' : ''}" yorumu`,
+                                date: new Date(comment.created_at)
+                            });
+                        });
+                    }
+                }
+                const moviesResponse = await fetch('/api/user-content.php?type=movie&status=watched');
+                if (moviesResponse.ok) {
+                    const moviesData = await moviesResponse.json();
+                    if (moviesData.success && moviesData.content) {
+                        moviesData.content.forEach(movie => {
+                            const safeTitle = app.escapeHtml(movie.title || 'Film');
+                            if (movie.rating) {
+                                activities.push({
+                                    type: 'rating',
+                                    content: `🎬 <strong>${safeTitle}</strong> filmine <span style="color: #f39c12; font-weight: bold;">⭐ ${movie.rating}/10</span> puan verdi`,
+                                    date: new Date(movie.updated_at)
+                                });
+                            } else {
+                                activities.push({
+                                    type: 'watched',
+                                    content: `🎬 <strong>${safeTitle}</strong> filmini izledi`,
+                                    date: new Date(movie.updated_at)
+                                });
+                            }
+                        });
+                    }
+                }
+                const booksResponse = await fetch('/api/user-content.php?type=book&status=read');
+                if (booksResponse.ok) {
+                    const booksData = await booksResponse.json();
+                    if (booksData.success && booksData.content) {
+                        booksData.content.forEach(book => {
+                            const safeTitle = app.escapeHtml(book.title || 'Kitap');
+                            if (book.rating) {
+                                activities.push({
+                                    type: 'rating',
+                                    content: `📚 <strong>${safeTitle}</strong> kitabına <span style="color: #f39c12; font-weight: bold;">⭐ ${book.rating}/10</span> puan verdi`,
+                                    date: new Date(book.updated_at)
+                                });
+                            } else {
+                                activities.push({
+                                    type: 'read',
+                                    content: `📚 <strong>${safeTitle}</strong> kitabını okudu`,
+                                    date: new Date(book.updated_at)
+                                });
+                            }
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Aktivite yükleme hatası:', error);
+            }
+
+            activities.sort((a, b) => new Date(b.date) - new Date(a.date));
+            displayActivities(activities.slice(0, 15));
+        }
+        function getStatusText(status, type) {
+            const statusMap = {
+                'watched': 'İzlediklerim',
+                'watchlist': 'İzlenecekler',
+                'read': 'Okuduklarım',
+                'readinglist': 'Okunacaklar'
+            };
+
+            return statusMap[status] || status;
+        }
+        function displayActivities(activities) {
+            const container = document.getElementById('activitiesList');
+
+            if (activities.length === 0) {
+                container.innerHTML = `
+                    <div class="no-results">
+                        📝 Henüz aktiviteniz yok<br>
+                        <small style="color: var(--color-text-faint);">Film izleyip kitap okuyarak aktivitelerinizi burada görebilirsiniz</small>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = activities.map(activity => `
+                <div class="activity-item">
+                    <div class="activity-header">
+                        <span class="activity-type">${getActivityTypeText(activity.type)}</span>
+                        <span style="color: var(--color-text-faint); font-size: 14px;">${app.formatDate(activity.date)}</span>
+                    </div>
+                    <div style="line-height: 1.5;">${activity.content}</div>
+                </div>
+            `).join('');
+        }
+        function getActivityTypeText(type) {
+            const types = {
+                'rating': '⭐ Puanlama',
+                'comment': '💬 Yorum',
+                'watched': '🎬 İzleme',
+                'read': '📚 Okuma',
+                'review': '💬 Yorum',
+                'list_add': '📁 Liste Ekleme'
+            };
+            return types[type] || type;
+        }
+        async function loadCustomLists() {
+            try {
+                const response = await fetch(`/api/custom-lists.php`, { credentials: 'include' });
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                const data = await response.json();
+                if (data.success) {
+                    displayCustomLists(data.lists || []);
+                }
+            } catch (error) {
+                console.error('❌ Özel listeler yüklenirken hata:', error);
+                displayCustomLists([]);
+            }
+        }
+        function displayCustomLists(lists) {
+            const container = document.getElementById('customLists');
+
+            if (lists.length === 0) {
+                container.innerHTML = `
+                    <div class="no-results">
+                        📁 Henüz özel listeniz yok<br>
+                        <small style="color: var(--color-text-faint);">"Yeni Liste Oluştur" butonuna tıklayarak özel listeler oluşturabilirsiniz</small>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = lists.map(list => `
+                <div class="list-card">
+                    <h3>${app.escapeHtml(list.name)}</h3>
+                    <div class="list-stats">${list.item_count || 0} içerik</div>
+                    <p style="color: var(--color-text-muted); margin-bottom: 15px; line-height: 1.4;">${app.escapeHtml(list.description) || 'Açıklama bulunmuyor'}</p>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" onclick="viewList('${list.id}')">📋 Listeyi Görüntüle</button>
+                        <button class="btn btn-secondary" onclick="editList('${list.id}')">✏️ Düzenle</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function editProfile() {
+            const user = app.currentUser;
+            const currentBio = document.getElementById('profileBio').textContent;
+
+            const editMenu = `
+        <div class="modal-overlay" id="editProfileModal" onclick="if(event.target===this) closeEditModal()">
+            <div class="modal-box" style="min-width: 400px; max-width: 90vw;">
+            <h2 style="margin-bottom: 20px;">Profili Düzenle</h2>
+
+            <div style="margin-bottom: 20px;">
+                <label class="form-label">Biyografi:</label>
+                <textarea id="editBio" class="form-control" style="font-family: inherit; min-height: 100px;">${app.escapeHtml(currentBio)}</textarea>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button onclick="saveProfile()" class="btn btn-primary" style="flex: 1;">💾 Kaydet</button>
+                <button onclick="closeEditModal()" class="btn btn-secondary" style="flex: 1;">✕ İptal</button>
+            </div>
+            </div>
+        </div>
+    `;
+
+            document.body.insertAdjacentHTML('beforeend', editMenu);
+        }
+
+        async function saveProfile() {
+            const newBio = document.getElementById('editBio').value.trim();
+
+            if (!newBio) {
+                app.toast('Biyografi boş olamaz!', 'error');
+                return;
+            }
+
+            const user = app.currentUser;
+            user.bio = newBio;
+            app.currentUser = user;
+            try {
+                document.getElementById('profileBio').textContent = newBio;
+                closeEditModal();
+                app.toast('Profil güncellendi!', 'success');
+            } catch (error) {
+                console.error('Profil kayıt hatası:', error);
+                app.toast('Profil güncellenirken hata oluştu!', 'error');
+            }
+        }
+
+        function closeEditModal() {
+            document.getElementById('editProfileModal')?.remove();
+        }
+        async function createNewList() {
+            const listName = prompt('Liste adını girin:');
+            if (listName && listName.trim()) {
+                const listDescription = prompt('Liste açıklaması girin (isteğe bağlı):') || '';
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/custom-lists.php`, {
+                        method: 'POST',
+                        headers: app.authHeaders(),
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            action: 'create',
+                            name: listName.trim(),
+                            description: listDescription.trim()
+                        })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        app.toast(`"${listName}" listesi oluşturuldu!`, 'success');
+                        loadCustomLists();
+                    } else {
+                        app.toast('Hata: ' + (data.message || 'Liste oluşturulamadı'), 'error');
+                    }
+                } catch (error) {
+                    console.error('Liste oluşturma hatası:', error);
+                    app.toast('Liste oluşturulurken hata oluştu!', 'error');
+                }
+            } else if (listName !== null) {
+                app.toast('Liste adı boş olamaz!', 'error');
+            }
+        }
+        async function editList(listId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/custom-lists.php?id=${listId}`);
+                const data = await response.json();
+                if (data.success && data.list) {
+                    const list = data.list;
+                    const newName = prompt('Yeni liste adını girin:', list.name);
+                    if (newName && newName.trim()) {
+                        const newDescription = prompt('Yeni açıklamayı girin:', list.description) || '';
+
+                        const updateResponse = await fetch(`${API_BASE_URL}/custom-lists.php`, {
+                            method: 'PUT',
+                            headers: app.authHeaders(),
+                            body: JSON.stringify({
+                                id: listId,
+                                name: newName.trim(),
+                                description: newDescription.trim()
+                            })
+                        });
+                        const updateData = await updateResponse.json();
+                        if (updateData.success) {
+                            app.toast('Liste güncellendi!', 'success');
+                            loadCustomLists();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Liste düzenleme hatası:', error);
+                app.toast('Liste düzenlenmesi sırasında hata oluştu!', 'error');
+            }
+        }
+        async function addItemToList(listId) {
+            const contentType = (await app.confirmDialog('Film mi eklemek istiyorsunuz? (OK=Film, İptal=Kitap)')) ? 'movie' : 'book';
+
+            const searchQuery = prompt(`${contentType === 'movie' ? '🎬 Film' : '📚 Kitap'} adını girin:`);
+            if (!searchQuery || !searchQuery.trim()) {
+                return;
+            }
+
+            searchAndSelectContent(listId, contentType, searchQuery.trim());
+        }
+        async function searchAndSelectContent(listId, contentType, query) {
+            try {
+                let results = [];
+
+                if (contentType === 'movie') {
+                    const movieData = await app.searchMovies(query);
+                    results = movieData.results || [];
+                } else {
+                    const bookData = await app.searchBooks(query);
+                    results = bookData.items || [];
+                }
+
+                if (results.length === 0) {
+                    app.toast('Sonuç bulunamadı!', 'info');
+                    return;
+                }
+                displaySearchResults(listId, results, contentType);
+
+            } catch (error) {
+                console.error('Arama hatası:', error);
+                app.toast('Arama sırasında hata oluştu!', 'error');
+            }
+        }
+        function displaySearchResults(listId, results, contentType) {
+            let html = `
+                <div class="modal-overlay" id="searchResultsModal" onclick="if(event.target===this) closeSearchModal()">
+                    <div class="modal-box" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
+                        <div class="modal-box-header">
+                            <h2>📌 ${contentType === 'movie' ? 'Film' : 'Kitap'} Seçin</h2>
+                            <button onclick="closeSearchModal()" class="modal-close-btn" aria-label="Kapat">✕</button>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px;">
+            `;
+
+            results.slice(0, 12).forEach(item => {
+                if (contentType === 'movie') {
+                    const posterUrl = item.poster_path
+                        ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+                        : 'https://placehold.co/150x225?text=Poster+Yok';
+                    const title = item.title || 'Bilinmiyor';
+
+                    html += `
+                        <div class="pick-card" onclick="selectContentForList('${listId}', 'movie', '${item.id}', '${encodeURIComponent(title)}')">
+                            <img src="${posterUrl}" alt="${app.escapeHtml(title)}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 5px; margin-bottom: 8px;">
+                            <div style="font-size: 12px; font-weight: 600; word-break: break-word;">${app.escapeHtml(title)}</div>
+                            <div style="margin-top: 4px;">${app.ratingPillHtml(item.vote_average)}</div>
+                        </div>
+                    `;
+                } else {
+                    const volumeInfo = item.volumeInfo || {};
+                    const coverUrl = volumeInfo.imageLinks?.thumbnail
+                        ? volumeInfo.imageLinks.thumbnail.replace('http://', 'https://')
+                        : 'https://placehold.co/150x225?text=Kapak+Yok';
+                    const title = volumeInfo.title || 'Bilinmiyor';
+
+                    html += `
+                        <div class="pick-card" onclick="selectContentForList('${listId}', 'book', '${item.id}', '${encodeURIComponent(title)}')">
+                            <img src="${coverUrl}" alt="${app.escapeHtml(title)}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 5px; margin-bottom: 8px;">
+                            <div style="font-size: 12px; font-weight: 600; word-break: break-word;">${app.escapeHtml(title)}</div>
+                            <div style="font-size: 11px; color: var(--color-text-faint);">✍️ ${app.escapeHtml(volumeInfo.authors ? volumeInfo.authors[0] : 'Bilinmiyor')}</div>
+                        </div>
+                    `;
+                }
+            });
+
+            html += `
+                        </div>
+                        <div style="margin-top: 20px; text-align: center;">
+                            <button onclick="closeSearchModal()" class="btn btn-secondary">Kapat</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', html);
+        }
+        function closeSearchModal() {
+            const modal = document.getElementById('searchResultsModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+        async function selectContentForList(listId, contentType, contentId, contentTitle) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/custom-lists.php`, {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    body: JSON.stringify({
+                        action: 'add_item',
+                        list_id: listId,
+                        content_type: contentType,
+                        content_id: contentId,
+                        content_title: decodeURIComponent(contentTitle)
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    app.toast(`"${contentTitle}" listeye eklendi!`, 'success');
+                    closeSearchModal();
+                    closeListModal();
+                    loadCustomLists();
+                    setTimeout(() => viewList(listId), 500);
+                } else {
+                    app.toast(data.message || 'Hata oluştu!', 'error');
+                }
+            } catch (error) {
+                console.error('İçerik ekleme hatası:', error);
+                app.toast('İçerik eklenirken hata oluştu!', 'error');
+            }
+        }
+        async function viewList(listId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/custom-lists.php?id=${listId}`);
+                const data = await response.json();
+
+                if (!data.success || !data.list) {
+                    app.toast('Liste bulunamadı!', 'error');
+                    return;
+                }
+
+                const list = data.list;
+                const items = list.items || [];
+
+                let html = `
+                    <div class="modal-overlay" id="listModal" onclick="if(event.target===this) closeListModal()">
+                        <div class="modal-box" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
+                            <div class="modal-box-header">
+                                <h2>${app.escapeHtml(list.name)}</h2>
+                                <button onclick="closeListModal()" class="modal-close-btn" aria-label="Kapat">✕</button>
+                            </div>
+
+                            <p style="color: var(--color-text-muted); margin-bottom: 20px;">${app.escapeHtml(list.description) || 'Açıklama bulunmuyor'}</p>
+
+                            <div class="modal-bordered-panel" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+                                <label class="spoiler-checkbox-label" style="margin: 0;">
+                                    <input type="checkbox" id="listPublicToggle" ${list.is_public ? 'checked' : ''} onchange="toggleListPublic('${listId}', this.checked)">
+                                    🔗 Herkese açık (link ile paylaşılabilir)
+                                </label>
+                                <button type="button" class="btn btn-outline" id="copyListLinkBtn" style="padding: 6px 14px; display: ${list.is_public ? 'inline-block' : 'none'};" onclick="copyListLink('${listId}')">Bağlantıyı Kopyala</button>
+                            </div>
+
+                            <h3 style="margin-bottom: 15px;">📚 Listedeki İçerikler (${items.length})</h3>
+
+                            <div id="listItems" class="modal-bordered-panel" style="margin-bottom: 20px; max-height: 400px; overflow-y: auto;">
+                                ${items.length > 0 ? `
+                                    <div id="listItemsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px;">
+                                        ${items.map(item => `
+                                            <div id="item-${item.id}" class="pick-card" style="cursor: default; display: flex; flex-direction: column; gap: 8px;">
+                                                <img src="https://placehold.co/140x200?text=Yükleniyor" alt="${app.escapeHtml(item.content_title)}" class="item-poster" data-item-id="${item.content_id}" data-item-type="${item.content_type}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 5px;">
+                                                <div style="font-size: 12px; font-weight: 600; word-break: break-word; line-height: 1.3;">${app.escapeHtml(item.content_title)}</div>
+                                                <button onclick="removeFromList('${listId}', '${item.id}')" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;">🗑️ Çıkar</button>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                ` : `
+                                    <div style="text-align: center; color: var(--color-text-faint); padding: 20px;">
+                                        📭 Listeye henüz içerik eklenmemiş
+                                    </div>
+                                `}
+                            </div>
+
+                            <div style="display: flex; gap: 10px;">
+                                <button onclick="addItemToList('${listId}')" class="btn btn-primary" style="flex: 1;">➕ İçerik Ekle</button>
+                                <button onclick="closeListModal()" class="btn btn-secondary" style="flex: 1;">Kapat</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.body.insertAdjacentHTML('beforeend', html);
+                loadListItemPosters(items);
+            } catch (error) {
+                console.error('Liste yüklenirken hata:', error);
+                app.toast('Liste yüklenirken hata oluştu!', 'error');
+            }
+        }
+        async function toggleListPublic(listId, isPublic) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/custom-lists.php`, {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ action: 'toggle_public', list_id: listId, is_public: isPublic })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('copyListLinkBtn').style.display = isPublic ? 'inline-block' : 'none';
+                    app.toast(isPublic ? 'Liste artık herkese açık' : 'Liste artık gizli', 'success');
+                } else {
+                    app.toast(data.message || 'İşlem başarısız oldu', 'error');
+                }
+            } catch (error) {
+                console.error('Paylaşım durumu değiştirme hatası:', error);
+                app.toast('Bağlantı hatası', 'error');
+            }
+        }
+        function copyListLink(listId) {
+            const url = `${window.location.origin}/shared-list.html?id=${listId}`;
+            navigator.clipboard.writeText(url).then(() => {
+                app.toast('Bağlantı kopyalandı!', 'success');
+            }).catch(() => {
+                app.toast(url, 'info', 6000);
+            });
+        }
+        async function loadListItemPosters(items) {
+            for (const item of items) {
+                try {
+                    let posterUrl = 'https://placehold.co/140x200?text=Resim+Yok';
+
+                    if (item.content_type === 'movie') {
+                        const movie = await app.getMovieDetail(item.content_id);
+                        if (movie?.poster_path) {
+                            posterUrl = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+                        }
+                    } else {
+                        const book = await app.getBookDetail(item.content_id);
+                        if (book?.volumeInfo?.imageLinks?.thumbnail) {
+                            posterUrl = book.volumeInfo.imageLinks.thumbnail.replace('http://', 'https://');
+                        }
+                    }
+
+                    const img = document.querySelector(`img[data-item-id="${item.content_id}"]`);
+                    if (img) {
+                        img.src = posterUrl;
+                    }
+                } catch (error) {
+                    console.error('Poster yükleme hatası:', error);
+                }
+            }
+        }
+        function closeListModal() {
+            const modal = document.getElementById('listModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+        async function removeFromList(listId, contentId) {
+            if (await app.confirmDialog('Bu içeriği listeden çıkarmak istediğinize emin misiniz?')) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/custom-lists.php`, {
+                        method: 'DELETE',
+                        headers: app.authHeaders(),
+                        body: JSON.stringify({
+                            list_id: listId,
+                            item_id: contentId
+                        })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        app.toast('İçerik listeden çıkarıldı!', 'success');
+                        closeListModal();
+                        setTimeout(() => viewList(listId), 500);
+                    }
+                } catch (error) {
+                    console.error('İçerik çıkarma hatası:', error);
+                    app.toast('İçerik çıkarılırken hata oluştu!', 'error');
+                }
+            }
+        }
+
+        function logout() {
+            if (app) {
+                app.logout();
+            }
+            window.location.href = 'login.html';
+        }
+
+    </script>
+</body>
+
+</html>
+

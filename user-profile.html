@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <title>Kullanıcı Profili - Sosyal Kütüphane</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--color-bg);
+            min-height: 100vh;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .profile-header {
+            background: var(--color-accent-gradient);
+            color: white;
+            padding: 40px 0;
+            margin-bottom: 40px;
+        }
+
+        .profile-header .container {
+            text-align: center;
+        }
+
+        .profile-header h1 {
+            font-size: 32px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .profile-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .profile-card {
+            background: var(--color-surface);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            height: fit-content;
+        }
+
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: var(--color-accent-gradient);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            color: white;
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--color-text);
+        }
+
+        .profile-email {
+            color: var(--color-text-muted);
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+            padding: 20px 0;
+            border-top: 1px solid var(--color-border);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--color-accent);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--color-text-faint);
+            margin-top: 5px;
+        }
+
+        .follow-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--color-accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+
+        .follow-btn:hover {
+            background: var(--color-accent-2);
+            transform: translateY(-2px);
+        }
+
+        .follow-btn.following {
+            background: var(--color-surface);
+            color: var(--color-accent);
+            border: 2px solid var(--color-accent);
+        }
+
+        .follow-btn.following:hover {
+            background: var(--color-bg);
+        }
+
+        .follow-btn.block-btn {
+            background: none;
+            color: var(--color-danger);
+            border: 2px solid var(--color-danger);
+        }
+
+        .follow-btn.block-btn:hover {
+            background: var(--color-danger-bg);
+        }
+
+        .follow-btn.block-btn.blocked {
+            background: var(--color-danger);
+            color: white;
+        }
+
+        .follow-btn.block-btn.blocked:hover {
+            filter: brightness(0.92);
+        }
+
+        .profile-content {
+            background: var(--color-surface);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 20px;
+            border-bottom: 2px solid var(--color-border);
+            margin-bottom: 30px;
+        }
+
+        .tab-btn {
+            padding: 12px 0;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--color-text-faint);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .tab-btn:hover {
+            color: var(--color-accent);
+        }
+
+        .tab-btn.active {
+            color: var(--color-accent);
+            border-bottom-color: var(--color-accent);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .content-item {
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .content-item:hover {
+            transform: scale(1.05);
+        }
+
+        .content-poster {
+            width: 100%;
+            height: 200px;
+            background: var(--color-border);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            object-fit: cover;
+        }
+
+        .content-title {
+            font-weight: 600;
+            color: var(--color-text);
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .content-rating {
+            color: #ffc107;
+            font-size: 12px;
+        }
+
+        .review-item {
+            padding: 15px;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: var(--color-surface-2);
+        }
+
+        .review-title {
+            font-weight: bold;
+            color: var(--color-text);
+            margin-bottom: 8px;
+        }
+
+        .review-rating {
+            color: #ffc107;
+            margin: 5px 0;
+            font-weight: 600;
+        }
+
+        .review-text {
+            color: var(--color-text-muted);
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+
+        .review-date {
+            color: var(--color-text-faint);
+            font-size: 12px;
+        }
+
+        .no-content {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--color-text-faint);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--color-accent);
+        }
+
+        @media (max-width: 768px) {
+            .profile-container {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .content-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
+            <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false">☰</button>
+            <div class="nav-links">
+                <a href="search.html" class="nav-link">🔍 Keşfet</a>
+                <a href="feed.html" class="nav-link">📰 Akış</a>
+                <a href="profile.html" class="nav-link">👤 Profilim</a>
+                <a href="messages.html" class="nav-link">💬 Mesajlar</a>
+                <div class="nav-icon-wrap">
+                    <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
+                        🔔
+                        <span class="nav-badge" id="notifBadge"></span>
+                    </button>
+                    <div class="nav-panel" id="notifPanel">
+                        <div class="nav-panel-header">Bildirimler</div>
+                        <div class="nav-panel-empty">Yükleniyor...</div>
+                    </div>
+                </div>
+                <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
+                <button class="logout-btn" onclick="logout()">Çıkış</button>
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="profile-header">
+        <div class="container">
+            <h1 id="pageTitle">Profil Yükleniyor...</h1>
+        </div>
+    </div>
+
+
+    <div class="container">
+        <div class="profile-container">
+
+            <div class="profile-card">
+                <div class="profile-avatar" id="userAvatar">👤</div>
+                <div class="profile-name" id="userName">Kullanıcı Adı</div>
+
+
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="followersCount">0</div>
+                        <div class="stat-label">Takipçi</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="followingCount">0</div>
+                        <div class="stat-label">Takip Edilen</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="moviesCount">0</div>
+                        <div class="stat-label">Film</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="booksCount">0</div>
+                        <div class="stat-label">Kitap</div>
+                    </div>
+                </div>
+
+                <div class="rating-histogram" id="ratingHistogram" style="display:none;">
+                    <div class="rating-histogram-title">⭐ Puan Dağılımı</div>
+                    <div class="rating-histogram-bars" id="ratingHistogramBars"></div>
+                </div>
+
+                <div id="compatibilityBadge" style="display: none; margin-top: 15px; padding: 12px; border-radius: var(--radius); background: var(--color-surface-2);">
+                    <div style="font-size: 22px; font-weight: 800; background: var(--color-accent-gradient); -webkit-background-clip: text; background-clip: text; color: transparent;" id="compatibilityScore"></div>
+                    <div style="font-size: 12px; color: var(--color-text-faint);" id="compatibilityDetail"></div>
+                </div>
+
+                <button id="followBtn" class="follow-btn" onclick="toggleFollow()" style="display: none;">
+                    + Takip Et
+                </button>
+                <button id="messageBtn" class="follow-btn" onclick="goToMessages()" style="display: none; margin-top: 10px; background: var(--color-surface-2); color: var(--color-text); border: 2px solid var(--color-border);">
+                    💬 Mesaj Gönder
+                </button>
+                <button id="blockBtn" class="follow-btn block-btn" onclick="toggleBlock()" style="display: none;">
+                    🚫 Engelle
+                </button>
+            </div>
+
+
+            <div class="profile-content">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('watched')">📽️ İzledikleri</button>
+                    <button class="tab-btn" onclick="switchTab('read')">📚 Okuduğu Kitaplar</button>
+                    <button class="tab-btn" onclick="switchTab('reviews')">✍️ Yazılan Yorumlar</button>
+                    <button class="tab-btn" onclick="switchTab('diary')">📔 Günlük</button>
+                </div>
+
+
+                <div id="watched" class="tab-content active">
+                    <div id="watchedContent" class="content-grid">
+                        <div class="no-content">Film bulunamadı</div>
+                    </div>
+                </div>
+
+
+                <div id="read" class="tab-content">
+                    <div id="readContent" class="content-grid">
+                        <div class="no-content">Kitap bulunamadı</div>
+                    </div>
+                </div>
+
+
+                <div id="reviews" class="tab-content">
+                    <div id="reviewsContent">
+                        <div class="no-content">Yorum bulunamadı</div>
+                    </div>
+                </div>
+
+                <div id="diary" class="tab-content">
+                    <div id="diaryContent">
+                        <div class="no-content">⏳ Günlük yükleniyor...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/escape-html.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        let profileUserId = null;
+        let isOwnProfile = false;
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            if (typeof app !== 'undefined' && app.initPromise) {
+                await app.initPromise;
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            profileUserId = urlParams.get('id');
+
+            if (!profileUserId) {
+                profileUserId = app?.currentUser?.id || 1;
+                isOwnProfile = true;
+            } else {
+                isOwnProfile = (parseInt(profileUserId) === app?.currentUser?.id);
+            }
+
+            await loadUserProfile();
+        });
+
+        async function loadUserContent() {
+            const userId = profileUserId;
+
+            if (!userId) {
+                console.error('Kullanıcı ID bulunamadı');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/get-user-content.php?user_id=${userId}`, { credentials: 'include' });
+                const data = await response.json();
+
+                let userMovies = data.watched || [];
+                let userBooks = data.read || [];
+                const watchedContainer = document.getElementById('watchedContent');
+                if (watchedContainer) {
+                    if (userMovies.length === 0) {
+                        watchedContainer.innerHTML = '<div class="no-content">Bu kullanıcı henüz film izlememiş</div>';
+                    } else {
+                        let moviesHtml = '';
+                        userMovies.forEach(m => {
+                            const movieId = m.tmdb_id || m.movie_id;
+                            const posterUrl = m.poster_path
+                                ? `https://image.tmdb.org/t/p/w300${m.poster_path}`
+                                : 'https://placehold.co/150x200?text=Poster+Yok';
+                            const title = app.escapeHtml(m.title || 'Film');
+
+                            moviesHtml += `
+                                <div class="content-item" onclick="goToDetail('movie', '${movieId}')" style="cursor: pointer;">
+                                    <img class="content-poster" src="${posterUrl}" alt="${title}" onerror="this.src='https://placehold.co/150x200?text=Poster+Yok'">
+                                    <div class="content-title">${title}</div>
+                                    ${m.rating ? `<div class="content-rating">⭐ ${m.rating}/10</div>` : ''}
+                                </div>
+                            `;
+                        });
+                        watchedContainer.innerHTML = moviesHtml;
+                    }
+                }
+                const readContainer = document.getElementById('readContent');
+                if (readContainer) {
+                    if (userBooks.length === 0) {
+                        readContainer.innerHTML = '<div class="no-content">Bu kullanıcı henüz kitap okumamış</div>';
+                    } else {
+                        let booksHtml = '';
+                        userBooks.forEach(b => {
+                            const bookId = b.google_books_id || b.book_id;
+                            const coverUrl = b.cover_url
+                                ? b.cover_url.replace('http://', 'https://')
+                                : 'https://placehold.co/150x200?text=Kapak+Yok';
+                            const title = app.escapeHtml(b.title || 'Kitap');
+
+                            booksHtml += `
+                                <div class="content-item" onclick="goToDetail('book', '${bookId}')" style="cursor: pointer;">
+                                    <img class="content-poster" src="${coverUrl}" alt="${title}" onerror="this.src='https://placehold.co/150x200?text=Kapak+Yok'">
+                                    <div class="content-title">${title}</div>
+                                    ${b.rating ? `<div class="content-rating">⭐ ${b.rating}/10</div>` : ''}
+                                </div>
+                            `;
+                        });
+                        readContainer.innerHTML = booksHtml;
+                    }
+                }
+                await loadUserReviews(userId);
+
+            } catch (error) {
+                console.error('İçerik yükleme hatası:', error);
+            }
+        }
+
+        async function loadUserReviews(userId) {
+            const reviewsContainer = document.getElementById('reviewsContent');
+            if (!reviewsContainer) return;
+
+            try {
+                const response = await fetch(`/api/comments.php?user_id=${userId}`, { credentials: 'include' });
+                const data = await response.json();
+
+                if (!data.success || !data.comments || data.comments.length === 0) {
+                    reviewsContainer.innerHTML = '<div class="no-content">Bu kullanıcı henüz yorum yapmamış</div>';
+                    return;
+                }
+
+                let reviewsHtml = '';
+                data.comments.forEach(comment => {
+                    const text = app.escapeHtml(comment.comment_text || comment.text || '');
+                    reviewsHtml += `
+                        <div class="review-item">
+                            <div class="review-text">"${text}"</div>
+                            <div class="review-date">${new Date(comment.created_at).toLocaleDateString('tr-TR')}</div>
+                        </div>
+                    `;
+                });
+                reviewsContainer.innerHTML = reviewsHtml;
+            } catch (error) {
+                console.error('Yorumlar yüklenirken hata:', error);
+                reviewsContainer.innerHTML = '<div class="no-content">Yorumlar yüklenirken hata oluştu</div>';
+            }
+        }
+
+        function goToDetail(type, id) {
+            window.location.href = `detail.php?type=${type}&id=${id}`;
+        }
+
+        function goToMessages() {
+            window.location.href = `messages.html?with=${profileUserId}`;
+        }
+
+        async function loadUserProfile() {
+            const userId = profileUserId;
+
+            if (!userId) {
+                document.querySelector('.container').innerHTML = '<div class="no-content">Kullanıcı ID bulunamadı</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/user-profile.php?id=${userId}`, { credentials: 'include' });
+                const data = await response.json();
+
+                if (!data.success) {
+                    document.querySelector('.container').innerHTML = '<div class="no-content">Kullanıcı bulunamadı</div>';
+                    return;
+                }
+
+                const user = data.user;
+                const stats = data.stats;
+                const pageTitle = document.getElementById('pageTitle');
+                const userAvatar = document.getElementById('userAvatar');
+                const userName = document.getElementById('userName');
+                const userEmail = document.getElementById('userEmail');
+                const followersCount = document.getElementById('followersCount');
+                const followingCount = document.getElementById('followingCount');
+                const moviesCount = document.getElementById('moviesCount');
+                const booksCount = document.getElementById('booksCount');
+
+                if (pageTitle) pageTitle.textContent = `${user.username} - Profil`;
+                if (userAvatar) {
+                    const avatar = user.avatar_url || user.avatar;
+
+                    if (avatar && avatar.startsWith('http')) {
+                        userAvatar.innerHTML = `<img src="${app.escapeHtml(avatar)}" alt="${app.escapeHtml(user.username)}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                    } else if (avatar && avatar.trim() !== '') {
+                        userAvatar.innerHTML = `<span style="font-size: 60px;">${app.escapeHtml(avatar)}</span>`;
+                    } else {
+                        userAvatar.textContent = user.username.charAt(0).toUpperCase();
+                    }
+                }
+
+                if (userName) userName.textContent = user.username;
+                if (followersCount) followersCount.textContent = stats.followers || 0;
+                if (followingCount) followingCount.textContent = stats.following || 0;
+                if (moviesCount) moviesCount.textContent = stats.movies_watched || 0;
+                if (booksCount) booksCount.textContent = stats.books_read || 0;
+
+                const followBtn = document.getElementById('followBtn');
+                if (followBtn && !isOwnProfile) {
+                    followBtn.style.display = 'block';
+                    checkFollowStatus(userId);
+                }
+                const messageBtn = document.getElementById('messageBtn');
+                if (messageBtn && !isOwnProfile) {
+                    messageBtn.style.display = 'block';
+                }
+                const blockBtn = document.getElementById('blockBtn');
+                if (blockBtn && !isOwnProfile) {
+                    blockBtn.style.display = 'block';
+                    checkBlockStatus(userId);
+                }
+                if (!isOwnProfile && app.currentUser) {
+                    loadCompatibility(userId);
+                }
+                loadRatingHistogram(userId);
+
+                loadUserContent();
+            } catch (error) {
+                console.error('Profil yükleme hatası:', error);
+                document.querySelector('.container').innerHTML = '<div class="no-content">Profil yüklenirken hata oluştu</div>';
+            }
+        }
+
+        async function loadUserContentOld(type, user) {
+            let content = [];
+
+            try {
+                const contentType = (type === 'watched') ? 'movie' : 'book';
+                const status = (type === 'watched') ? 'watched' : 'read';
+                const response = await fetch(`/api/user-content.php?user_id=${user.id}&type=${contentType}&status=${status}`, { credentials: 'include' });
+                const data = await response.json();
+
+                if (data.success && data.content) {
+                    content = data.content.map(item => ({
+                        id: item.id,
+                        title: item.title,
+                        poster: item.poster_path || item.cover_url || 'https://placehold.co/150x200?text=No+Image',
+                        rating: item.rating || 0
+                    }));
+                }
+            } catch (error) {
+                console.error('İçerik yükleme hatası:', error);
+            }
+
+            displayContent(type, content);
+        }
+
+        function displayContent(type, content) {
+            let containerId = type === 'watched' ? 'watchedContent' :
+                type === 'read' ? 'readContent' : 'reviewsContent';
+
+            let container = document.getElementById(containerId);
+
+            if (!content || content.length === 0) {
+                container.innerHTML = '<div class="no-content">İçerik bulunamadı</div>';
+                return;
+            }
+
+            if (type === 'reviews') {
+                container.innerHTML = content.map(review => `
+                    <div class="review-item">
+                        <div class="review-title">${app.escapeHtml(review.title)}</div>
+                        <div class="review-rating">⭐ ${review.rating}/10</div>
+                        <div class="review-text">"${app.escapeHtml(review.text)}"</div>
+                        <div class="review-date">${new Date(review.date).toLocaleDateString('tr-TR')}</div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = content.map(item => `
+                    <div class="content-item" onclick="goToDetail('${type}', '${item.id}')">
+                        <img src="${item.poster}" alt="${app.escapeHtml(item.title)}" class="content-poster" onerror="this.src='https://placehold.co/150x200?text=No+Image'">
+                        <div class="content-title">${app.escapeHtml(item.title)}</div>
+                        <div class="content-rating">⭐ ${item.rating || 0}/10</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+
+            if (tabName === 'diary') loadDiary();
+        }
+
+        let diaryLoaded = false;
+        async function loadDiary() {
+            if (diaryLoaded) return;
+            diaryLoaded = true;
+
+            const container = document.getElementById('diaryContent');
+            try {
+                const response = await fetch(`/api/diary.php?user_id=${profileUserId}`, { credentials: 'include' });
+                const data = await response.json();
+                const entries = data.entries || [];
+
+                if (!data.success || entries.length === 0) {
+                    container.innerHTML = '<div class="no-content">📔 Günlük boş</div>';
+                    return;
+                }
+
+                container.innerHTML = entries.map(entry => {
+                    const icon = entry.type === 'movie' ? '🎬' : entry.type === 'series' ? '📺' : '📚';
+                    const dateStr = new Date(entry.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+                    return `
+                        <div class="review-item" onclick="window.location.href='detail.php?type=${entry.type}&id=${entry.id}'" style="cursor:pointer;">
+                            <div class="review-title">${icon} ${app.escapeHtml(entry.title)}</div>
+                            <div style="color: var(--color-text-faint); font-size: 12px;">${dateStr}</div>
+                            ${entry.rating ? `<div class="review-rating">⭐ ${entry.rating}/10</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Günlük yüklenirken hata:', error);
+                container.innerHTML = '<div class="no-content">❌ Günlük yüklenemedi</div>';
+            }
+        }
+
+        async function loadRatingHistogram(userId) {
+            try {
+                const response = await fetch(`/api/user-stats.php?user_id=${userId}`, { credentials: 'include' });
+                const data = await response.json();
+                const distribution = data.stats?.rating_distribution;
+                if (!data.success || !distribution) return;
+
+                const hasRatings = Object.values(distribution).some(c => c > 0);
+                if (hasRatings) {
+                    app.renderRatingHistogram(document.getElementById('ratingHistogramBars'), distribution);
+                    document.getElementById('ratingHistogram').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Puan dağılımı alınamadı:', error);
+            }
+        }
+
+        async function loadCompatibility(userId) {
+            const badge = document.getElementById('compatibilityBadge');
+            try {
+                const response = await fetch(`/api/compatibility.php?user_id=${userId}`, { credentials: 'include' });
+                const data = await response.json();
+                if (!data.success || data.score === null) return;
+
+                document.getElementById('compatibilityScore').textContent = `🎯 %${data.score} Zevk Uyumu`;
+                const detail = document.getElementById('compatibilityDetail');
+                if (data.basis === 'ratings') {
+                    detail.textContent = `${data.shared_rated_count} ortak puanlanmış içeriğe göre`;
+                } else {
+                    detail.textContent = 'Ortak tür ilgisine göre tahmini';
+                }
+                badge.style.display = 'block';
+            } catch (error) {
+                console.error('Uyumluluk hesaplama hatası:', error);
+            }
+        }
+
+        async function checkFollowStatus(userId) {
+            const btn = document.getElementById('followBtn');
+
+            if (!app.currentUser) {
+                btn.style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/follow-status.php?user_id=${userId}`, { credentials: 'include' });
+                const data = await response.json();
+
+                if (data.success && data.is_following) {
+                    btn.textContent = '✓ Takip Ediliyor';
+                    btn.classList.add('following');
+                } else {
+                    btn.textContent = '+ Takip Et';
+                    btn.classList.remove('following');
+                }
+            } catch (error) {
+                console.error('Takip durumu kontrol hatası:', error);
+            }
+        }
+
+        async function toggleFollow() {
+            if (!app.currentUser) {
+                app.toast('Takip etmek için giriş yapmalısınız!', 'error');
+                return;
+            }
+
+            try {
+                const targetUserId = profileUserId;
+                const btn = document.getElementById('followBtn');
+
+                if (btn.classList.contains('following')) {
+                    const response = await fetch('/api/follow.php', {
+                        method: 'DELETE',
+                        headers: app.authHeaders(),
+                        credentials: 'include',
+                        body: JSON.stringify({ target_user_id: targetUserId })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        btn.textContent = '+ Takip Et';
+                        btn.classList.remove('following');
+                    }
+                } else {
+                    const response = await fetch('/api/follow.php', {
+                        method: 'POST',
+                        headers: app.authHeaders(),
+                        credentials: 'include',
+                        body: JSON.stringify({ target_user_id: targetUserId })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        btn.textContent = '✓ Takip Ediliyor';
+                        btn.classList.add('following');
+                    }
+                }
+            } catch (error) {
+                console.error('Takip değişikliği hatası:', error);
+                app.toast('İşlem başarısız oldu!', 'error');
+            }
+        }
+
+        async function checkBlockStatus(userId) {
+            const btn = document.getElementById('blockBtn');
+            if (!app.currentUser) {
+                btn.style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/block.php?target_user_id=${userId}`, { credentials: 'include' });
+                const data = await response.json();
+                if (data.success && data.is_blocked) {
+                    btn.textContent = '✅ Engeli Kaldır';
+                    btn.classList.add('blocked');
+                } else {
+                    btn.textContent = '🚫 Engelle';
+                    btn.classList.remove('blocked');
+                }
+            } catch (error) {
+                console.error('Engel durumu kontrol hatası:', error);
+            }
+        }
+
+        async function toggleBlock() {
+            if (!app.currentUser) return;
+
+            const btn = document.getElementById('blockBtn');
+            const targetUserId = profileUserId;
+            const isBlocked = btn.classList.contains('blocked');
+
+            if (!isBlocked && !(await app.confirmDialog('Bu kullanıcıyı engellemek istediğinize emin misiniz? Birbirinizi takip edemez ve mesajlaşamazsınız.', { confirmText: 'Engelle' }))) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/block.php', {
+                    method: isBlocked ? 'DELETE' : 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ target_user_id: targetUserId })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    app.toast(isBlocked ? 'Engel kaldırıldı' : 'Kullanıcı engellendi', 'success');
+                    checkBlockStatus(targetUserId);
+                    if (!isBlocked) checkFollowStatus(targetUserId);
+                } else {
+                    app.toast(data.message || 'İşlem başarısız oldu', 'error');
+                }
+            } catch (error) {
+                console.error('Engelleme hatası:', error);
+                app.toast('Bağlantı hatası', 'error');
+            }
+        }
+
+        function logout() {
+            if (app) {
+                app.logout();
+            }
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+
+</html>

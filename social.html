@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <title>Sosyal - Sosyal Kütüphane</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--color-bg);
+            min-height: 100vh;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .social-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 30px;
+        }
+
+        .sidebar {
+            background: var(--color-surface);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .sidebar h3 {
+            margin-bottom: 15px;
+            color: var(--color-text);
+        }
+
+        .search-users {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-users input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid var(--color-border);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .search-users button {
+            padding: 10px 15px;
+            background: var(--color-accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .user-card {
+            background: var(--color-surface-2);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-info h4 {
+            margin-bottom: 5px;
+            color: var(--color-text);
+        }
+
+        .user-info p {
+            font-size: 12px;
+            color: var(--color-text-muted);
+        }
+
+        .follow-btn {
+            padding: 8px 15px;
+            background: var(--color-accent);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .follow-btn.followed {
+            background: #6c757d;
+        }
+
+        .follow-btn:hover {
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            border-bottom: 2px solid var(--color-border);
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 12px 25px;
+            border: none;
+            background: none;
+            color: var(--color-text-muted);
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: var(--color-accent);
+            border-bottom-color: var(--color-accent);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .comment-item {
+            background: var(--color-surface);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .comment-date {
+            font-size: 12px;
+            color: var(--color-text-faint);
+        }
+
+        .comment-text {
+            color: var(--color-text-muted);
+            line-height: 1.6;
+            margin-bottom: 15px;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .comment-text.truncated {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .show-more-btn {
+            background: none;
+            border: none;
+            color: var(--color-accent);
+            cursor: pointer;
+            font-size: 13px;
+            padding: 5px 0;
+            margin-bottom: 10px;
+        }
+
+        .show-more-btn:hover {
+            text-decoration: underline;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 15px;
+            border-top: 1px solid var(--color-border);
+            padding-top: 10px;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.3s;
+        }
+
+        .action-btn:hover {
+            color: var(--color-accent);
+        }
+
+        .action-btn.liked {
+            color: var(--color-danger);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--color-text-faint);
+        }
+
+        .following-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .following-card {
+            background: var(--color-surface);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .following-card h4 {
+            margin: 15px 0 5px 0;
+            color: var(--color-text);
+        }
+
+        .following-card p {
+            font-size: 13px;
+            color: var(--color-text-muted);
+            margin-bottom: 15px;
+        }
+
+        .unfollow-btn {
+            padding: 8px 15px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .social-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+            }
+
+            .following-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
+            <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false">☰</button>
+            <div class="nav-links">
+                <a href="search.html" class="nav-link">🔍 Keşfet</a>
+                <a href="feed.html" class="nav-link">📰 Akış</a>
+                <a href="profile.html" class="nav-link">👤 Profilim</a>
+                <a href="messages.html" class="nav-link">💬 Mesajlar</a>
+                <div class="nav-icon-wrap">
+                    <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
+                        🔔
+                        <span class="nav-badge" id="notifBadge"></span>
+                    </button>
+                    <div class="nav-panel" id="notifPanel">
+                        <div class="nav-panel-header">Bildirimler</div>
+                        <div class="nav-panel-empty">Yükleniyor...</div>
+                    </div>
+                </div>
+                <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
+                <button class="logout-btn" onclick="logout()">Çıkış</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="social-grid">
+            
+            <div class="sidebar">
+                <h3>👥 Kullanıcıları Bul</h3>
+                <div class="search-users">
+                    <input type="text" id="userSearchInput" placeholder="Kullanıcı ara...">
+                    <button onclick="searchUsers()">🔍</button>
+                </div>
+                <div id="searchResults"></div>
+
+                <div style="margin-top: 24px;">
+                    <h3>🤝 Tanıyor Olabileceğiniz Kişiler</h3>
+                    <div id="suggestedUsers"></div>
+                </div>
+            </div>
+
+            
+            <div class="main-content">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('feed')">📰 Beslenme</button>
+                    <button class="tab-btn" onclick="switchTab('comments')">💬 Tüm Yorumlar</button>
+                    <button class="tab-btn" onclick="switchTab('following')">⭐ Takip Ettiklerim</button>
+                </div>
+
+                
+                <div id="feedTab" class="tab-content active">
+                    <div id="feedContainer">
+                        <div class="empty-state">📰 Henüz aktivite yok</div>
+                    </div>
+                </div>
+
+                
+                <div id="commentsTab" class="tab-content">
+                    <div id="commentsContainer">
+                        <div class="empty-state">💬 Henüz yorum yapılmamış</div>
+                    </div>
+                </div>
+
+                
+                <div id="followingTab" class="tab-content">
+                    <div id="followingContainer">
+                        <div class="empty-state">⭐ Henüz kimseyi takip etmiyorsunuz</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/escape-html.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        let displayedComments = [];
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            if (typeof app !== 'undefined' && app.initPromise) {
+                await app.initPromise;
+            }
+            if (!app?.currentUser) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            loadFeed();
+            loadAllComments();
+            loadFollowing();
+            loadSuggestedUsers();
+        });
+
+        async function loadSuggestedUsers() {
+            const container = document.getElementById('suggestedUsers');
+            if (!container) return;
+
+            try {
+                const response = await fetch('/api/suggested-users.php?limit=6', { credentials: 'include' });
+                const data = await response.json();
+                const suggestions = data.suggestions || [];
+
+                if (!data.success || suggestions.length === 0) {
+                    container.innerHTML = '<div class="empty-state" style="padding: 15px; font-size: 12px;">Şu an öneri yok</div>';
+                    return;
+                }
+
+                container.innerHTML = suggestions.map(user => `
+                    <div class="user-card">
+                        <div class="user-info" onclick="window.location.href='user-profile.html?id=${user.id}'" style="cursor: pointer;">
+                            <h4>${app.escapeHtml(user.username)}</h4>
+                            <p>${user.mutual_count > 0 ? `👥 ${user.mutual_count} ortak takip` : '✨ Popüler kullanıcı'}</p>
+                        </div>
+                        <button class="follow-btn" onclick="event.stopPropagation(); followSuggested(${user.id})">+ Takip</button>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Öneri yükleme hatası:', error);
+            }
+        }
+
+        async function followSuggested(targetUserId) {
+            try {
+                await fetch('/api/follow.php', {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ target_user_id: targetUserId })
+                });
+                app.toast('Kullanıcı takip edildi!', 'success');
+                loadSuggestedUsers();
+                loadFollowing();
+            } catch (error) {
+                console.error('Takip işlemi hatası:', error);
+                app.toast('Takip işlemi başarısız oldu', 'error');
+            }
+        }
+
+        async function searchUsers() {
+            const query = document.getElementById('userSearchInput').value.trim();
+            const resultsContainer = document.getElementById('searchResults');
+
+            if (!query) {
+                resultsContainer.innerHTML = '';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/search-users.php?q=${encodeURIComponent(query)}`, { credentials: 'include' });
+                const data = await response.json();
+
+                if (!data.success || data.users.length === 0) {
+                    resultsContainer.innerHTML = '<div class="empty-state" style="padding: 20px; font-size: 12px;">Kullanıcı bulunamadı</div>';
+                    return;
+                }
+
+                let html = '';
+                for (const user of data.users) {
+                    const isFollowing = await checkIfFollowing(user.id);
+                    html += `
+                        <div class="user-card">
+                            <div class="user-info" onclick="window.location.href='user-profile.html?id=${user.id}'" style="cursor: pointer;">
+                                <h4>${app.escapeHtml(user.username)}</h4>
+                            </div>
+                            <button class="follow-btn ${isFollowing ? 'followed' : ''}" 
+                                    onclick="event.stopPropagation(); toggleFollow(${user.id})">
+                                ${isFollowing ? '✓ Takip' : '+ Takip'}
+                            </button>
+                        </div>
+                    `;
+                }
+
+                resultsContainer.innerHTML = html;
+            } catch (error) {
+                console.error('Kullanıcı arama hatası:', error);
+                resultsContainer.innerHTML = '<div class="empty-state" style="padding: 20px; font-size: 12px; color: red;">Arama sırasında hata oluştu</div>';
+            }
+        }
+
+        async function toggleFollow(targetUserId) {
+            try {
+                const isFollowing = await checkIfFollowing(targetUserId);
+
+                if (isFollowing) {
+                    await fetch('/api/follow.php', {
+                        method: 'DELETE',
+                        headers: app.authHeaders(),
+                        credentials: 'include',
+                        body: JSON.stringify({ target_user_id: targetUserId })
+                    });
+                } else {
+                    await fetch('/api/follow.php', {
+                        method: 'POST',
+                        headers: app.authHeaders(),
+                        credentials: 'include',
+                        body: JSON.stringify({ target_user_id: targetUserId })
+                    });
+                }
+
+                searchUsers();
+                loadFollowing();
+            } catch (error) {
+                console.error('Takip işlemi hatası:', error);
+                app.toast('Takip işlemi başarısız oldu', 'error');
+            }
+        }
+
+        async function checkIfFollowing(userId) {
+            try {
+                const response = await fetch(`/api/follow-status.php?user_id=${userId}`, { credentials: 'include' });
+                const data = await response.json();
+                return data.success && data.is_following;
+            } catch (error) {
+                console.error('Takip durumu kontrol hatası:', error);
+                return false;
+            }
+        }
+
+        async function loadFeed() {
+            try {
+                const followingRes = await fetch('/api/get-following.php', { credentials: 'include' });
+                const followingData = await followingRes.json();
+                const followingList = followingData.following || [];
+                const followingUsernames = followingList.map(f => f.username);
+                const commentsRes = await fetch('/api/comments.php', { credentials: 'include' });
+                const commentsData = await commentsRes.json();
+                let activities = [];
+
+                if (commentsData.comments && Array.isArray(commentsData.comments)) {
+                    commentsData.comments.forEach(comment => {
+                        if (followingUsernames.includes(comment.username)) {
+                            activities.push({
+                                type: 'comment',
+                                username: comment.username,
+                                text: comment.comment_text || comment.text,
+                                date: comment.created_at || new Date().toISOString(),
+                                likes: comment.likes_count || 0
+                            });
+                        }
+                    });
+                }
+
+                activities.sort((a, b) => new Date(b.date) - new Date(a.date));
+                displayFeed(activities.slice(0, 20));
+            } catch (error) {
+                console.error('Feed yükleme hatası:', error);
+                document.getElementById('feedContainer').innerHTML = '<div class="empty-state">❌ Feed yüklenirken hata oluştu</div>';
+            }
+        }
+
+        function displayFeed(activities) {
+            const container = document.getElementById('feedContainer');
+
+            if (activities.length === 0) {
+                container.innerHTML = '<div class="empty-state">📰 Takip ettiğiniz kullanıcıların henüz aktivitesi yok</div>';
+                return;
+            }
+
+            let html = '';
+            activities.forEach((activity, idx) => {
+                html += `
+                    <div class="comment-item">
+                        <div class="comment-header">
+                            <span class="comment-author">👤 ${app.escapeHtml(activity.username)}</span>
+                            <span class="comment-date">${app.formatDate(activity.date)}</span>
+                        </div>
+                        <div class="comment-text">${app.escapeHtml(activity.text)}</div>
+                        <div class="comment-actions">
+                            <button class="action-btn" data-likes="${activity.likes}" onclick="likeFeedItem(this)">
+                                ❤️ Beğen (${activity.likes})
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function likeFeedItem(btn) {
+            btn.classList.toggle('liked');
+            let currentLikes = parseInt(btn.dataset.likes) || 0;
+
+            if (btn.classList.contains('liked')) {
+                currentLikes++;
+                btn.innerHTML = `❤️ Beğenildi (${currentLikes})`;
+            } else {
+                currentLikes = Math.max(0, currentLikes - 1);
+                btn.innerHTML = `❤️ Beğen (${currentLikes})`;
+            }
+            btn.dataset.likes = currentLikes;
+        }
+
+        async function loadAllComments() {
+            try {
+                const response = await fetch('/api/comments.php?all=true');
+                const data = await response.json();
+                let allComments = [];
+
+                if (data.comments && Array.isArray(data.comments)) {
+                    allComments = data.comments.map(comment => ({
+                        id: comment.id,
+                        username: comment.username,
+                        text: comment.comment_text || comment.text,
+                        date: comment.created_at || new Date().toISOString(),
+                        likes: comment.likes_count || 0
+                    }));
+                }
+
+                allComments.sort((a, b) => new Date(b.date) - new Date(a.date));
+                displayComments(allComments.slice(0, 50));
+            } catch (error) {
+                console.error('Yorumlar yükleme hatası:', error);
+                document.getElementById('commentsContainer').innerHTML = '<div class="empty-state">❌ Yorumlar yüklenirken hata oluştu</div>';
+            }
+        }
+
+        function displayComments(comments) {
+            displayedComments = comments;
+            const container = document.getElementById('commentsContainer');
+
+            if (comments.length === 0) {
+                container.innerHTML = '<div class="empty-state">💬 Henüz yorum yapılmamış</div>';
+                return;
+            }
+
+            let html = '';
+            comments.forEach((comment, idx) => {
+                const text = app.escapeHtml(comment.text || '');
+                const isLong = text.length > 200;
+                const truncatedClass = isLong ? 'truncated' : '';
+
+                html += `
+                    <div class="comment-item">
+                        <div class="comment-header">
+                            <span class="comment-author">👤 ${app.escapeHtml(comment.username)}</span>
+                        </div>
+                        <div class="comment-text ${truncatedClass}" id="comment-text-${idx}">"${text}"</div>
+                        ${isLong ? `<button class="show-more-btn" onclick="toggleCommentText(${idx})">Daha fazla göster</button>` : ''}
+                        <div class="comment-actions">
+                            <button class="action-btn" onclick="likeComment(${idx})">
+                                ❤️ Beğen (${comment.likes})
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function toggleCommentText(idx) {
+            const textEl = document.getElementById(`comment-text-${idx}`);
+            const btn = textEl.nextElementSibling;
+
+            if (textEl.classList.contains('truncated')) {
+                textEl.classList.remove('truncated');
+                btn.textContent = 'Daha az göster';
+            } else {
+                textEl.classList.add('truncated');
+                btn.textContent = 'Daha fazla göster';
+            }
+        }
+
+        async function likeComment(idx) {
+            const comment = displayedComments[idx];
+            if (!comment || !comment.id) return;
+
+            try {
+                const response = await fetch('/api/like-comment.php', {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ comment_id: comment.id })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    loadAllComments();
+                }
+            } catch (error) {
+                console.error('Beğenme hatası:', error);
+            }
+        }
+
+        async function loadFollowing() {
+            try {
+                const response = await fetch('/api/get-following.php');
+                const data = await response.json();
+
+                if (!data.success) {
+                    document.getElementById('followingContainer').innerHTML = '<div class="empty-state">❌ Hata oluştu</div>';
+                    return;
+                }
+
+                const following = data.following;
+
+                if (following.length === 0) {
+                    document.getElementById('followingContainer').innerHTML = '<div class="empty-state">⭐ Henüz kimseyi takip etmiyorsunuz</div>';
+                    return;
+                }
+
+                let html = '<div class="following-list">';
+                for (const user of following) {
+                    const safeUsername = app.escapeHtml(user.username);
+                    const avatarLetter = safeUsername.charAt(0).toUpperCase();
+                    const avatar = user.avatar_url || user.avatar;
+
+                    let avatarContent;
+                    if (avatar && avatar.startsWith('http')) {
+                        avatarContent = `<img src="${app.escapeHtml(avatar)}" alt="${safeUsername}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                    } else if (avatar && avatar.trim() !== '') {
+                        avatarContent = `<span style="font-size: 36px;">${app.escapeHtml(avatar)}</span>`;
+                    } else {
+                        avatarContent = avatarLetter;
+                    }
+
+                    html += `
+                        <div class="following-card">
+                            <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--color-accent-gradient); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: bold; margin: 0 auto 10px; overflow: hidden;">${avatarContent}</div>
+                            <h4 style="cursor: pointer; color: var(--color-accent);" onclick="goToUserProfile(${user.id})">${safeUsername}</h4>
+                            <button class="unfollow-btn" onclick="toggleFollow(${user.id})">
+                                Takibi Bırak
+                            </button>
+                        </div>
+                    `;
+                }
+                html += '</div>';
+
+                document.getElementById('followingContainer').innerHTML = html;
+            } catch (error) {
+                console.error('Takip edilen yükleme hatası:', error);
+                document.getElementById('followingContainer').innerHTML = '<div class="empty-state">❌ Yükleme hatası</div>';
+            }
+        }
+
+        function goToUserProfile(userId) {
+            window.location.href = `user-profile.html?id=${userId}`;
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            document.getElementById(tab + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function logout() {
+            if (app) {
+                app.logout();
+            }
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+
+</html>
+

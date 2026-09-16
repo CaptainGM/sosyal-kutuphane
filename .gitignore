@@ -1,0 +1,15 @@
+vendor/
+.env
+*.env
+!.env.example
+.vscode/
+tempCodeRunnerFile.bat
+uploads/*
+!uploads/.gitkeep
+.phpunit.result.cache
+
+api/fix-*.php
+api/create-tables.php
+api/database-view.php
+detail.html
+schema.sql

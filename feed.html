@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <title>Sosyal Akış - Sosyal Kütüphane</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--color-text);
+            font-size: 28px;
+        }
+
+        /* Aktivite Kartı */
+        .activity-card {
+            background: var(--color-surface);
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 25px;
+            transition: transform 0.3s;
+        }
+
+        .activity-card:hover {
+            transform: translateY(-3px);
+        }
+
+        /* Üst Bilgi (Header) */
+        .activity-header {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--color-accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .header-info {
+            flex: 1;
+        }
+
+        .username-link {
+            font-weight: bold;
+            color: var(--color-accent);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .username-link:hover {
+            text-decoration: underline;
+        }
+
+        .action-text {
+            color: var(--color-text-muted);
+            font-size: 14px;
+            margin-top: 3px;
+        }
+
+        .activity-date {
+            color: var(--color-text-faint);
+            font-size: 12px;
+            margin-top: 3px;
+        }
+
+        /* Ana İçerik (Body) */
+        .activity-body {
+            padding: 20px;
+            background: var(--color-surface-2);
+            display: flex;
+            gap: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .activity-body:hover {
+            background: var(--color-border);
+        }
+
+        .content-poster {
+            width: 100px;
+            height: 150px;
+            border-radius: 10px;
+            object-fit: cover;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .content-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .content-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--color-text);
+            margin-bottom: 10px;
+        }
+
+        .content-type-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            width: fit-content;
+        }
+
+        .badge-movie {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-book {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .badge-series {
+            background: #f3e5f5;
+            color: #8e24aa;
+        }
+
+        .rating-display {
+            color: #f39c12;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) .badge-movie {
+                background: rgba(25, 118, 210, 0.25);
+                color: #8ab4f8;
+            }
+
+            :root:not([data-theme="light"]) .badge-book {
+                background: rgba(56, 142, 60, 0.25);
+                color: #81c995;
+            }
+
+            :root:not([data-theme="light"]) .badge-series {
+                background: rgba(142, 36, 170, 0.25);
+                color: #d7aefb;
+            }
+        }
+
+        :root[data-theme="dark"] .badge-movie {
+            background: rgba(25, 118, 210, 0.25);
+            color: #8ab4f8;
+        }
+
+        :root[data-theme="dark"] .badge-book {
+            background: rgba(56, 142, 60, 0.25);
+            color: #81c995;
+        }
+
+        :root[data-theme="dark"] .badge-series {
+            background: rgba(142, 36, 170, 0.25);
+            color: #d7aefb;
+        }
+
+        .comment-preview {
+            color: var(--color-text-muted);
+            font-style: italic;
+            line-height: 1.5;
+            border-left: 3px solid var(--color-accent);
+            padding-left: 12px;
+            margin-top: 10px;
+        }
+
+        /* Alt Bilgi (Footer) */
+        .activity-footer {
+            padding: 12px 20px;
+            border-top: 1px solid var(--color-border);
+            display: flex;
+            gap: 15px;
+        }
+
+        .footer-btn {
+            background: none;
+            border: none;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 15px;
+            border-radius: 8px;
+            transition: transform 0.1s ease, background-color 0.2s ease, color 0.2s ease;
+            font-size: 14px;
+        }
+
+        .footer-btn:hover {
+            background: var(--color-surface-2);
+            color: var(--color-accent);
+        }
+
+        .footer-btn:active {
+            transform: scale(0.95);
+        }
+
+        .footer-btn.liked {
+            color: var(--color-danger);
+        }
+
+        /* Boş Durum */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--color-text-faint);
+        }
+
+        .empty-state h2 {
+            margin-bottom: 15px;
+            color: var(--color-text-muted);
+        }
+
+        .empty-state p {
+            margin-bottom: 25px;
+        }
+
+        .empty-state a {
+            display: inline-block;
+            padding: 12px 25px;
+            background: var(--color-accent-gradient);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: var(--color-accent);
+            font-size: 18px;
+        }
+
+        .load-more-container {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .load-more-btn {
+            background: var(--color-accent-gradient);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 3px 12px rgba(var(--color-accent-rgb), 0.35);
+            transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.15s ease;
+        }
+
+        .load-more-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(var(--color-accent-rgb), 0.45);
+        }
+
+        .load-more-btn:active {
+            transform: translateY(0) scale(0.98);
+            filter: brightness(0.94);
+        }
+
+        .load-more-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .no-more-activities {
+            color: var(--color-text-faint);
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .activity-body {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .content-poster {
+                width: 150px;
+                height: 225px;
+            }
+
+            .comment-preview {
+                border-left: none;
+                border-top: 3px solid var(--color-accent);
+                padding-left: 0;
+                padding-top: 12px;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+    
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
+            <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false">☰</button>
+            <div class="nav-links">
+                <a href="search.html" class="nav-link">🔍 Keşfet</a>
+                <a href="feed.html" class="nav-link active">📰 Akış</a>
+                <a href="profile.html" class="nav-link">👤 Profilim</a>
+                <a href="messages.html" class="nav-link">💬 Mesajlar</a>
+                <div class="nav-icon-wrap">
+                    <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
+                        🔔
+                        <span class="nav-badge" id="notifBadge"></span>
+                    </button>
+                    <div class="nav-panel" id="notifPanel">
+                        <div class="nav-panel-header">Bildirimler</div>
+                        <div class="nav-panel-empty">Yükleniyor...</div>
+                    </div>
+                </div>
+                <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
+                <button class="logout-btn" onclick="logout()">Çıkış</button>
+            </div>
+        </div>
+    </nav>
+
+    
+    <div class="container">
+        <div class="reco-section" id="recoSection" style="display:none;">
+            <h2 class="reco-title">✨ Sana Özel Öneriler</h2>
+            <div class="reco-scroll" id="recoScroll"></div>
+        </div>
+
+        <h1 class="page-title">📰 Sosyal Akış</h1>
+        <div id="feedContainer">
+            <div class="loading">⏳ Aktiviteler yükleniyor...</div>
+        </div>
+    </div>
+
+    <script src="js/escape-html.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        let allActivities = [];
+        let currentPage = 1;
+        const ITEMS_PER_PAGE = 10;
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            if (typeof app !== 'undefined' && app.initPromise) {
+                await app.initPromise;
+            }
+
+            if (!app?.currentUser) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            loadFeed();
+            loadRecommendations();
+        });
+
+        async function loadRecommendations() {
+            try {
+                const response = await fetch('/api/recommendations.php', { credentials: 'include' });
+                const data = await response.json();
+                if (!data.success) return;
+
+                const items = [
+                    ...(data.movies || []).map(m => ({ ...m, type: 'movie', poster: m.poster_path ? `https://image.tmdb.org/t/p/w200${m.poster_path}` : 'https://placehold.co/110x160?text=Film' })),
+                    ...(data.series || []).map(s => ({ ...s, type: 'series', poster: s.poster_path ? `https://image.tmdb.org/t/p/w200${s.poster_path}` : 'https://placehold.co/110x160?text=Dizi' })),
+                    ...(data.books || []).map(b => ({ ...b, type: 'book', poster: b.cover_url || 'https://placehold.co/110x160?text=Kitap' }))
+                ];
+
+                if (items.length === 0) return;
+
+                document.getElementById('recoSection').style.display = 'block';
+                document.getElementById('recoScroll').innerHTML = items.map(item => `
+                    <div class="reco-card" onclick="goToDetail('${item.type}', '${item.id}')">
+                        <img src="${item.poster}" alt="${app.escapeHtml(item.title)}" loading="lazy" onerror="this.src='https://placehold.co/110x160?text=Yok'">
+                        <div class="reco-card-title">${app.escapeHtml(item.title)}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Öneri yükleme hatası:', error);
+            }
+        }
+
+        async function loadFeed() {
+            const container = document.getElementById('feedContainer');
+
+            try {
+                const followingRes = await fetch('/api/get-following.php', { credentials: 'include' });
+                const followingData = await followingRes.json();
+
+                if (!followingData.success || !followingData.following || followingData.following.length === 0) {
+                    showEmptyState('Henüz kimseyi takip etmiyorsunuz', 'Kullanıcıları takip ederek aktivitelerini burada görebilirsiniz.');
+                    return;
+                }
+
+                const followingUsers = followingData.following;
+                const userMap = {};
+                followingUsers.forEach(u => {
+                    userMap[u.id] = u;
+                    userMap[u.username] = u;
+                });
+                let activities = [];
+                for (const user of followingUsers) {
+                    try {
+                        const contentRes = await fetch(`/api/get-user-content.php?user_id=${user.id}`, { credentials: 'include' });
+                        const contentData = await contentRes.json();
+
+                        if (contentData.success && contentData.watched) {
+                            contentData.watched.forEach(movie => {
+                                activities.push({
+                                    type: 'movie_watched',
+                                    userId: user.id,
+                                    username: user.username,
+                                    avatar: user.avatar_url || user.avatar,
+                                    contentType: 'movie',
+                                    contentId: movie.tmdb_id || movie.movie_id,
+                                    contentTitle: movie.title || 'Film',
+                                    poster: movie.poster_path,
+                                    rating: movie.rating,
+                                    likes: 0,
+                                    date: movie.updated_at || new Date().toISOString()
+                                });
+                            });
+                        }
+
+                        if (contentData.success && contentData.read) {
+                            contentData.read.forEach(book => {
+                                activities.push({
+                                    type: 'book_read',
+                                    userId: user.id,
+                                    username: user.username,
+                                    avatar: user.avatar_url || user.avatar,
+                                    contentType: 'book',
+                                    contentId: book.google_books_id || book.book_id,
+                                    contentTitle: book.title || 'Kitap',
+                                    poster: book.cover_url,
+                                    rating: book.rating,
+                                    likes: 0,
+                                    date: book.updated_at || new Date().toISOString()
+                                });
+                            });
+                        }
+
+                        if (contentData.success && contentData.series) {
+                            contentData.series.forEach(series => {
+                                activities.push({
+                                    type: 'series_watching',
+                                    userId: user.id,
+                                    username: user.username,
+                                    avatar: user.avatar_url || user.avatar,
+                                    contentType: 'series',
+                                    contentId: series.tmdb_id || series.series_id,
+                                    contentTitle: series.title || 'Dizi',
+                                    poster: series.poster_path,
+                                    rating: series.rating,
+                                    likes: 0,
+                                    date: series.updated_at || new Date().toISOString()
+                                });
+                            });
+                        }
+                    } catch (e) {
+                        console.error('İçerik yüklenemedi:', e);
+                    }
+                    try {
+                        const commentsRes = await fetch(`/api/comments.php?user_id=${user.id}`, { credentials: 'include' });
+                        const commentsData = await commentsRes.json();
+
+                        if (commentsData.success && commentsData.comments) {
+                            for (const comment of commentsData.comments) {
+                                let contentTitle = 'İçerik';
+                                let poster = null;
+
+                                try {
+                                    if (comment.content_type === 'movie') {
+                                        const movieData = await app.getMovieDetail(comment.content_id);
+                                        if (movieData) {
+                                            contentTitle = movieData.title;
+                                            poster = movieData.poster_path;
+                                        }
+                                    } else if (comment.content_type === 'book') {
+                                        const bookData = await app.getBookDetail(comment.content_id);
+                                        if (bookData?.volumeInfo) {
+                                            contentTitle = bookData.volumeInfo.title;
+                                            poster = bookData.volumeInfo.imageLinks?.thumbnail;
+                                        }
+                                    } else if (comment.content_type === 'series') {
+                                        const seriesData = await app.getSeriesDetail(comment.content_id);
+                                        if (seriesData) {
+                                            contentTitle = seriesData.name;
+                                            poster = seriesData.poster_path;
+                                        }
+                                    }
+                                } catch (e) {
+                                    console.error('İçerik bilgisi alınamadı:', e);
+                                }
+
+                                activities.push({
+                                    type: 'comment',
+                                    userId: user.id,
+                                    username: user.username,
+                                    avatar: user.avatar_url || user.avatar,
+                                    contentType: comment.content_type,
+                                    contentId: comment.content_id,
+                                    contentTitle: contentTitle,
+                                    poster: poster,
+                                    commentText: comment.comment_text,
+                                    likes: 0,
+                                    date: comment.created_at
+                                });
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Yorumlar yüklenemedi:', e);
+                    }
+                }
+                activities.sort((a, b) => new Date(b.date) - new Date(a.date));
+                allActivities = activities;
+                currentPage = 1;
+                const ITEMS_PER_PAGE = 10;
+
+                if (activities.length === 0) {
+                    showEmptyState('Takip ettiklerinizin aktivitesi yok', 'Takip ettiğiniz kullanıcılar film/dizi izleyip kitap okudukça burada görünecek.');
+                    return;
+                }
+                const initialActivities = activities.slice(0, ITEMS_PER_PAGE);
+                displayActivities(initialActivities, activities.length > ITEMS_PER_PAGE);
+
+            } catch (error) {
+                console.error('Feed yükleme hatası:', error);
+                container.innerHTML = '<div class="empty-state"><h2>❌ Bir hata oluştu</h2><p>Lütfen sayfayı yenileyin.</p></div>';
+            }
+        }
+
+        function showEmptyState(title, message) {
+            const container = document.getElementById('feedContainer');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h2>📭 ${title}</h2>
+                    <p>${message}</p>
+                    <a href="social.html">👥 Kullanıcıları Keşfet</a>
+                </div>
+            `;
+        }
+
+        function displayActivities(activities, hasMore = false) {
+            const container = document.getElementById('feedContainer');
+            let html = '';
+
+            activities.forEach((activity, idx) => {
+                const avatarContent = getAvatarContent(activity.avatar, activity.username);
+                const safeUsername = app.escapeHtml(activity.username);
+                const safeContentTitle = app.escapeHtml(activity.contentTitle);
+                const safeCommentText = app.escapeHtml(activity.commentText);
+                const timeAgo = getTimeAgo(activity.date);
+                const actionText = getActionText(activity);
+                const typeBadge = activity.contentType === 'movie'
+                    ? '<span class="content-type-badge badge-movie">🎬 Film</span>'
+                    : activity.contentType === 'series'
+                        ? '<span class="content-type-badge badge-series">📺 Dizi</span>'
+                        : '<span class="content-type-badge badge-book">📚 Kitap</span>';
+                let posterUrl = 'https://placehold.co/100x150?text=Yükleniyor';
+                if ((activity.contentType === 'movie' || activity.contentType === 'series') && activity.poster) {
+                    posterUrl = `https://image.tmdb.org/t/p/w200${activity.poster}`;
+                } else if (activity.contentType === 'book' && activity.poster) {
+                    posterUrl = activity.poster.replace('http://', 'https://');
+                }
+
+                html += `
+                    <div class="activity-card">
+                        
+                        <div class="activity-header">
+                            <div class="user-avatar" onclick="goToUserProfile(${activity.userId})">
+                                ${avatarContent}
+                            </div>
+                            <div class="header-info">
+                                <span class="username-link" onclick="goToUserProfile(${activity.userId})">${safeUsername}</span>
+                                <div class="action-text">${actionText}</div>
+                                <div class="activity-date">${timeAgo}</div>
+                            </div>
+                        </div>
+
+
+                        <div class="activity-body" onclick="goToDetail('${activity.contentType}', '${activity.contentId}')">
+                            <img class="content-poster" src="${posterUrl}" alt="${safeContentTitle}" loading="lazy" onerror="this.src='https://placehold.co/100x150?text=Resim+Yok'">
+                            <div class="content-info">
+                                ${typeBadge}
+                                <div class="content-title">${safeContentTitle}</div>
+                                ${activity.rating ? `<div class="rating-display">⭐ ${activity.rating}/10 puan verdi</div>` : ''}
+                                ${activity.commentText ? `<div class="comment-preview">"${safeCommentText.substring(0, 150)}${safeCommentText.length > 150 ? '...' : ''}"<br><a href="detail.php?type=${activity.contentType}&id=${activity.contentId}" style="color:var(--color-accent);">daha fazlasını oku</a></div>` : ''}
+                            </div>
+                        </div>
+                        
+                        
+                        <div class="activity-footer">
+                            <button class="footer-btn" data-likes="${activity.likes || 0}" onclick="likeActivity(this)">
+                                ❤️ Beğen (${activity.likes || 0})
+                            </button>
+                            <button class="footer-btn" onclick="goToDetail('${activity.contentType}', '${activity.contentId}')">
+                                💬 Yorum Yap
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            if (hasMore) {
+                html += `
+                    <div class="load-more-container">
+                        <button class="load-more-btn" onclick="loadMoreActivities()">
+                            📥 Daha Fazla Yükle
+                        </button>
+                    </div>
+                `;
+            } else if (allActivities.length > ITEMS_PER_PAGE) {
+                html += `
+                    <div class="load-more-container">
+                        <p class="no-more-activities">✅ Tüm aktiviteler yüklendi</p>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+        function loadMoreActivities() {
+            currentPage++;
+            const startIdx = 0;
+            const endIdx = currentPage * ITEMS_PER_PAGE;
+            const activitiesToShow = allActivities.slice(startIdx, endIdx);
+            const hasMore = endIdx < allActivities.length;
+            displayActivities(activitiesToShow, hasMore);
+            window.scrollTo({
+                top: document.body.scrollHeight - 800,
+                behavior: 'smooth'
+            });
+        }
+
+        function getAvatarContent(avatar, username) {
+            const safeUsername = app.escapeHtml(username);
+            if (avatar && avatar.startsWith('http')) {
+                return `<img src="${app.escapeHtml(avatar)}" alt="${safeUsername}">`;
+            } else if (avatar && avatar.trim() !== '') {
+                // avatar_url artık sunucu tarafında yalnızca http(s) URL olarak doğrulanıyor
+                // (bkz. api/user-profile.php); buraya düşen serbest metin/emoji kısmını da kaçışlıyoruz.
+                return `<span style="font-size: 28px;">${app.escapeHtml(avatar)}</span>`;
+            } else {
+                return safeUsername.charAt(0).toUpperCase();
+            }
+        }
+
+        function getActionText(activity) {
+            const title = app.escapeHtml(activity.contentTitle);
+            switch (activity.type) {
+                case 'movie_watched':
+                    return activity.rating
+                        ? `🎬 <strong>${title}</strong> filmini oyladı`
+                        : `🎬 <strong>${title}</strong> filmini izledi`;
+                case 'book_read':
+                    return activity.rating
+                        ? `📚 <strong>${title}</strong> kitabını oyladı`
+                        : `📚 <strong>${title}</strong> kitabını okudu`;
+                case 'series_watching':
+                    return activity.rating
+                        ? `📺 <strong>${title}</strong> dizisini oyladı`
+                        : `📺 <strong>${title}</strong> dizisini izliyor`;
+                case 'comment':
+                    return `💬 <strong>${title}</strong> hakkında yorum yaptı`;
+                default:
+                    return 'bir aktivite gerçekleştirdi';
+            }
+        }
+
+        function getTimeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'az önce';
+            if (diffMins < 60) return `${diffMins} dakika önce`;
+            if (diffHours < 24) return `${diffHours} saat önce`;
+            if (diffDays < 7) return `${diffDays} gün önce`;
+            if (diffDays < 30) return `${Math.floor(diffDays / 7)} hafta önce`;
+
+            return date.toLocaleDateString('tr-TR');
+        }
+
+        function goToUserProfile(userId) {
+            window.location.href = `user-profile.html?id=${userId}`;
+        }
+
+        function goToDetail(type, id) {
+            window.location.href = `detail.php?type=${type}&id=${id}`;
+        }
+
+        function likeActivity(btn) {
+            btn.classList.toggle('liked');
+            let currentLikes = parseInt(btn.dataset.likes) || 0;
+
+            if (btn.classList.contains('liked')) {
+                currentLikes++;
+                btn.dataset.likes = currentLikes;
+                btn.innerHTML = `❤️ Beğenildi (${currentLikes})`;
+            } else {
+                currentLikes = Math.max(0, currentLikes - 1);
+                btn.dataset.likes = currentLikes;
+                btn.innerHTML = `❤️ Beğen (${currentLikes})`;
+            }
+        }
+
+        function logout() {
+            if (app) {
+                app.logout();
+            }
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+
+</html>
+
