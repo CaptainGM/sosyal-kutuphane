@@ -84,20 +84,22 @@
         }
 
         .tab-btn.active {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            color: white;
-            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.45);
+            background: rgba(255, 255, 255, 0.14) !important;
+            border-color: rgba(255, 255, 255, 0.22) !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+            backdrop-filter: blur(10px);
         }
 
         input[type="text"],
         select {
             padding: 13px 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
             border-radius: 12px;
             font-size: 14px;
-            background: rgba(10, 15, 26, 0.65) !important;
+            background: rgba(10, 15, 26, 0.75) !important;
             color: #ffffff !important;
-            transition: all 0.2s;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         input[type="text"] {
@@ -107,38 +109,123 @@
         input[type="text"]:focus,
         select:focus {
             outline: none;
-            border-color: #8b5cf6 !important;
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25) !important;
+            border-color: rgba(255, 255, 255, 0.35) !important;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08) !important;
         }
 
         button.search-btn {
-            padding: 13px 26px;
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            color: white;
-            border: none;
+            padding: 13px 24px;
+            background: #1e293b;
+            color: #f8fafc;
+            border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 12px;
             font-size: 14px;
-            font-weight: 700;
+            font-weight: 600;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 6px 18px -2px rgba(99, 102, 241, 0.4);
-            transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.15s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         button.search-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 24px -2px rgba(99, 102, 241, 0.55);
-            filter: brightness(1.05);
+            background: #334155;
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
         }
 
         button.search-btn:active {
             transform: translateY(0) scale(0.98);
-            filter: brightness(0.95);
         }
 
-        /* ✅ DÜZELTME 4: Filtreleme alanları */
+        /* Canlı arama öneri açılır menüsü */
+        .search-autocomplete-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: rgba(15, 23, 42, 0.96);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 16px;
+            box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            z-index: 1000;
+            overflow: hidden;
+            padding: 8px;
+        }
+
+        .search-suggest-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.15s ease, transform 0.1s ease;
+            text-decoration: none;
+            color: #f1f5f9;
+        }
+
+        .search-suggest-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(2px);
+        }
+
+        .search-suggest-poster {
+            width: 38px;
+            height: 56px;
+            border-radius: 6px;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: #1e293b;
+        }
+
+        .search-suggest-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .search-suggest-title {
+            font-size: 13.5px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #f8fafc;
+        }
+
+        .search-suggest-meta {
+            font-size: 11.5px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 3px;
+        }
+
+        .search-suggest-footer {
+            padding: 10px 12px;
+            margin-top: 4px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #818cf8;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.15s;
+        }
+
+        .search-suggest-footer:hover {
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        /* Filtreleme ve sıralama butonları */
         .filter-section {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -168,7 +255,7 @@
         .filter-group label {
             font-weight: 600;
             color: var(--color-text);
-            font-size: 14px;
+            font-size: 13.5px;
         }
 
         .filter-group select {
@@ -177,25 +264,31 @@
 
         .sort-controls {
             display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 8px;
+            margin-bottom: 16px;
             flex-wrap: wrap;
         }
 
         .sort-btn {
-            padding: 8px 15px;
-            background: var(--color-surface);
-            border: 2px solid var(--color-accent);
-            color: var(--color-accent);
+            padding: 7px 15px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
             border-radius: 8px;
             cursor: pointer;
-            font-weight: 600;
-            transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+            font-weight: 500;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .sort-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.18);
             transform: translateY(-1px);
-            box-shadow: 0 3px 10px rgba(var(--color-accent-rgb), 0.25);
         }
 
         .sort-btn:active {
@@ -203,9 +296,62 @@
         }
 
         .sort-btn.active {
-            background: var(--color-accent);
-            color: white;
-            box-shadow: 0 3px 10px rgba(var(--color-accent-rgb), 0.35);
+            background: #ffffff !important;
+            color: #090d16 !important;
+            border: 1px solid #ffffff !important;
+            font-weight: 600 !important;
+            box-shadow: 0 2px 10px rgba(255, 255, 255, 0.25) !important;
+        }
+
+        .filter-action-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-apply-btn {
+            padding: 10px 22px;
+            background: linear-gradient(180deg, #4f46e5 0%, #4338ca 100%);
+            border: 1px solid #6366f1;
+            color: #ffffff;
+            border-radius: 10px;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 10px rgba(79, 70, 229, 0.35);
+            transition: all 0.2s ease;
+        }
+
+        .filter-apply-btn:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.45);
+        }
+
+        .filter-reset-btn {
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            border-radius: 10px;
+            font-size: 13.5px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .filter-reset-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #f8fafc;
+            border-color: rgba(255, 255, 255, 0.18);
         }
 
         /* ✅ Pagination */
@@ -431,7 +577,8 @@
             <div class="search-controls">
                 <div style="position: relative; flex: 1; display: flex; align-items: center;">
                     <svg style="position: absolute; left: 16px; width: 18px; height: 18px; color: #64748b; pointer-events: none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                    <input type="text" id="searchInput" placeholder="Film ara..." onkeypress="handleKeyPress(event)" style="padding-left: 46px;">
+                    <input type="text" id="searchInput" placeholder="Film ara..." autocomplete="off" onkeypress="handleKeyPress(event)" style="padding-left: 46px;">
+                    <div id="searchAutocompleteDropdown" class="search-autocomplete-dropdown" style="display: none;"></div>
                 </div>
                 <button class="search-btn" onclick="performSearch()">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -468,10 +615,16 @@
 
                 <div class="filter-grid" id="filterGrid"></div>
 
-                <button class="search-btn" onclick="applyFilters()" style="margin-top: 10px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    <span>Filtreyi Uygula</span>
-                </button>
+                <div class="filter-action-row">
+                    <button class="filter-apply-btn" onclick="applyFilters()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Filtreyi Uygula</span>
+                    </button>
+                    <button class="filter-reset-btn" onclick="resetFilters()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        <span>Filtreleri Sıfırla</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -575,6 +728,11 @@
         let currentFilters = {};
         let allResults = [];
         let isFiltering = false;
+        function getYearOptionsHtml() {
+            const curYear = Math.max(new Date().getFullYear(), 2026);
+            return Array.from({ length: 45 }, (_, i) => curYear - i).map(y => `<option value="${y}">${y}</option>`).join('');
+        }
+
         const MOVIE_GENRES = [
             { id: 28, name: 'Action' },
             { id: 12, name: 'Adventure' },
@@ -705,7 +863,7 @@
                         <label>Yıl</label>
                         <select id="yearFilter" onchange="updateFilters()">
                             <option value="">Tümü</option>
-                            ${Array.from({ length: 30 }, (_, i) => 2024 - i).map(y => `<option value="${y}">${y}</option>`).join('')}
+                            ${getYearOptionsHtml()}
                         </select>
                     </div>
                     <div class="filter-group">
@@ -743,7 +901,7 @@
                         <label>Yıl</label>
                         <select id="yearFilter" onchange="updateFilters()">
                             <option value="">Tümü</option>
-                            ${Array.from({ length: 30 }, (_, i) => 2024 - i).map(y => `<option value="${y}">${y}</option>`).join('')}
+                            ${getYearOptionsHtml()}
                         </select>
                     </div>
                     <div class="filter-group">
@@ -887,9 +1045,14 @@
             });
             event.target.classList.add('active');
             if (isFiltering) {
-                filterShowcaseMovies();
+                if (currentTab === 'movie') {
+                    filterShowcaseMovies();
+                } else if (currentTab === 'series') {
+                    filterShowcaseSeries();
+                }
             }
         }
+
         async function applyFilters() {
             updateFilters();
             const query = document.getElementById('searchInput').value.trim();
@@ -905,7 +1068,8 @@
 
             if (currentTab === 'series') {
                 if (!query) {
-                    document.getElementById('resultsContainer').innerHTML = '<div class="no-results">👆 Filtreleri uygulamak için önce bir arama yapın</div>';
+                    isFiltering = true;
+                    filterShowcaseSeries();
                     return;
                 }
                 performSearch();
@@ -917,6 +1081,100 @@
                 filterShowcaseMovies();
             } else {
                 performSearch();
+            }
+        }
+
+        async function filterShowcaseSeries() {
+            const resultsContainer = document.getElementById('resultsContainer');
+            const topRatedSection = document.getElementById('topRatedSection');
+            const popularSection = document.getElementById('popularSection');
+            const allMoviesSection = document.getElementById('allMoviesSection');
+            if (isFiltering) {
+                topRatedSection.style.display = 'none';
+                popularSection.style.display = 'none';
+                allMoviesSection.style.display = 'none';
+            } else {
+                topRatedSection.style.display = 'block';
+                popularSection.style.display = 'block';
+                allMoviesSection.style.display = 'none';
+            }
+
+            resultsContainer.innerHTML = '<div class="loading">🔍 Diziler filtreleniyor...</div>';
+            currentPage = 1;
+
+            try {
+                let topRated = [];
+                let popular = [];
+
+                try {
+                    topRated = await app.getTopRatedSeries();
+                } catch (e) {
+                    topRated = [];
+                }
+
+                try {
+                    popular = await app.getPopularSeries();
+                } catch (e) {
+                    popular = [];
+                }
+
+                let allSeries = [...topRated, ...popular];
+                allSeries = allSeries.filter((series, index, self) =>
+                    index === self.findIndex(s => s.id === series.id)
+                );
+                allSeries = applySeriesFilters(allSeries);
+                allSeries = sortResults(allSeries, currentSortBy, 'first_air_date');
+
+                allResults = allSeries;
+                totalPages = Math.ceil(allResults.length / 12);
+
+                if (allResults.length === 0) {
+                    resultsContainer.innerHTML = `
+                        <div class="no-results">
+                            Seçilen filtrelere uygun dizi bulunamadı
+                        </div>
+                    `;
+                    document.getElementById('pagination').style.display = 'none';
+                } else {
+                    displayPaginatedResults(allResults, 'series', 1);
+                }
+
+            } catch (error) {
+                console.error('Dizi filtreleme hatası:', error);
+                showError(resultsContainer, 'Filtreleme sırasında hata oluştu!');
+            }
+        }
+
+        function resetFilters() {
+            currentFilters = {};
+            if (document.getElementById('genreFilter')) document.getElementById('genreFilter').value = '';
+            if (document.getElementById('yearFilter')) document.getElementById('yearFilter').value = '';
+            if (document.getElementById('ratingFilter')) document.getElementById('ratingFilter').value = '';
+            if (document.getElementById('categoryFilter')) document.getElementById('categoryFilter').value = '';
+            isFiltering = false;
+            currentSortBy = 'relevance';
+            document.querySelectorAll('.sort-btn').forEach((btn, idx) => {
+                if (idx === 0) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+            const query = document.getElementById('searchInput').value.trim();
+            if (query) {
+                performSearch();
+            } else {
+                document.getElementById('resultsContainer').innerHTML = '';
+                document.getElementById('pagination').style.display = 'none';
+                if (currentTab === 'movie') {
+                    document.getElementById('topRatedSection').style.display = 'block';
+                    document.getElementById('popularSection').style.display = 'block';
+                    document.getElementById('allMoviesSection').style.display = 'block';
+                    loadShowcaseMovies();
+                } else if (currentTab === 'series') {
+                    document.getElementById('topRatedSection').style.display = 'block';
+                    document.getElementById('popularSection').style.display = 'block';
+                    loadShowcaseSeries();
+                } else {
+                    loadShowcaseBooks();
+                }
             }
         }
         async function filterShowcaseMovies() {
@@ -1510,7 +1768,7 @@
                              onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok'">
                         <div class="info">
                             <h3>${series.name}</h3>
-                            <div class="meta">📅 ${year} | ${app.ratingPillHtml(series.vote_average)}</div>
+                            <div class="meta">${year} · ${app.ratingPillHtml(series.vote_average)}</div>
                         </div>
                     </div>
                 `;
@@ -1546,7 +1804,7 @@
         }
 
         function showError(container, message) {
-            container.innerHTML = `<div class="error-message">❌ ${message}</div>`;
+            container.innerHTML = `<div class="error-message">${message}</div>`;
         }
 
         function logout() {
@@ -1554,6 +1812,128 @@
                 app.logout();
             }
             window.location.href = 'login.html';
+        }
+
+        // Canlı Arama (Autocomplete / Öneri Açılır Menüsü)
+        let searchDebounceTimer = null;
+        const searchInputEl = document.getElementById('searchInput');
+        const autocompleteDropdownEl = document.getElementById('searchAutocompleteDropdown');
+
+        if (searchInputEl && autocompleteDropdownEl) {
+            searchInputEl.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                clearTimeout(searchDebounceTimer);
+                if (query.length < 2) {
+                    autocompleteDropdownEl.style.display = 'none';
+                    autocompleteDropdownEl.innerHTML = '';
+                    return;
+                }
+                searchDebounceTimer = setTimeout(() => {
+                    fetchAutocompleteSuggestions(query);
+                }, 220);
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!searchInputEl.contains(e.target) && !autocompleteDropdownEl.contains(e.target)) {
+                    autocompleteDropdownEl.style.display = 'none';
+                }
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    autocompleteDropdownEl.style.display = 'none';
+                }
+            });
+        }
+
+        async function fetchAutocompleteSuggestions(query) {
+            try {
+                let items = [];
+                if (currentTab === 'movie') {
+                    const data = await app.searchMovies(query);
+                    items = (data.results || []).slice(0, 6).map(m => ({
+                        id: m.id,
+                        type: 'movie',
+                        title: m.title || m.original_title,
+                        year: m.release_date ? m.release_date.split('-')[0] : 'N/A',
+                        rating: m.vote_average ? m.vote_average.toFixed(1) : null,
+                        poster: m.poster_path ? `https://image.tmdb.org/t/p/w200${m.poster_path}` : 'https://placehold.co/80x120?text=Poster'
+                    }));
+                } else if (currentTab === 'series') {
+                    const data = await app.searchSeries(query);
+                    items = (data.results || []).slice(0, 6).map(s => ({
+                        id: s.id,
+                        type: 'series',
+                        title: s.name || s.original_name,
+                        year: s.first_air_date ? s.first_air_date.split('-')[0] : 'N/A',
+                        rating: s.vote_average ? s.vote_average.toFixed(1) : null,
+                        poster: s.poster_path ? `https://image.tmdb.org/t/p/w200${s.poster_path}` : 'https://placehold.co/80x120?text=Poster'
+                    }));
+                } else {
+                    const resp = await fetch(`${BOOKS_PROXY_URL}?action=search&q=${encodeURIComponent('intitle:' + query)}&maxResults=6&orderBy=relevance`);
+                    const data = await resp.json();
+                    items = (data.items || []).slice(0, 6).map(b => {
+                        const info = b.volumeInfo || {};
+                        let thumb = info.imageLinks?.thumbnail || info.imageLinks?.smallThumbnail || '';
+                        if (thumb.startsWith('http://')) thumb = thumb.replace('http://', 'https://');
+                        return {
+                            id: b.id,
+                            type: 'book',
+                            title: info.title || 'İsimsiz Kitap',
+                            year: info.publishedDate ? info.publishedDate.split('-')[0] : 'N/A',
+                            rating: info.averageRating ? info.averageRating.toFixed(1) : null,
+                            poster: thumb || 'https://placehold.co/80x120?text=Kapak'
+                        };
+                    });
+                }
+
+                if (items.length === 0) {
+                    autocompleteDropdownEl.innerHTML = `
+                        <div style="padding: 14px 16px; font-size: 13px; color: #94a3b8; text-align: center;">
+                            "${app.escapeHtml(query)}" için öneri bulunamadı
+                        </div>
+                    `;
+                    autocompleteDropdownEl.style.display = 'block';
+                    return;
+                }
+
+                const tabName = currentTab === 'movie' ? 'Filmler' : currentTab === 'series' ? 'Diziler' : 'Kitaplar';
+                let html = `
+                    <div style="padding: 6px 12px 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #64748b; border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 4px;">
+                        Önerilen ${tabName}
+                    </div>
+                `;
+
+                items.forEach(item => {
+                    const typeLabel = item.type === 'movie' ? 'Film' : item.type === 'series' ? 'Dizi' : 'Kitap';
+                    html += `
+                        <a href="detail.php?type=${item.type}&id=${item.id}" class="search-suggest-item">
+                            <img src="${item.poster}" alt="${app.escapeHtml(item.title)}" class="search-suggest-poster" onerror="this.src='https://placehold.co/80x120?text=Görsel'">
+                            <div class="search-suggest-info">
+                                <div class="search-suggest-title">${app.escapeHtml(item.title)}</div>
+                                <div class="search-suggest-meta">
+                                    <span style="background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; font-weight: 600; color: #e2e8f0; font-size: 10.5px;">${typeLabel}</span>
+                                    <span>${item.year}</span>
+                                    ${item.rating ? `<span style="color: #fbbf24; font-weight: 600;">★ ${item.rating}</span>` : ''}
+                                </div>
+                            </div>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="m9 18 6-6-6-6"/></svg>
+                        </a>
+                    `;
+                });
+
+                html += `
+                    <div class="search-suggest-footer" onclick="performSearch(); document.getElementById('searchAutocompleteDropdown').style.display='none';">
+                        <span>"${app.escapeHtml(query)}" ile tüm sonuçları ara</span>
+                        <span>Enter ↵</span>
+                    </div>
+                `;
+
+                autocompleteDropdownEl.innerHTML = html;
+                autocompleteDropdownEl.style.display = 'block';
+            } catch (err) {
+                console.error('Autocomplete hatası:', err);
+            }
         }
     </script>
 </body>

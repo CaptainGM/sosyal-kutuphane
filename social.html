@@ -307,16 +307,39 @@
     
     <nav class="navbar">
         <div class="navbar-inner">
-            <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
-            <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false">☰</button>
+            <a href="search.html" class="logo" style="display: inline-flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: -0.4px;">
+                <div style="width: 36px; height: 36px; border-radius: 11px; background: linear-gradient(135deg, #6366f1, #8b5cf6, #d946ef); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45); flex-shrink: 0;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="m10 14 5 3-5 3v-6Z"/></svg>
+                </div>
+                <span>Sosyal Kütüphane</span>
+            </a>
+            <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+            </button>
             <div class="nav-links">
-                <a href="search.html" class="nav-link">🔍 Keşfet</a>
-                <a href="feed.html" class="nav-link">📰 Akış</a>
-                <a href="profile.html" class="nav-link">👤 Profilim</a>
-                <a href="messages.html" class="nav-link">💬 Mesajlar</a>
+                <a href="search.html" class="nav-link">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    Keşfet
+                </a>
+                <a href="feed.html" class="nav-link">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>
+                    Akış
+                </a>
+                <a href="social.html" class="nav-link active">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Sosyal
+                </a>
+                <a href="profile.html" class="nav-link">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Profilim
+                </a>
+                <a href="messages.html" class="nav-link">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    Mesajlar
+                </a>
                 <div class="nav-icon-wrap">
                     <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
-                        🔔
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
                         <span class="nav-badge" id="notifBadge"></span>
                     </button>
                     <div class="nav-panel" id="notifPanel">
@@ -324,10 +347,13 @@
                         <div class="nav-panel-empty">Yükleniyor...</div>
                     </div>
                 </div>
-                <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
-                <button class="logout-btn" onclick="logout()">Çıkış</button>
+                <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                </button>
+                <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
             </div>
         </div>
+        <span id="userWelcome" style="display:none;"></span>
     </nav>
 
     <div class="container">
@@ -372,7 +398,7 @@
                 
                 <div id="followingTab" class="tab-content">
                     <div id="followingContainer">
-                        <div class="empty-state">⭐ Henüz kimseyi takip etmiyorsunuz</div>
+                        <div class="empty-state">Henüz kimseyi takip etmiyorsunuz</div>
                     </div>
                 </div>
             </div>
@@ -696,14 +722,14 @@
                 const data = await response.json();
 
                 if (!data.success) {
-                    document.getElementById('followingContainer').innerHTML = '<div class="empty-state">❌ Hata oluştu</div>';
+                    document.getElementById('followingContainer').innerHTML = '<div class="empty-state">Hata oluştu, lütfen tekrar deneyin.</div>';
                     return;
                 }
 
                 const following = data.following;
 
                 if (following.length === 0) {
-                    document.getElementById('followingContainer').innerHTML = '<div class="empty-state">⭐ Henüz kimseyi takip etmiyorsunuz</div>';
+                    document.getElementById('followingContainer').innerHTML = '<div class="empty-state">Henüz kimseyi takip etmiyorsunuz</div>';
                     return;
                 }
 

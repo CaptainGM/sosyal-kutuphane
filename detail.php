@@ -732,7 +732,10 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                         <div class="platform-rating" id="userPlatformRating"
                             style="margin-top: 10px; background: rgba(var(--color-accent-rgb), 0.3);">
                             <div class="rating-score" id="userRatingScore">-/-</div>
-                            <div class="rating-count" id="userRatingCount">👥 Kullanıcı Puanı</div>
+                            <div class="rating-count" id="userRatingCount" style="display:inline-flex; align-items:center; justify-content:center; gap:4px;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                <span>Kullanıcı Puanı</span>
+                            </div>
                         </div>
                     </div>
                     <div class="content-info">
@@ -748,8 +751,9 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 
     <div class="container">
         <div style="margin-bottom: 20px;">
-            <button id="followCreatorBtn" class="btn btn-primary" style="display: none;">
-                👥 Yazarı Takip Et
+            <button id="followCreatorBtn" class="btn btn-primary" style="display: none; align-items:center; gap:6px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg>
+                <span>Yazarı Takip Et</span>
             </button>
         </div>
 
@@ -1859,10 +1863,14 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                             ` : safeText;
                         const commentBodyHtml = comment.has_spoiler ? `
                             <div class="spoiler-wrap" id="spoiler-${comment.id}">
-                                <button type="button" class="spoiler-reveal-btn" onclick="document.getElementById('spoiler-${comment.id}').classList.add('spoiler-revealed')">🙈 Spoiler içeriyor — göstermek için dokun</button>
+                                <button type="button" class="spoiler-reveal-btn" onclick="document.getElementById('spoiler-${comment.id}').classList.add('spoiler-revealed')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg><span>Spoiler İçerik — Görmek İçin Tıklayın</span></button>
                                 <div class="spoiler-content">${commentBodyInner}</div>
                             </div>
                         ` : commentBodyInner;
+
+                        const heartIcon = comment.liked_by_me 
+                            ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="2" style="vertical-align: -1px; margin-right: 4px;"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`
+                            : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 4px;"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`;
 
                         html += `
                     <div class="comment-item" id="comment-${comment.id}" style="background: var(--color-surface); padding: 20px; border-radius: 10px; border-left: 4px solid var(--color-accent);">
@@ -1877,23 +1885,27 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                             ${commentBodyHtml}
                         </div>
 
-                        <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px;">
-                            <button id="like-btn-${comment.id}" onclick="likeComment(${comment.id})" style="background: none; border: none; color: ${comment.liked_by_me ? 'var(--color-danger)' : 'var(--color-accent)'}; cursor: pointer;">
-                                ${comment.liked_by_me ? '❤️' : '🤍'} <span id="like-count-${comment.id}">${comment.likes_count || 0}</span>
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px; align-items: center;">
+                            <button id="like-btn-${comment.id}" onclick="likeComment(${comment.id})" style="background: none; border: none; color: ${comment.liked_by_me ? 'var(--color-danger)' : 'var(--color-accent)'}; cursor: pointer; display: inline-flex; align-items: center;">
+                                ${heartIcon} <span id="like-count-${comment.id}">${comment.likes_count || 0}</span>
                             </button>
-                            <button onclick="showReplyForm(${comment.id})" style="background: none; border: none; color: var(--color-accent); cursor: pointer;">
-                                💬 Yanıtla
+                            <button onclick="showReplyForm(${comment.id})" style="background: none; border: none; color: var(--color-accent); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                <span>Yanıtla</span>
                             </button>
                             ${isOwnComment ? `
-                                <button onclick="showEditModal(${comment.id})" style="background: none; border: none; color: var(--color-accent); cursor: pointer;">
-                                    ✏️ Düzenle
+                                <button onclick="showEditModal(${comment.id})" style="background: none; border: none; color: var(--color-accent); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                                    <span>Düzenle</span>
                                 </button>
-                                <button onclick="deleteComment(${comment.id})" style="background: none; border: none; color: var(--color-danger); cursor: pointer;">
-                                    🗑️ Sil
+                                <button onclick="deleteComment(${comment.id})" style="background: none; border: none; color: var(--color-danger); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                    <span>Sil</span>
                                 </button>
                             ` : `
-                                <button onclick="showReportModal(${comment.id})" style="background: none; border: none; color: var(--color-text-faint); cursor: pointer;">
-                                    🚩 Şikayet Et
+                                <button onclick="showReportModal(${comment.id})" style="background: none; border: none; color: var(--color-text-faint); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>
+                                    <span>Şikayet Et</span>
                                 </button>
                             `}
                         </div>
@@ -1902,7 +1914,9 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                         <div id="reply-form-${comment.id}" style="display: none; margin-top: 15px; padding: 15px; background: var(--color-surface-2); border-radius: 8px;">
                             <textarea id="reply-text-${comment.id}" placeholder="@${safeUsername} kullanıcısına yanıt yazın..." style="width: 100%; padding: 10px; border: 1px solid var(--color-border); border-radius: 5px; min-height: 80px; font-family: inherit;"></textarea>
                             <label class="spoiler-checkbox-label">
-                                <input type="checkbox" id="reply-spoiler-${comment.id}"> 🙈 Bu yanıt spoiler içeriyor
+                                <input type="checkbox" id="reply-spoiler-${comment.id}">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 2px;"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                                <span>Bu yanıt spoiler (sürprizbozan) içeriyor</span>
                             </label>
                             <div style="display: flex; gap: 10px; margin-top: 10px;">
                                 <button onclick="submitReply(${comment.id})" class="btn btn-primary" style="padding: 8px 15px;">Yanıtla</button>
@@ -1920,10 +1934,13 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                             const safeReplyText = app.escapeHtml(reply.comment_text);
                             const replyBodyHtml = reply.has_spoiler ? `
                                 <div class="spoiler-wrap" id="spoiler-reply-${reply.id}">
-                                    <button type="button" class="spoiler-reveal-btn" onclick="document.getElementById('spoiler-reply-${reply.id}').classList.add('spoiler-revealed')">🙈 Spoiler içeriyor — göstermek için dokun</button>
+                                    <button type="button" class="spoiler-reveal-btn" onclick="document.getElementById('spoiler-reply-${reply.id}').classList.add('spoiler-revealed')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg><span>Spoiler İçerik — Görmek İçin Tıklayın</span></button>
                                     <div class="spoiler-content">${safeReplyText}</div>
                                 </div>
                             ` : safeReplyText;
+                            const replyHeart = reply.liked_by_me 
+                                ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="2" style="vertical-align: -1px; margin-right: 3px;"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`
+                                : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 3px;"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`;
                             return `
                                         <div style="background: var(--color-surface-2); padding: 12px; border-radius: 8px; margin-bottom: 10px;">
                                             <div style="margin-bottom: 8px;">
@@ -1931,12 +1948,15 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                                                 <span style="color: var(--color-text-faint); font-size: 11px; margin-left: 8px;">${replyTimeAgo}</span>
                                             </div>
                                             <div style="margin: 0; color: var(--color-text-muted); font-size: 14px;">${replyBodyHtml}</div>
-                                            <div style="display: flex; gap: 10px; margin-top: 8px;">
-                                                <button onclick="likeComment(${reply.id})" style="background: none; border: none; color: ${reply.liked_by_me ? 'var(--color-danger)' : 'var(--color-accent)'}; cursor: pointer; font-size: 12px;">
-                                                    ${reply.liked_by_me ? '❤️' : '🤍'} ${reply.likes_count || 0}
+                                            <div style="display: flex; gap: 10px; margin-top: 8px; align-items: center;">
+                                                <button onclick="likeComment(${reply.id})" style="background: none; border: none; color: ${reply.liked_by_me ? 'var(--color-danger)' : 'var(--color-accent)'}; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center;">
+                                                    ${replyHeart} <span>${reply.likes_count || 0}</span>
                                                 </button>
                                                 ${isOwnReply ? `
-                                                    <button onclick="deleteComment(${reply.id})" style="background: none; border: none; color: var(--color-danger); cursor: pointer; font-size: 12px;">🗑️ Sil</button>
+                                                    <button onclick="deleteComment(${reply.id})" style="background: none; border: none; color: var(--color-danger); cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 3px;">
+                                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                                        <span>Sil</span>
+                                                    </button>
                                                 ` : ''}
                                             </div>
                                         </div>
