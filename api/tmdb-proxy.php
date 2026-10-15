@@ -60,13 +60,21 @@ if ($endpoint === 'search') {
         jsonResponse($cached);
     }
 
-    $url = "https://api.themoviedb.org/3/$tmdbType/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits";
+    // credits, fragmanlar (videos) ve Nerede İzlenir (watch/providers) tek istekte çekilir
+    $url = "https://api.themoviedb.org/3/$tmdbType/$id?api_key=$apiKey&language=tr-TR&append_to_response=credits,videos,watch/providers&include_video_language=tr,en";
     $data = tmdbFetch($url);
     if ($data === null) {
         jsonResponse(['success' => false, 'message' => 'İçerik alınamadı'], 502);
     }
+    // Türkçe fragman bulunamadıysa İngilizce fragmanları da yedek olarak sorgula
+    if (empty($data['videos']['results'])) {
+        $enVideos = tmdbFetch("https://api.themoviedb.org/3/$tmdbType/$id/videos?api_key=$apiKey&language=en-US");
+        if (!empty($enVideos['results'])) {
+            $data['videos']['results'] = $enVideos['results'];
+        }
+    }
     if (!isTmdbError($data)) {
-        cacheSet($db, $cacheKey, $data, 86400); // 24 saat — detay bilgisi nadiren değişir
+        cacheSet($db, $cacheKey, $data, 86400); // 24 saat
     }
     jsonResponse($data);
 
