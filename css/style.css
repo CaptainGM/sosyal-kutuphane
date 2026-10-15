@@ -1,76 +1,80 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
 :root {
-    --color-bg: #f8f9fa;
+    --color-bg: #f8fafc;
     --color-surface: #ffffff;
-    --color-surface-2: #f4f5f7;
-    --color-text: #2b2f33;
-    --color-text-muted: #666666;
-    --color-text-faint: #999999;
-    --color-border: #e0e0e0;
-    --color-accent: #667eea;
-    --color-accent-2: #764ba2;
-    --color-accent-gradient: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-2) 100%);
-    --color-danger: #dc3545;
-    --color-danger-bg: #fdecec;
-    --color-success: #2fa84f;
-    --color-success-bg: #eaf7ee;
-    --color-overlay: rgba(15, 17, 20, 0.55);
-    --radius: 8px;
-    --radius-lg: 15px;
-    --shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
-    --shadow-hover: 0 5px 25px rgba(0, 0, 0, 0.2);
+    --color-surface-2: #f1f5f9;
+    --color-text: #0f172a;
+    --color-text-muted: #64748b;
+    --color-text-faint: #94a3b8;
+    --color-border: #e2e8f0;
+    --color-accent: #6366f1;
+    --color-accent-2: #8b5cf6;
+    --color-accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+    --color-danger: #ef4444;
+    --color-danger-bg: #fee2e2;
+    --color-success: #10b981;
+    --color-success-bg: #d1fae5;
+    --color-overlay: rgba(15, 23, 42, 0.65);
+    --radius-sm: 6px;
+    --radius: 10px;
+    --radius-lg: 16px;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08);
+    --shadow-hover: 0 12px 28px -4px rgba(15, 23, 42, 0.15);
     --navbar-bg: var(--color-accent-gradient);
     --navbar-border: transparent;
-    --color-accent-rgb: 102, 126, 234;
-    --color-danger-rgb: 220, 53, 69;
+    --color-accent-rgb: 99, 102, 241;
+    --color-danger-rgb: 239, 68, 68;
 }
 
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-        --color-bg: #14181b;
-        --color-surface: #1e2327;
-        --color-surface-2: #262c31;
-        --color-text: #e8e9ea;
-        --color-text-muted: #a8b0b5;
-        --color-text-faint: #7c848a;
-        --color-border: #33393e;
-        --color-accent: #8b9df2;
-        --color-accent-2: #a98be0;
-        --color-danger: #ff8080;
-        --color-danger-bg: #3a1f22;
-        --color-success: #6ee08a;
-        --color-success-bg: #163a24;
-        --color-overlay: rgba(0, 0, 0, 0.7);
-        --shadow: 0 3px 15px rgba(0, 0, 0, 0.5);
-        --shadow-hover: 0 5px 25px rgba(0, 0, 0, 0.6);
-        --navbar-bg: var(--color-surface-2);
+        --color-bg: #090d16;
+        --color-surface: #111827;
+        --color-surface-2: #1f2937;
+        --color-text: #f8fafc;
+        --color-text-muted: #94a3b8;
+        --color-text-faint: #64748b;
+        --color-border: #1e293b;
+        --color-accent: #818cf8;
+        --color-accent-2: #a78bfa;
+        --color-danger: #f87171;
+        --color-danger-bg: #450a0a;
+        --color-success: #34d399;
+        --color-success-bg: #064e3b;
+        --color-overlay: rgba(0, 0, 0, 0.8);
+        --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+        --shadow-hover: 0 12px 30px -4px rgba(0, 0, 0, 0.7);
+        --navbar-bg: rgba(17, 24, 39, 0.85);
         --navbar-border: var(--color-border);
-        --color-accent-rgb: 139, 157, 242;
-        --color-danger-rgb: 255, 128, 128;
+        --color-accent-rgb: 129, 140, 248;
+        --color-danger-rgb: 248, 113, 113;
     }
 }
 
 :root[data-theme="dark"] {
-    --color-bg: #14181b;
-    --color-surface: #1e2327;
-    --color-surface-2: #262c31;
-    --color-text: #e8e9ea;
-    --color-text-muted: #a8b0b5;
-    --color-text-faint: #7c848a;
-    --color-border: #33393e;
-    --color-accent: #8b9df2;
-    --color-accent-2: #a98be0;
-    --color-danger: #ff8080;
-    --color-danger-bg: #3a1f22;
-    --color-success: #6ee08a;
-    --color-success-bg: #163a24;
-    --color-overlay: rgba(0, 0, 0, 0.7);
-    --shadow: 0 3px 15px rgba(0, 0, 0, 0.5);
-    --shadow-hover: 0 5px 25px rgba(0, 0, 0, 0.6);
-    --navbar-bg: var(--color-surface-2);
+    --color-bg: #090d16;
+    --color-surface: #111827;
+    --color-surface-2: #1f2937;
+    --color-text: #f8fafc;
+    --color-text-muted: #94a3b8;
+    --color-text-faint: #64748b;
+    --color-border: #1e293b;
+    --color-accent: #818cf8;
+    --color-accent-2: #a78bfa;
+    --color-danger: #f87171;
+    --color-danger-bg: #450a0a;
+    --color-success: #34d399;
+    --color-success-bg: #064e3b;
+    --color-overlay: rgba(0, 0, 0, 0.8);
+    --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+    --shadow-hover: 0 12px 30px -4px rgba(0, 0, 0, 0.7);
+    --navbar-bg: rgba(17, 24, 39, 0.85);
     --navbar-border: var(--color-border);
-    --color-accent-rgb: 139, 157, 242;
-    --color-danger-rgb: 255, 128, 128;
+    --color-accent-rgb: 129, 140, 248;
+    --color-danger-rgb: 248, 113, 113;
 }
 
 * {
@@ -80,10 +84,12 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: var(--color-bg);
     color: var(--color-text);
     line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     transition: background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -310,66 +316,189 @@ body {
 }
 
 
+/* --- Modern OpenSource UI Stili Butonlar & Mikro-Etkileşimler --- */
 .btn {
-    padding: 12px 24px;
-    border: none;
+    position: relative;
+    padding: 11px 22px;
+    border: 1px solid transparent;
     border-radius: var(--radius);
+    font-family: inherit;
     font-size: 14px;
     font-weight: 600;
+    letter-spacing: -0.01em;
     cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.15s ease, background-color 0.2s ease;
     text-decoration: none;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     text-align: center;
+    user-select: none;
+    outline: none;
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 0.2s ease,
+                border-color 0.2s ease,
+                filter 0.15s ease;
 }
 
+/* Fiziksel / Taktil Çökme Hissi (OpenSource UI Raised Keycap Sinking) */
 .btn:active {
-    transform: translateY(0) scale(0.98);
+    transform: translateY(2px) scale(0.985);
     filter: brightness(0.94);
 }
 
+.btn:focus-visible {
+    box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb), 0.35);
+}
+
+/* 3D Gradient Primary Button */
 .btn-primary {
     background: var(--color-accent-gradient);
-    color: white;
-    box-shadow: 0 3px 10px rgba(var(--color-accent-rgb), 0.35);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 4px 14px -2px rgba(var(--color-accent-rgb), 0.42);
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(var(--color-accent-rgb), 0.45);
+    box-shadow: 0 6px 20px -3px rgba(var(--color-accent-rgb), 0.58), 0 2px 4px rgba(0, 0, 0, 0.08);
+    filter: brightness(1.04);
 }
 
+/* Shimmer Sweep Animation (Göz Alıcı Işık Efekti) */
+.btn-shimmer {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #c026d3 100%);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 4px 16px -2px rgba(99, 102, 241, 0.45);
+}
+
+.btn-shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -120%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+    transform: skewX(-22deg);
+    animation: shimmerSweep 3.2s infinite;
+}
+
+@keyframes shimmerSweep {
+    0% { left: -120%; }
+    35%, 100% { left: 220%; }
+}
+
+.btn-shimmer:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -2px rgba(124, 58, 237, 0.6);
+}
+
+/* Glassmorphism Frosted Glass Button */
+.btn-glass {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    color: var(--color-text);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.btn-glass:hover {
+    background: rgba(255, 255, 255, 0.22);
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+/* Secondary Button */
 .btn-secondary {
-    background: #6c757d;
-    color: white;
-    box-shadow: 0 3px 10px rgba(108, 117, 125, 0.3);
+    background: var(--color-surface-2);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
 }
 
 .btn-secondary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(108, 117, 125, 0.4);
+    background: var(--color-surface);
+    border-color: var(--color-text-faint);
+    box-shadow: var(--shadow);
 }
 
+/* Modern Outline Button */
 .btn-outline {
     background: transparent;
-    border: 2px solid var(--color-accent);
+    border: 1.5px solid var(--color-accent);
     color: var(--color-accent);
 }
 
 .btn-outline:hover {
-    background: rgba(var(--color-accent-rgb), 0.1);
+    background: rgba(var(--color-accent-rgb), 0.08);
     transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(var(--color-accent-rgb), 0.2);
 }
 
+/* Danger Button */
 .btn-danger {
-    background: var(--color-danger);
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     color: white;
-    box-shadow: 0 3px 10px rgba(var(--color-danger-rgb), 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 2px 10px rgba(var(--color-danger-rgb), 0.3);
 }
 
 .btn-danger:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(var(--color-danger-rgb), 0.4);
+    box-shadow: 0 6px 20px rgba(var(--color-danger-rgb), 0.45);
+}
+
+/* Pill Action Buttons (İzledim / Okudum / İstek Listesi) */
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 9999px;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-border);
+    color: var(--color-text);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    box-shadow: 0 6px 18px -2px rgba(var(--color-accent-rgb), 0.22);
+}
+
+.action-btn:active {
+    transform: translateY(1px) scale(0.98);
+}
+
+.action-btn.active {
+    background: var(--color-accent-gradient);
+    color: #ffffff !important;
+    border-color: transparent !important;
+    box-shadow: 0 6px 22px -2px rgba(var(--color-accent-rgb), 0.52);
+    animation: popBadge 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popBadge {
+    0% { transform: scale(0.92); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
 }
 
 
@@ -962,3 +1091,465 @@ body {
         max-width: none;
     }
 }
+
+/* ==========================================================================
+   YENİ ÖZELLİK STİLLERİ: Nerede İzlenir?, Fragman, Spoiler ve Hikaye Kartı
+   ========================================================================== */
+
+/* --- 1. Nerede İzlenir? (Watch Providers) --- */
+.providers-section {
+    margin: 25px 0;
+    padding: 20px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.providers-section h4 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: var(--color-text);
+}
+
+.providers-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+.provider-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 14px 6px 8px;
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-border);
+    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.provider-badge:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-accent);
+    box-shadow: 0 4px 12px rgba(var(--color-accent-rgb), 0.2);
+}
+
+.provider-logo {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+}
+
+.provider-type-tag {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: rgba(var(--color-accent-rgb), 0.12);
+    color: var(--color-accent);
+    font-weight: 700;
+}
+
+.no-providers-msg {
+    color: var(--color-text-faint);
+    font-size: 13.5px;
+    font-style: italic;
+}
+
+/* --- 2. Fragman Oynatıcı Modalı --- */
+.trailer-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.trailer-modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.trailer-modal-box {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    background: #000;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    transform: scale(0.94);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.trailer-modal-overlay.active .trailer-modal-box {
+    transform: scale(1);
+}
+
+.trailer-iframe-wrap {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 oranı */
+    height: 0;
+}
+
+.trailer-iframe-wrap iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.trailer-close-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 20;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: white;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+.trailer-close-btn:hover {
+    background: #ef4444;
+    border-color: #ef4444;
+    transform: scale(1.08);
+}
+
+/* --- 3. Spoiler Koruması (Buzlu Cam / Blurlu Metin) --- */
+.spoiler-wrap {
+    position: relative;
+    margin: 8px 0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.spoiler-content {
+    transition: filter 0.35s ease, opacity 0.35s ease;
+    filter: blur(10px);
+    user-select: none;
+    -webkit-user-select: none;
+    pointer-events: none;
+    opacity: 0.35;
+}
+
+.spoiler-reveal-btn {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px dashed rgba(var(--color-accent-rgb), 0.5);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.spoiler-reveal-btn:hover {
+    background: rgba(15, 23, 42, 0.75);
+    border-color: var(--color-accent);
+    transform: scale(1.01);
+}
+
+.spoiler-wrap.spoiler-revealed .spoiler-content {
+    filter: blur(0);
+    user-select: text;
+    -webkit-user-select: text;
+    pointer-events: auto;
+    opacity: 1;
+}
+
+.spoiler-wrap.spoiler-revealed .spoiler-reveal-btn {
+    display: none;
+}
+
+.spoiler-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    user-select: none;
+    margin-top: 8px;
+}
+
+.spoiler-checkbox-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-accent);
+    cursor: pointer;
+}
+
+/* --- 4. Görsel Hikaye Kartı Modalı (Story Canvas) --- */
+.story-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.story-modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.story-modal-box {
+    position: relative;
+    max-width: 440px;
+    width: 100%;
+    background: var(--color-surface);
+    border-radius: 20px;
+    padding: 24px;
+    border: 1px solid var(--color-border);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    transform: scale(0.92);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.story-modal-overlay.active .story-modal-box {
+    transform: scale(1);
+}
+
+.story-canvas-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    background: #000;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.story-canvas-container canvas {
+    max-width: 100%;
+    height: auto;
+    max-height: 520px;
+    border-radius: 14px;
+}
+
+.story-modal-actions {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    justify-content: center;
+}
+
+/* ==========================================================================
+   5. PAROLA TOGGLE (Kayma Yapmayan, SVG Uyumlu)
+   ========================================================================== */
+.password-field-wrap {
+    position: relative !important;
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.password-field-wrap input {
+    width: 100% !important;
+    padding-right: 46px !important;
+    box-sizing: border-box !important;
+}
+
+.password-toggle-btn {
+    position: absolute !important;
+    right: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 6px !important;
+    margin: 0 !important;
+    width: 32px !important;
+    height: 32px !important;
+    color: var(--color-text-muted) !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 8px !important;
+    transition: color 0.15s ease, background 0.15s ease !important;
+    z-index: 5 !important;
+    user-select: none !important;
+}
+
+.password-toggle-btn:hover {
+    color: var(--color-text) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    transform: translateY(-50%) !important;
+}
+
+.password-toggle-btn:active {
+    transform: translateY(-50%) scale(0.92) !important;
+}
+
+.password-toggle-btn svg {
+    display: block !important;
+    pointer-events: none !important;
+}
+
+/* ==========================================================================
+   6. KARANLIK MOD FORM & YORUM ALANI DÜZELTMESİ (Beyaz Kutu Sorunu)
+   ========================================================================== */
+textarea,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+select {
+    background: var(--color-surface) !important;
+    color: var(--color-text) !important;
+    border: 1px solid var(--color-border) !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+:root[data-theme="dark"] textarea,
+:root[data-theme="dark"] input[type="text"],
+:root[data-theme="dark"] input[type="email"],
+:root[data-theme="dark"] input[type="password"],
+:root[data-theme="dark"] input[type="search"],
+:root[data-theme="dark"] select {
+    background: rgba(17, 24, 39, 0.85) !important;
+    color: #f8fafc !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+:root[data-theme="dark"] textarea::placeholder,
+:root[data-theme="dark"] input::placeholder {
+    color: #64748b !important;
+}
+
+.comment-form textarea {
+    background: var(--color-surface-2) !important;
+    color: var(--color-text) !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: 12px !important;
+    padding: 16px !important;
+    font-size: 14.5px !important;
+    line-height: 1.6 !important;
+    transition: all 0.2s ease !important;
+}
+
+.comment-form textarea:focus {
+    outline: none !important;
+    border-color: var(--color-accent) !important;
+    box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb), 0.2) !important;
+    background: var(--color-surface) !important;
+}
+
+/* ==========================================================================
+   7. MODERN ŞEFFAF / CAM BUTONLAR & MİKRO ETKİLEŞİMLER (motionsites / opensourceui)
+   ========================================================================== */
+.glass-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--color-text);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.glass-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    color: #ffffff;
+}
+
+.glass-btn:active {
+    transform: translateY(0) scale(0.97);
+}
+
+.glass-btn.active,
+.glass-btn-accent {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.35), rgba(139, 92, 246, 0.35));
+    border-color: rgba(139, 92, 246, 0.6);
+    color: #ffffff;
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+}
+
+.glass-btn.active:hover,
+.glass-btn-accent:hover {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.5), rgba(139, 92, 246, 0.5));
+    border-color: rgba(139, 92, 246, 0.8);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.45);
+}
+
+.glass-btn svg {
+    width: 17px;
+    height: 17px;
+    stroke-width: 2;
+    flex-shrink: 0;
+}
+
