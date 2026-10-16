@@ -9,283 +9,134 @@
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <title>Sosyal - Sosyal Kütüphane</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/ui.css">
+    <script src="js/motion.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* Sosyal sayfasına özel stiller: zevk eşleşmesi kartları, kişi ızgarası, yan panel. Ortak parçalar css/ui.css'te. */
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 30px 20px;
-        }
-
-        .social-grid {
+        .match-grid {
             display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 30px;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 18px;
         }
 
-        .sidebar {
-            background: var(--color-surface);
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            height: fit-content;
-            position: sticky;
-            top: 100px;
+        .match-card {
+            display: grid;
+            align-content: start;
+            gap: 16px;
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .sidebar h3 {
-            margin-bottom: 15px;
-            color: var(--color-text);
+        .match-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(var(--color-accent-rgb), 0.5);
+            box-shadow: var(--shadow-hover);
         }
 
-        .search-users {
+        .match-top {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .search-users input {
-            flex: 1;
-            padding: 10px;
-            border: 2px solid var(--color-border);
-            border-radius: 8px;
-            font-size: 14px;
-        }
-
-        .search-users button {
-            padding: 10px 15px;
-            background: var(--color-accent);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .user-card {
-            background: var(--color-surface-2);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
+            gap: 14px;
         }
 
-        .user-info {
-            flex: 1;
+        .match-top .person {
+            color: inherit;
+            text-decoration: none;
         }
 
-        .user-info h4 {
-            margin-bottom: 5px;
+        .match-top .gauge {
+            --size: 86px;
+        }
+
+        .match-top .gauge::before {
+            inset: 8px;
+        }
+
+        .match-top .gauge-value {
+            font-size: 23px;
+        }
+
+        .match-bio {
+            display: -webkit-box;
+            min-height: 2.9em;
+            overflow: hidden;
+            color: var(--color-text-muted);
+            font-size: 13.5px;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .people-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .person-card {
+            display: grid;
+            justify-items: center;
+            gap: 12px;
+            padding: 22px 16px;
+            text-align: center;
+        }
+
+        .person-card .person-name {
+            max-width: 100%;
             color: var(--color-text);
+            font-size: 16px;
+            text-decoration: none;
         }
 
-        .user-info p {
-            font-size: 12px;
-            color: var(--color-text-muted);
-        }
-
-        .follow-btn {
-            padding: 8px 15px;
-            background: var(--color-accent);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.3s;
-        }
-
-        .follow-btn.followed {
-            background: #6c757d;
-        }
-
-        .follow-btn:hover {
-            opacity: 0.9;
-        }
-
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 10px;
-            border-bottom: 2px solid var(--color-border);
-            margin-bottom: 20px;
-        }
-
-        .tab-btn {
-            padding: 12px 25px;
-            border: none;
-            background: none;
-            color: var(--color-text-muted);
-            font-weight: 600;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
-        }
-
-        .tab-btn.active {
+        .person-card .person-name:hover {
             color: var(--color-accent);
-            border-bottom-color: var(--color-accent);
         }
 
-        .tab-content {
+        .search-box {
+            display: flex;
+            gap: 8px;
+        }
+
+        .search-box .input {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .side-list {
+            display: grid;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .side-list:empty {
             display: none;
         }
 
-        .tab-content.active {
-            display: block;
+        .side-list .list-row {
+            padding: 10px 12px;
         }
 
-        .comment-item {
-            background: var(--color-surface);
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .comment-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .comment-author {
-            font-weight: 600;
+        .side-list .person-name {
+            max-width: 140px;
             color: var(--color-text);
+            text-decoration: none;
         }
 
-        .comment-date {
-            font-size: 12px;
-            color: var(--color-text-faint);
+        .follow-chip {
+            flex: none;
         }
 
-        .comment-text {
+        .panel-hint {
+            margin: 6px 0 14px;
             color: var(--color-text-muted);
-            line-height: 1.6;
-            margin-bottom: 15px;
-            word-break: break-word;
-            overflow-wrap: break-word;
-        }
-
-        .comment-text.truncated {
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .show-more-btn {
-            background: none;
-            border: none;
-            color: var(--color-accent);
-            cursor: pointer;
-            font-size: 13px;
-            padding: 5px 0;
-            margin-bottom: 10px;
-        }
-
-        .show-more-btn:hover {
-            text-decoration: underline;
-        }
-
-        .comment-actions {
-            display: flex;
-            gap: 15px;
-            border-top: 1px solid var(--color-border);
-            padding-top: 10px;
-        }
-
-        .action-btn {
-            background: none;
-            border: none;
-            color: var(--color-text-muted);
-            cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: color 0.3s;
-        }
-
-        .action-btn:hover {
-            color: var(--color-accent);
-        }
-
-        .action-btn.liked {
-            color: var(--color-danger);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--color-text-faint);
-        }
-
-        .following-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
-        }
-
-        .following-card {
-            background: var(--color-surface);
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .following-card h4 {
-            margin: 15px 0 5px 0;
-            color: var(--color-text);
-        }
-
-        .following-card p {
-            font-size: 13px;
-            color: var(--color-text-muted);
-            margin-bottom: 15px;
-        }
-
-        .unfollow-btn {
-            padding: 8px 15px;
-            background: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        @media (max-width: 768px) {
-            .social-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .sidebar {
-                position: static;
-            }
-
-            .following-list {
-                grid-template-columns: 1fr;
-            }
+            font-size: 13.5px;
         }
     </style>
 </head>
 
 <body>
-    
-    <nav class="navbar">
+<a class="skip-link" href="#main">İçeriğe geç</a>
+<nav class="navbar" aria-label="Ana gezinme">
     <div class="navbar-inner">
         <a href="search.html" class="logo">
             <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="m10 14 5 3-5 3v-6Z"/></svg></span>
@@ -293,11 +144,13 @@
         </a>
         <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button>
         <div class="nav-links">
-            <a href="search.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>Keşfet</a>
-            <a href="feed.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h6"/></svg>Akış</a>
-            <a href="social.html" class="nav-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Sosyal</a>
-            <a href="profile.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profilim</a>
-            <a href="messages.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Mesajlar</a>
+            <a href="search.html" class="nav-link" data-nav="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>Keşfet</a>
+            <a href="tonight.html" class="nav-link" data-nav="tonight"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg>Ne izlesem?</a>
+            <a href="feed.html" class="nav-link" data-nav="feed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h6"/></svg>Akış</a>
+            <a href="social.html" class="nav-link active" data-nav="social" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Sosyal</a>
+            <a href="profile.html" class="nav-link" data-nav="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profilim</a>
+            <a href="messages.html" class="nav-link" data-nav="messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Mesajlar</a>
+            <a href="admin.html" class="nav-link" data-nav="admin" id="navAdminLink" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>Yönetim</a>
             <div class="nav-icon-wrap">
                 <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="nav-badge" id="notifBadge"></span></button>
                 <div class="nav-panel" id="notifPanel">
@@ -311,118 +164,250 @@
     </div>
     <span id="userWelcome" style="display:none;"></span>
 </nav>
-
-    <div class="container">
-        <div class="social-grid">
-            
-            <div class="sidebar">
-                <h3>👥 Kullanıcıları Bul</h3>
-                <div class="search-users">
-                    <input type="text" id="userSearchInput" placeholder="Kullanıcı ara...">
-                    <button onclick="searchUsers()">🔍</button>
-                </div>
-                <div id="searchResults"></div>
-
-                <div style="margin-top: 24px;">
-                    <h3>🤝 Tanıyor Olabileceğiniz Kişiler</h3>
-                    <div id="suggestedUsers"></div>
-                </div>
-            </div>
-
-            
-            <div class="main-content">
-                <div class="tabs">
-                    <button class="tab-btn active" onclick="switchTab('feed')">📰 Beslenme</button>
-                    <button class="tab-btn" onclick="switchTab('comments')">💬 Tüm Yorumlar</button>
-                    <button class="tab-btn" onclick="switchTab('following')">⭐ Takip Ettiklerim</button>
-                </div>
-
-                
-                <div id="feedTab" class="tab-content active">
-                    <div id="feedContainer">
-                        <div class="empty-state">📰 Henüz aktivite yok</div>
-                    </div>
-                </div>
-
-                
-                <div id="commentsTab" class="tab-content">
-                    <div id="commentsContainer">
-                        <div class="empty-state">💬 Henüz yorum yapılmamış</div>
-                    </div>
-                </div>
-
-                
-                <div id="followingTab" class="tab-content">
-                    <div id="followingContainer">
-                        <div class="empty-state">Henüz kimseyi takip etmiyorsunuz</div>
-                    </div>
-                </div>
+    <main id="main" class="page">
+        <div class="page-head">
+            <div>
+                <span class="eyebrow"><span class="dot"></span>Topluluk</span>
+                <h1 class="page-title">Sosyal</h1>
+                <p class="page-sub">Zevkine en yakın insanları bul, takip ettiklerinin yorumlarını izle, topluluğun neleri konuştuğuna göz at.</p>
             </div>
         </div>
-    </div>
+
+        <div class="split">
+            <div class="stack">
+                <div class="seg" role="group" aria-label="Sosyal bölümler">
+                    <button type="button" class="tab-btn active" data-tab="matches" aria-pressed="true" onclick="switchTab('matches', this)">Sana uyanlar</button>
+                    <button type="button" class="tab-btn" data-tab="feed" aria-pressed="false" onclick="switchTab('feed', this)">Takip akışı</button>
+                    <button type="button" class="tab-btn" data-tab="comments" aria-pressed="false" onclick="switchTab('comments', this)">Tüm yorumlar</button>
+                    <button type="button" class="tab-btn" data-tab="following" aria-pressed="false" onclick="switchTab('following', this)">Takip ettiklerim <span class="seg-count" id="followingCount">0</span></button>
+                </div>
+
+                <section id="matchesTab" class="tab-content active" aria-label="Zevk eşleşmeleri">
+                    <div id="matchesContainer"><div class="loading">Zevk eşleşmeleri hesaplanıyor...</div></div>
+                </section>
+
+                <section id="feedTab" class="tab-content" aria-label="Takip akışı">
+                    <div id="feedContainer"><div class="loading">Akış yükleniyor...</div></div>
+                </section>
+
+                <section id="commentsTab" class="tab-content" aria-label="Tüm yorumlar">
+                    <div id="commentsContainer"><div class="loading">Yorumlar yükleniyor...</div></div>
+                </section>
+
+                <section id="followingTab" class="tab-content" aria-label="Takip ettiklerim">
+                    <div id="followingContainer"><div class="loading">Yükleniyor...</div></div>
+                </section>
+            </div>
+
+            <aside class="stack sticky-side" aria-label="Kişi bul">
+                <section class="panel">
+                    <h2 class="panel-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                        Kullanıcı bul
+                    </h2>
+                    <form class="search-box" style="margin-top: 14px;" onsubmit="searchUsers(); return false;" role="search">
+                        <input type="search" id="userSearchInput" class="input" placeholder="Kullanıcı adı yaz" aria-label="Kullanıcı ara" autocomplete="off">
+                        <button type="submit" class="btn btn-primary btn-sm">Ara</button>
+                    </form>
+                    <div id="searchResults" class="side-list" aria-live="polite"></div>
+                </section>
+
+                <section class="panel">
+                    <h2 class="panel-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        Tanıyor olabileceğin kişiler
+                    </h2>
+                    <div id="suggestedUsers" class="side-list"><div class="loading" style="padding: 12px;">Yükleniyor...</div></div>
+                </section>
+            </aside>
+        </div>
+    </main>
 
     <script src="js/escape-html.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/comment-view.js"></script>
     <script>
-        let displayedComments = [];
+        const esc = (value) => app.escapeHtml(value);
+        const SOCIAL_TABS = ['matches', 'feed', 'comments', 'following'];
 
         document.addEventListener('DOMContentLoaded', async function () {
             if (typeof app !== 'undefined' && app.initPromise) {
                 await app.initPromise;
             }
-            if (!app?.currentUser) {
+            if (!app || !app.currentUser) {
                 window.location.href = 'index.html';
                 return;
             }
 
+            loadMatches();
             loadFeed();
             loadAllComments();
             loadFollowing();
             loadSuggestedUsers();
+
+            const name = (location.hash || '').replace('#', '');
+            if (SOCIAL_TABS.includes(name) && name !== 'matches') switchTab(name);
         });
+
+        function switchTab(tab, btn) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.seg .tab-btn').forEach(button => {
+                button.classList.remove('active');
+                button.setAttribute('aria-pressed', 'false');
+            });
+            document.getElementById(tab + 'Tab').classList.add('active');
+            const button = btn || document.querySelector(`.seg [data-tab="${tab}"]`);
+            if (button) {
+                button.classList.add('active');
+                button.setAttribute('aria-pressed', 'true');
+            }
+            if (location.hash !== '#' + tab) history.replaceState(null, '', '#' + tab);
+        }
+
+        window.addEventListener('hashchange', () => {
+            const name = (location.hash || '').replace('#', '');
+            if (SOCIAL_TABS.includes(name)) switchTab(name);
+        });
+
+        function emptyBlock(iconName, title, hint, cta) {
+            return `<div class="empty">
+                <div class="empty-icon">${app.icon(iconName)}</div>
+                <div class="empty-title">${esc(title)}</div>
+                <p>${esc(hint)}</p>
+                ${cta ? `<a class="btn-glass" href="${esc(cta.href)}">${esc(cta.label)}</a>` : ''}
+            </div>`;
+        }
+
+        // --- Zevk eşleşmeleri ---
+        function matchCard(match) {
+            const genres = (match.common_genres || []).map(genre => `<span class="chip">${esc(genre)}</span>`).join('');
+            const tentative = match.confidence === 'low' ? '<span class="chip chip--warm">Tahmini</span>' : '';
+            return `<article class="panel match-card">
+                <div class="match-top">
+                    <a class="person" href="user-profile.html?id=${Number(match.user_id)}">
+                        ${app.avatarMarkup(match.avatar_url, match.username)}
+                        <span class="person-text"><span class="person-name">${esc(match.username)}</span><span class="person-sub">${Number(match.shared_total)} ortak içerik</span></span>
+                    </a>
+                    <div class="gauge" data-value="${Number(match.score)}" style="--value: 0;" role="img" aria-label="Zevk uyumu yüzde ${Number(match.score)}">
+                        <div class="gauge-body"><div class="gauge-value">%${Number(match.score)}</div></div>
+                    </div>
+                </div>
+                <p class="match-bio">${esc(match.bio) || 'Henüz biyografi eklememiş.'}</p>
+                <div class="cluster cluster--tight"><span class="chip chip--accent">${esc(match.label)}</span>${tentative}${genres}</div>
+                <div class="cluster cluster--tight">
+                    <a class="btn btn-primary btn-sm" href="user-profile.html?id=${Number(match.user_id)}">Uyum raporunu gör</a>
+                    <button type="button" class="btn-glass btn-sm follow-chip" data-follow="${Number(match.user_id)}" aria-pressed="${match.is_following ? 'true' : 'false'}">${match.is_following ? 'Takip ediliyor ✓' : '+ Takip et'}</button>
+                </div>
+            </article>`;
+        }
+
+        async function loadMatches() {
+            const container = document.getElementById('matchesContainer');
+            try {
+                const response = await fetch('/api/taste-matches.php?limit=12', { credentials: 'include' });
+                const data = await response.json();
+                if (!data.success) throw new Error(data.message || 'Eşleşmeler alınamadı');
+
+                if (!data.has_enough_data) {
+                    container.innerHTML = emptyBlock('sparkles', 'Eşleşme için biraz daha içerik lazım',
+                        `Zevk eşleşmesi, kütüphanendeki film, dizi ve kitaplardan hesaplanır. Şu an ${Number(data.my_library_count)} içeriğin var; en az 3 olunca seninle aynı şeyleri sevenleri burada listeleriz.`,
+                        { href: 'search.html', label: 'Keşfet\'e git' });
+                    return;
+                }
+                if (data.matches.length === 0) {
+                    container.innerHTML = emptyBlock('users', 'Henüz seninle kesişen kimse yok',
+                        'Diğer kullanıcıların kütüphanesi büyüdükçe ortak film, dizi ve türler üzerinden eşleşmeler burada belirir.');
+                    return;
+                }
+
+                container.innerHTML = `<div class="match-grid">${data.matches.map(matchCard).join('')}</div>`;
+                container.querySelectorAll('[data-follow]').forEach(button => {
+                    button.addEventListener('click', () => toggleFollow(Number(button.dataset.follow), button));
+                });
+                // Göstergeler bir sonraki karede dolar (azaltılmış harekette geçiş olmadan doğrudan görünür).
+                requestAnimationFrame(() => requestAnimationFrame(() => {
+                    container.querySelectorAll('.gauge[data-value]').forEach(gauge => gauge.style.setProperty('--value', gauge.dataset.value));
+                }));
+            } catch (error) {
+                console.error('Zevk eşleşmeleri yüklenemedi:', error);
+                container.innerHTML = '<div class="error-message">Eşleşmeler yüklenemedi. Sayfayı yenilemeyi dene.</div>';
+            }
+        }
+
+        // --- Takip ---
+        async function isFollowing(userId) {
+            try {
+                const response = await fetch(`/api/follow-status.php?user_id=${userId}`, { credentials: 'include' });
+                const data = await response.json();
+                return Boolean(data.success && data.is_following);
+            } catch (error) {
+                console.error('Takip durumu kontrol hatası:', error);
+                return false;
+            }
+        }
+
+        function paintFollowButton(button, following) {
+            if (!button) return;
+            button.setAttribute('aria-pressed', following ? 'true' : 'false');
+            button.textContent = following ? 'Takip ediliyor ✓' : '+ Takip et';
+        }
+
+        // Düğmenin durumuna göre takip eder / bırakır ve ilgili listeleri tazeler.
+        async function toggleFollow(targetUserId, button) {
+            try {
+                const following = button ? button.getAttribute('aria-pressed') === 'true' : await isFollowing(targetUserId);
+                const response = await fetch('/api/follow.php', {
+                    method: following ? 'DELETE' : 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ target_user_id: targetUserId })
+                });
+                const data = await response.json();
+                if (!data.success) {
+                    app.toast(data.message || 'Takip işlemi başarısız oldu', 'error');
+                    return;
+                }
+                paintFollowButton(button, !following);
+                app.toast(following ? 'Takipten çıkıldı' : 'Kullanıcı takip edildi', 'success');
+                loadFollowing();
+                loadFeed();
+                if (!button || !button.closest('#matchesContainer')) loadSuggestedUsers();
+            } catch (error) {
+                console.error('Takip işlemi hatası:', error);
+                app.toast('Takip işlemi başarısız oldu', 'error');
+            }
+        }
 
         async function loadSuggestedUsers() {
             const container = document.getElementById('suggestedUsers');
-            if (!container) return;
-
             try {
                 const response = await fetch('/api/suggested-users.php?limit=6', { credentials: 'include' });
                 const data = await response.json();
                 const suggestions = data.suggestions || [];
 
                 if (!data.success || suggestions.length === 0) {
-                    container.innerHTML = '<div class="empty-state" style="padding: 15px; font-size: 12px;">Şu an öneri yok</div>';
+                    container.innerHTML = '<p class="panel-hint" style="margin: 14px 0 0;">Şu an önerecek kimse yok.</p>';
                     return;
                 }
 
                 container.innerHTML = suggestions.map(user => `
-                    <div class="user-card">
-                        <div class="user-info" onclick="window.location.href='user-profile.html?id=${user.id}'" style="cursor: pointer;">
-                            <h4>${app.escapeHtml(user.username)}</h4>
-                            <p>${user.mutual_count > 0 ? `👥 ${user.mutual_count} ortak takip` : '✨ Popüler kullanıcı'}</p>
-                        </div>
-                        <button class="follow-btn" onclick="event.stopPropagation(); followSuggested(${user.id})">+ Takip</button>
+                    <div class="list-row">
+                        <a class="person" href="user-profile.html?id=${Number(user.id)}" style="color: inherit; text-decoration: none;">
+                            ${app.avatarMarkup(user.avatar_url, user.username, 'sm')}
+                            <span class="person-text">
+                                <span class="person-name">${esc(user.username)}</span>
+                                <span class="person-sub">${user.mutual_count > 0 ? `${Number(user.mutual_count)} ortak takip` : 'Popüler kullanıcı'}</span>
+                            </span>
+                        </a>
+                        <button type="button" class="btn-glass btn-sm follow-chip" data-follow="${Number(user.id)}" aria-pressed="false">+ Takip et</button>
                     </div>
                 `).join('');
+                container.querySelectorAll('[data-follow]').forEach(button => {
+                    button.addEventListener('click', () => toggleFollow(Number(button.dataset.follow), button));
+                });
             } catch (error) {
                 console.error('Öneri yükleme hatası:', error);
-            }
-        }
-
-        async function followSuggested(targetUserId) {
-            try {
-                await fetch('/api/follow.php', {
-                    method: 'POST',
-                    headers: app.authHeaders(),
-                    credentials: 'include',
-                    body: JSON.stringify({ target_user_id: targetUserId })
-                });
-                app.toast('Kullanıcı takip edildi!', 'success');
-                loadSuggestedUsers();
-                loadFollowing();
-            } catch (error) {
-                console.error('Takip işlemi hatası:', error);
-                app.toast('Takip işlemi başarısız oldu', 'error');
+                container.innerHTML = '<p class="panel-hint" style="margin: 14px 0 0;">Öneriler yüklenemedi.</p>';
             }
         }
 
@@ -440,314 +425,149 @@
                 const data = await response.json();
 
                 if (!data.success || data.users.length === 0) {
-                    resultsContainer.innerHTML = '<div class="empty-state" style="padding: 20px; font-size: 12px;">Kullanıcı bulunamadı</div>';
+                    resultsContainer.innerHTML = '<p class="panel-hint" style="margin: 0;">Bu adla kullanıcı bulunamadı.</p>';
                     return;
                 }
 
-                let html = '';
-                for (const user of data.users) {
-                    const isFollowing = await checkIfFollowing(user.id);
-                    html += `
-                        <div class="user-card">
-                            <div class="user-info" onclick="window.location.href='user-profile.html?id=${user.id}'" style="cursor: pointer;">
-                                <h4>${app.escapeHtml(user.username)}</h4>
-                            </div>
-                            <button class="follow-btn ${isFollowing ? 'followed' : ''}" 
-                                    onclick="event.stopPropagation(); toggleFollow(${user.id})">
-                                ${isFollowing ? '✓ Takip' : '+ Takip'}
-                            </button>
-                        </div>
-                    `;
-                }
-
-                resultsContainer.innerHTML = html;
+                const states = await Promise.all(data.users.map(user => isFollowing(user.id)));
+                resultsContainer.innerHTML = data.users.map((user, index) => `
+                    <div class="list-row">
+                        <a class="person" href="user-profile.html?id=${Number(user.id)}" style="color: inherit; text-decoration: none;">
+                            ${app.avatarMarkup(user.avatar_url, user.username, 'sm')}
+                            <span class="person-text"><span class="person-name">${esc(user.username)}</span></span>
+                        </a>
+                        <button type="button" class="btn-glass btn-sm follow-chip" data-follow="${Number(user.id)}" aria-pressed="${states[index] ? 'true' : 'false'}">${states[index] ? 'Takip ediliyor ✓' : '+ Takip et'}</button>
+                    </div>
+                `).join('');
+                resultsContainer.querySelectorAll('[data-follow]').forEach(button => {
+                    button.addEventListener('click', () => toggleFollow(Number(button.dataset.follow), button));
+                });
             } catch (error) {
                 console.error('Kullanıcı arama hatası:', error);
-                resultsContainer.innerHTML = '<div class="empty-state" style="padding: 20px; font-size: 12px; color: red;">Arama sırasında hata oluştu</div>';
+                resultsContainer.innerHTML = '<p class="panel-hint" style="margin: 0; color: var(--color-danger);">Arama sırasında hata oluştu.</p>';
             }
         }
 
-        async function toggleFollow(targetUserId) {
-            try {
-                const isFollowing = await checkIfFollowing(targetUserId);
-
-                if (isFollowing) {
-                    await fetch('/api/follow.php', {
-                        method: 'DELETE',
-                        headers: app.authHeaders(),
-                        credentials: 'include',
-                        body: JSON.stringify({ target_user_id: targetUserId })
-                    });
-                } else {
-                    await fetch('/api/follow.php', {
-                        method: 'POST',
-                        headers: app.authHeaders(),
-                        credentials: 'include',
-                        body: JSON.stringify({ target_user_id: targetUserId })
-                    });
-                }
-
-                searchUsers();
-                loadFollowing();
-            } catch (error) {
-                console.error('Takip işlemi hatası:', error);
-                app.toast('Takip işlemi başarısız oldu', 'error');
-            }
-        }
-
-        async function checkIfFollowing(userId) {
-            try {
-                const response = await fetch(`/api/follow-status.php?user_id=${userId}`, { credentials: 'include' });
-                const data = await response.json();
-                return data.success && data.is_following;
-            } catch (error) {
-                console.error('Takip durumu kontrol hatası:', error);
-                return false;
-            }
-        }
-
+        // --- Yorumlar ---
         async function loadFeed() {
+            const container = document.getElementById('feedContainer');
             try {
                 const followingRes = await fetch('/api/get-following.php', { credentials: 'include' });
                 const followingData = await followingRes.json();
-                const followingList = followingData.following || [];
-                const followingUsernames = followingList.map(f => f.username);
-                const commentsRes = await fetch('/api/comments.php', { credentials: 'include' });
+                const followingUsernames = (followingData.following || []).map(f => f.username);
+                // Takip edilenlerin yorumları: tüm yorumlar alınır, yalnızca takip edilen kullanıcılar süzülür.
+                const commentsRes = await fetch('/api/comments.php?all=true', { credentials: 'include' });
                 const commentsData = await commentsRes.json();
-                let activities = [];
-
-                if (commentsData.comments && Array.isArray(commentsData.comments)) {
-                    commentsData.comments.forEach(comment => {
-                        if (followingUsernames.includes(comment.username)) {
-                            activities.push({
-                                type: 'comment',
-                                username: comment.username,
-                                text: comment.comment_text || comment.text,
-                                date: comment.created_at || new Date().toISOString(),
-                                likes: comment.likes_count || 0
-                            });
-                        }
-                    });
-                }
-
-                activities.sort((a, b) => new Date(b.date) - new Date(a.date));
-                displayFeed(activities.slice(0, 20));
+                const comments = Array.isArray(commentsData.comments) ? commentsData.comments : [];
+                const activities = comments
+                    .filter(comment => followingUsernames.includes(comment.username))
+                    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                displayComments(container, activities.slice(0, 20),
+                    followingUsernames.length === 0
+                        ? emptyBlock('users', 'Henüz kimseyi takip etmiyorsun', 'Birilerini takip ettiğinde onların yorumları burada akar. "Sana uyanlar" sekmesinden başlayabilirsin.')
+                        : emptyBlock('message', 'Takip ettiklerin henüz yorum yazmamış', 'Yeni yorumlar geldiğinde burada görünür.'));
             } catch (error) {
-                console.error('Feed yükleme hatası:', error);
-                document.getElementById('feedContainer').innerHTML = '<div class="empty-state">❌ Feed yüklenirken hata oluştu</div>';
+                console.error('Akış yükleme hatası:', error);
+                container.innerHTML = '<div class="error-message">Akış yüklenemedi. Sayfayı yenilemeyi dene.</div>';
             }
-        }
-
-        function displayFeed(activities) {
-            const container = document.getElementById('feedContainer');
-
-            if (activities.length === 0) {
-                container.innerHTML = '<div class="empty-state">📰 Takip ettiğiniz kullanıcıların henüz aktivitesi yok</div>';
-                return;
-            }
-
-            let html = '';
-            activities.forEach((activity, idx) => {
-                html += `
-                    <div class="comment-item">
-                        <div class="comment-header">
-                            <span class="comment-author">👤 ${app.escapeHtml(activity.username)}</span>
-                            <span class="comment-date">${app.formatDate(activity.date)}</span>
-                        </div>
-                        <div class="comment-text">${app.escapeHtml(activity.text)}</div>
-                        <div class="comment-actions">
-                            <button class="action-btn" data-likes="${activity.likes}" onclick="likeFeedItem(this)">
-                                ❤️ Beğen (${activity.likes})
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            container.innerHTML = html;
-        }
-
-        function likeFeedItem(btn) {
-            btn.classList.toggle('liked');
-            let currentLikes = parseInt(btn.dataset.likes) || 0;
-
-            if (btn.classList.contains('liked')) {
-                currentLikes++;
-                btn.innerHTML = `❤️ Beğenildi (${currentLikes})`;
-            } else {
-                currentLikes = Math.max(0, currentLikes - 1);
-                btn.innerHTML = `❤️ Beğen (${currentLikes})`;
-            }
-            btn.dataset.likes = currentLikes;
         }
 
         async function loadAllComments() {
+            const container = document.getElementById('commentsContainer');
             try {
-                const response = await fetch('/api/comments.php?all=true');
+                const response = await fetch('/api/comments.php?all=true', { credentials: 'include' });
                 const data = await response.json();
-                let allComments = [];
-
-                if (data.comments && Array.isArray(data.comments)) {
-                    allComments = data.comments.map(comment => ({
-                        id: comment.id,
-                        username: comment.username,
-                        text: comment.comment_text || comment.text,
-                        date: comment.created_at || new Date().toISOString(),
-                        likes: comment.likes_count || 0
-                    }));
-                }
-
-                allComments.sort((a, b) => new Date(b.date) - new Date(a.date));
-                displayComments(allComments.slice(0, 50));
+                const comments = Array.isArray(data.comments) ? data.comments : [];
+                comments.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                displayComments(container, comments.slice(0, 50),
+                    emptyBlock('message', 'Henüz yorum yazılmamış', 'İlk yorumu yazan sen ol: bir film ya da kitabın sayfasında düşüncelerini paylaş.', { href: 'search.html', label: 'Keşfet\'e git' }));
             } catch (error) {
                 console.error('Yorumlar yükleme hatası:', error);
-                document.getElementById('commentsContainer').innerHTML = '<div class="empty-state">❌ Yorumlar yüklenirken hata oluştu</div>';
+                container.innerHTML = '<div class="error-message">Yorumlar yüklenemedi. Sayfayı yenilemeyi dene.</div>';
             }
         }
 
-        function displayComments(comments) {
-            displayedComments = comments;
-            const container = document.getElementById('commentsContainer');
-
+        function displayComments(container, comments, emptyHtml) {
             if (comments.length === 0) {
-                container.innerHTML = '<div class="empty-state">💬 Henüz yorum yapılmamış</div>';
+                container.innerHTML = emptyHtml;
                 return;
             }
-
-            let html = '';
-            comments.forEach((comment, idx) => {
-                const text = app.escapeHtml(comment.text || '');
-                const isLong = text.length > 200;
-                const truncatedClass = isLong ? 'truncated' : '';
-
-                html += `
-                    <div class="comment-item">
-                        <div class="comment-header">
-                            <span class="comment-author">👤 ${app.escapeHtml(comment.username)}</span>
-                        </div>
-                        <div class="comment-text ${truncatedClass}" id="comment-text-${idx}">"${text}"</div>
-                        ${isLong ? `<button class="show-more-btn" onclick="toggleCommentText(${idx})">Daha fazla göster</button>` : ''}
-                        <div class="comment-actions">
-                            <button class="action-btn" onclick="likeComment(${idx})">
-                                ❤️ Beğen (${comment.likes})
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            container.innerHTML = html;
+            container.innerHTML = `<div class="cv-list">${comments.map(commentCardHtml).join('')}</div>`;
         }
 
-        function toggleCommentText(idx) {
-            const textEl = document.getElementById(`comment-text-${idx}`);
-            const btn = textEl.nextElementSibling;
+        // Solda yazar ve gövde, sağda yorumun hakkında olduğu içerik (afiş ve başlık). Spoiler gövdesi buzlu camla gelir.
+        function commentCardHtml(comment) {
+            const viewerId = app && app.currentUser ? app.currentUser.id : null;
+            const actions = `
+                <button type="button" class="cv-action${comment.liked_by_me ? ' is-liked' : ''}" onclick="likeComment(${Number(comment.id)})" aria-label="Beğen">
+                    ${CommentView.heartIcon(comment.liked_by_me)} <span>${Number(comment.likes_count) || 0}</span>
+                </button>`;
+            return CommentView.card(comment, { viewerId, actions, withContent: true });
+        }
 
-            if (textEl.classList.contains('truncated')) {
-                textEl.classList.remove('truncated');
-                btn.textContent = 'Daha az göster';
-            } else {
-                textEl.classList.add('truncated');
-                btn.textContent = 'Daha fazla göster';
+        async function likeComment(commentId) {
+            if (!app || !app.currentUser) {
+                app.toast('Beğenmek için giriş yapmalısın', 'error');
+                return;
             }
-        }
-
-        async function likeComment(idx) {
-            const comment = displayedComments[idx];
-            if (!comment || !comment.id) return;
 
             try {
                 const response = await fetch('/api/like-comment.php', {
                     method: 'POST',
                     headers: app.authHeaders(),
                     credentials: 'include',
-                    body: JSON.stringify({ comment_id: comment.id })
+                    body: JSON.stringify({ comment_id: commentId })
                 });
                 const data = await response.json();
                 if (data.success) {
                     loadAllComments();
+                    loadFeed();
+                } else {
+                    app.toast(data.message || 'Beğeni eklenemedi', 'error');
                 }
             } catch (error) {
                 console.error('Beğenme hatası:', error);
             }
         }
 
+        // --- Takip ettiklerim ---
         async function loadFollowing() {
+            const container = document.getElementById('followingContainer');
             try {
-                const response = await fetch('/api/get-following.php');
+                const response = await fetch('/api/get-following.php', { credentials: 'include' });
                 const data = await response.json();
 
                 if (!data.success) {
-                    document.getElementById('followingContainer').innerHTML = '<div class="empty-state">Hata oluştu, lütfen tekrar deneyin.</div>';
+                    container.innerHTML = '<div class="error-message">Liste yüklenemedi. Sayfayı yenilemeyi dene.</div>';
                     return;
                 }
 
-                const following = data.following;
+                const following = data.following || [];
+                document.getElementById('followingCount').textContent = following.length;
 
                 if (following.length === 0) {
-                    document.getElementById('followingContainer').innerHTML = '<div class="empty-state">Henüz kimseyi takip etmiyorsunuz</div>';
+                    container.innerHTML = emptyBlock('users', 'Henüz kimseyi takip etmiyorsun', 'Zevkine yakın kişileri "Sana uyanlar" sekmesinde bulabilirsin.');
                     return;
                 }
 
-                let html = '<div class="following-list">';
-                for (const user of following) {
-                    const safeUsername = app.escapeHtml(user.username);
-                    const avatarLetter = safeUsername.charAt(0).toUpperCase();
-                    const avatar = user.avatar_url || user.avatar;
-
-                    let avatarContent;
-                    if (avatar && avatar.startsWith('http')) {
-                        avatarContent = `<img src="${app.escapeHtml(avatar)}" alt="${safeUsername}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
-                    } else if (avatar && avatar.trim() !== '') {
-                        avatarContent = `<span style="font-size: 36px;">${app.escapeHtml(avatar)}</span>`;
-                    } else {
-                        avatarContent = avatarLetter;
-                    }
-
-                    html += `
-                        <div class="following-card">
-                            <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--color-accent-gradient); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: bold; margin: 0 auto 10px; overflow: hidden;">${avatarContent}</div>
-                            <h4 style="cursor: pointer; color: var(--color-accent);" onclick="goToUserProfile(${user.id})">${safeUsername}</h4>
-                            <button class="unfollow-btn" onclick="toggleFollow(${user.id})">
-                                Takibi Bırak
-                            </button>
+                container.innerHTML = `<div class="people-grid">${following.map(user => `
+                    <article class="panel person-card">
+                        ${app.avatarMarkup(user.avatar_url || user.avatar, user.username, 'lg')}
+                        <a class="person-name" href="user-profile.html?id=${Number(user.id)}">${esc(user.username)}</a>
+                        <div class="cluster cluster--tight">
+                            <a class="btn btn-outline btn-sm" href="user-profile.html?id=${Number(user.id)}">Profili aç</a>
+                            <button type="button" class="btn-glass btn-sm follow-chip" data-follow="${Number(user.id)}" aria-pressed="true">Takip ediliyor ✓</button>
                         </div>
-                    `;
-                }
-                html += '</div>';
-
-                document.getElementById('followingContainer').innerHTML = html;
+                    </article>`).join('')}</div>`;
+                container.querySelectorAll('[data-follow]').forEach(button => {
+                    button.addEventListener('click', () => toggleFollow(Number(button.dataset.follow), button));
+                });
             } catch (error) {
                 console.error('Takip edilen yükleme hatası:', error);
-                document.getElementById('followingContainer').innerHTML = '<div class="empty-state">❌ Yükleme hatası</div>';
+                container.innerHTML = '<div class="error-message">Liste yüklenemedi. Sayfayı yenilemeyi dene.</div>';
             }
-        }
-
-        function goToUserProfile(userId) {
-            window.location.href = `user-profile.html?id=${userId}`;
-        }
-
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(el => {
-                el.classList.remove('active');
-            });
-
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-
-            document.getElementById(tab + 'Tab').classList.add('active');
-            event.target.classList.add('active');
-        }
-
-        function logout() {
-            if (app) {
-                app.logout();
-            }
-            window.location.href = 'index.html';
         }
     </script>
 </body>
 
 </html>
-
