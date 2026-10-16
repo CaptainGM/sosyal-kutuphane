@@ -900,49 +900,6 @@ h3 {
     margin-bottom: 10px;
 }
 
-/* Yorumlarda spoiler işaretleme */
-.spoiler-wrap .spoiler-content {
-    display: none;
-}
-
-.spoiler-wrap.spoiler-revealed .spoiler-content {
-    display: block;
-}
-
-.spoiler-wrap.spoiler-revealed .spoiler-reveal-btn {
-    display: none;
-}
-
-.spoiler-reveal-btn {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    border: 1px dashed var(--color-border);
-    border-radius: var(--radius-sm);
-    background: var(--color-surface-2);
-    color: var(--color-text-muted);
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    text-align: center;
-    cursor: pointer;
-}
-
-.spoiler-reveal-btn:hover {
-    border-color: rgba(var(--color-accent-rgb), 0.4);
-    color: var(--color-text);
-}
-
-.spoiler-checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin: 8px 0;
-    color: var(--color-text-muted);
-    font-size: 13px;
-    cursor: pointer;
-}
-
 /* --- Toast bildirimleri (alert() yerine) --- */
 #toastContainer {
     position: fixed;
@@ -1500,82 +1457,6 @@ h3 {
     transform: scale(1.08);
 }
 
-/* --- 3. Spoiler Koruması (Buzlu Cam / Blurlu Metin) --- */
-.spoiler-wrap {
-    position: relative;
-    margin: 8px 0;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.spoiler-content {
-    transition: filter 0.35s ease, opacity 0.35s ease;
-    filter: blur(10px);
-    user-select: none;
-    -webkit-user-select: none;
-    pointer-events: none;
-    opacity: 0.35;
-}
-
-.spoiler-reveal-btn {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    background: rgba(15, 23, 42, 0.55);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    border: 1px dashed rgba(var(--color-accent-rgb), 0.5);
-    border-radius: 8px;
-    color: #ffffff;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.spoiler-reveal-btn:hover {
-    background: rgba(15, 23, 42, 0.75);
-    border-color: var(--color-accent);
-    transform: scale(1.01);
-}
-
-.spoiler-wrap.spoiler-revealed .spoiler-content {
-    filter: blur(0);
-    user-select: text;
-    -webkit-user-select: text;
-    pointer-events: auto;
-    opacity: 1;
-}
-
-.spoiler-wrap.spoiler-revealed .spoiler-reveal-btn {
-    display: none;
-}
-
-.spoiler-checkbox-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--color-text-muted);
-    cursor: pointer;
-    user-select: none;
-    margin-top: 8px;
-}
-
-.spoiler-checkbox-label input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    accent-color: var(--color-accent);
-    cursor: pointer;
-}
-
 /* --- 4. Görsel Hikaye Kartı Modalı (Story Canvas) --- */
 .story-modal-overlay {
     position: fixed;
@@ -1919,4 +1800,257 @@ h3 {
     margin-top: 12px;
     color: var(--color-text-muted);
     font-size: 13px;
+}
+
+/* ==========================================================================
+   DETAY SAYFASI: AKSİYON SATIRI VE SPOILER KORUMASI
+   Tek sahip bu bölüm; sayfa içi (inline) stiller bu sınıfları yeniden tanımlamaz.
+   ========================================================================== */
+
+/* Aksiyon satırı: tek satırda, eşit sütunlarla. Gizli düğmeler boşluk bırakmaz. */
+.user-actions {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(150px, 1fr);
+    gap: 12px;
+    margin-bottom: 30px;
+    padding: 6px 2px 10px;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+}
+
+.user-actions::-webkit-scrollbar {
+    display: none;
+}
+
+.action-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 50px;
+    padding: 12px 18px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    scroll-snap-align: start;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.action-btn svg {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    border-color: rgba(var(--color-accent-rgb), 0.5);
+    color: var(--color-accent);
+    box-shadow: 0 12px 26px -14px rgba(var(--color-accent-rgb), 0.6);
+}
+
+.action-btn:active {
+    transform: translateY(1px) scale(0.98);
+}
+
+.action-btn.active,
+.action-btn.active:hover {
+    background: var(--color-accent-gradient);
+    border-color: transparent;
+    color: #ffffff;
+    box-shadow: 0 10px 26px -12px rgba(var(--color-accent-rgb), 0.9);
+}
+
+/* Fragman düğmesi parlama geçişini korur (btn-shimmer). */
+.action-btn.btn-shimmer {
+    background: var(--color-accent-gradient);
+    border-color: transparent;
+    color: #ffffff;
+}
+
+/* Spoiler: yorum ve yanıtlar buzlu camla gizlenir; "Spoileri gör" ile açılır. */
+.spoiler-wrap {
+    position: relative;
+    margin: 8px 0;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.spoiler-content {
+    min-height: 3.4em;
+    filter: blur(9px);
+    opacity: 0.6;
+    transition: filter 0.45s ease, opacity 0.45s ease;
+    user-select: none;
+    pointer-events: none;
+}
+
+.spoiler-reveal-btn {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 100%;
+    padding: 0 12px;
+    background: rgba(15, 23, 42, 0.45);
+    border: 1px dashed rgba(var(--color-accent-rgb), 0.6);
+    border-radius: var(--radius-sm);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.3s ease;
+}
+
+.spoiler-reveal-btn:hover {
+    background: rgba(15, 23, 42, 0.6);
+    border-color: var(--color-accent);
+}
+
+.spoiler-reveal-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb), 0.5);
+}
+
+.spoiler-wrap.spoiler-revealed .spoiler-content {
+    filter: none;
+    opacity: 1;
+    user-select: text;
+    pointer-events: auto;
+}
+
+.spoiler-wrap.spoiler-revealed .spoiler-reveal-btn {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.spoiler-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    color: var(--color-text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+}
+
+.spoiler-checkbox-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-accent);
+}
+
+/* Nerede İzlenir rozetleri artık bağlantı: metin rengi ve alt çizgi bağlantıya ait olmasın. */
+.provider-badge {
+    text-decoration: none;
+}
+
+.provider-badge:hover {
+    color: var(--color-accent);
+}
+
+/* Şifre kuralları: kayıt ve sıfırlama formlarında canlı kontrol listesi. */
+.pw-rules {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px 14px;
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.pw-rules li {
+    position: relative;
+    padding-left: 22px;
+    color: var(--color-text-muted);
+    font-size: 12.5px;
+    transition: color 0.2s ease;
+}
+
+.pw-rules li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.2em;
+    width: 12px;
+    height: 12px;
+    border: 1.5px solid var(--color-border);
+    border-radius: 50%;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.pw-rules li.is-met {
+    color: var(--color-success);
+}
+
+.pw-rules li.is-met::before {
+    background: var(--color-success);
+    border-color: var(--color-success);
+    box-shadow: inset 0 0 0 2px var(--color-surface);
+}
+
+@media (max-width: 480px) {
+    .pw-rules {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Hareketli arka plan (aurora): iki yavaş dönen renk lekesi. Yalnızca transform animasyonu; blur filtresi yok. */
+body::after {
+    content: '';
+    position: fixed;
+    inset: -20%;
+    z-index: -2;
+    pointer-events: none;
+    background:
+        radial-gradient(40% 40% at 25% 30%, rgba(var(--color-accent-rgb), 0.28), transparent 70%),
+        radial-gradient(35% 35% at 75% 25%, rgba(219, 39, 119, 0.18), transparent 70%),
+        radial-gradient(45% 45% at 60% 80%, rgba(6, 182, 212, 0.18), transparent 70%);
+    animation: aurora-drift 26s ease-in-out infinite alternate;
+    will-change: transform;
+}
+
+:root[data-theme="light"] body::after {
+    opacity: 0.85;
+}
+
+@keyframes aurora-drift {
+    0% {
+        transform: translate3d(-2%, -1%, 0) scale(1);
+    }
+
+    50% {
+        transform: translate3d(3%, 2%, 0) scale(1.06);
+    }
+
+    100% {
+        transform: translate3d(-1%, 3%, 0) scale(0.98);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body::after {
+        animation: none;
+    }
 }

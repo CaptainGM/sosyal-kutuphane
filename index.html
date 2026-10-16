@@ -706,8 +706,14 @@
                             <label class="form-label" for="registerPassword">Şifre</label>
                             <div class="input-wrapper">
                                 <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                                <input type="password" class="input-field" id="registerPassword" placeholder="En az 6 karakter" required minlength="6">
+                                <input type="password" class="input-field" id="registerPassword" placeholder="En az 8 karakter" required minlength="8" aria-describedby="registerPasswordRules">
                             </div>
+                            <ul class="pw-rules" id="registerPasswordRules" aria-live="polite">
+                                <li data-rule="length">En az 8 karakter</li>
+                                <li data-rule="upper">En az bir büyük harf</li>
+                                <li data-rule="lower">En az bir küçük harf</li>
+                                <li data-rule="special">En az bir özel karakter (! @ # ? vb.)</li>
+                            </ul>
                             <div id="registerCapsLockWarning" class="caps-warning" style="display: none;">
                                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v10"/><path d="m16 8-4-4-4 4"/><rect width="18" height="6" x="3" y="16" rx="2"/></svg>
                                 <span>Caps Lock açık</span>
@@ -890,6 +896,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             wireCapsLock('loginPassword', 'loginCapsLockWarning');
             wireCapsLock('registerPassword', 'registerCapsLockWarning');
+            wirePasswordRules('registerPassword', 'registerPasswordRules');
         });
 
         // Tek tıkla demo girişi
@@ -1090,8 +1097,29 @@
                 showError('forgotError', 'Bağlantı hatası: ' + error.message);
             }
         }
+        // Giriş ekranındaki 3D halka: gerçek popüler film afişleri (TMDB). Alınamazsa tasarımdaki gradyan posterler kalır.
+        async function loadRingPosters() {
+            try {
+                const res = await fetch('/api/tmdb-proxy.php?endpoint=list&type=movie&list=popular&page=1', { credentials: 'include' });
+                const data = await res.json();
+                const movies = (data.results || []).filter(movie => movie.poster_path).slice(0, 5);
+                document.querySelectorAll('.ring .poster').forEach((el, index) => {
+                    const movie = movies[index];
+                    if (!movie) return;
+                    const poster = "url('https://image.tmdb.org/t/p/w342" + movie.poster_path + "')";
+                    el.style.setProperty('--poster', 'linear-gradient(180deg, rgba(5, 6, 11, 0) 35%, rgba(5, 6, 11, 0.85) 100%), ' + poster + ' center / cover no-repeat');
+                    el.querySelector('.poster-kind').textContent = 'Popüler';
+                    el.querySelector('strong').textContent = movie.title;
+                    el.querySelector('small').textContent = movie.vote_average ? 'Puan ' + movie.vote_average.toFixed(1) : 'Yeni eklendi';
+                });
+            } catch (error) {
+                // Ağ ya da anahtar yoksa gradyan posterler olduğu gibi kalır.
+            }
+        }
+        loadRingPosters();
     </script>
     <script src="js/escape-html.js"></script>
+    <script src="js/password-rules.js"></script>
     <script src="js/app.js"></script>
     <script src="js/scene.js"></script>
 </body>

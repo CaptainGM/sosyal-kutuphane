@@ -1,11 +1,30 @@
 // Giriş ekranının 3D arka planı: parçacık alanı ve dönen tel kafes (Three.js).
-// WebGL yoksa, CDN'e ulaşılamazsa veya hareket azaltma tercihi açıksa (prefers-reduced-motion)
-// sessizce atlanır; sayfa CSS arka planıyla çalışır.
-// Yalnızca index.html yükler. Diğer sayfalar CSS 3D (poster eğilmesi) kullanır.
+// Tema değişince (themechange olayı) renkler ve karışım modu yeniden uygulanır:
+// koyu temada parlayan (toplamalı) noktalar, açık temada koyu ve doygun noktalar.
+// WebGL yoksa, CDN erişilemezse ya da hareket azaltma açıksa sessizce atlanır.
 (function () {
     const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const isSmallScreen = window.matchMedia('(max-width: 768px)').matches;
+
+    const PALETTES = {
+        dark: {
+            points: ['#818cf8', '#c084fc', '#f472b6', '#22d3ee'],
+            knot: 0x8b8dff, knotOpacity: 0.38,
+            shell: 0xc084fc, shellOpacity: 0.16,
+            pointOpacity: 1,
+        },
+        light: {
+            points: ['#4f46e5', '#9333ea', '#db2777', '#0e7490'],
+            knot: 0x4f46e5, knotOpacity: 0.5,
+            shell: 0x9333ea, shellOpacity: 0.22,
+            pointOpacity: 0.75,
+        },
+    };
+
+    function currentTheme() {
+        return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    }
 
     function hasWebGL() {
         try {
@@ -39,12 +58,10 @@
         const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 100);
         camera.position.z = 9;
 
-        // Parçacık alanı: küresel kabukta dağılmış, renkli ve yavaş dönen noktalar.
+        // Parçacık alanı: küresel kabukta dağılmış noktalar.
         const count = isSmallScreen ? 450 : 1100;
         const positions = new Float32Array(count * 3);
         const colors = new Float32Array(count * 3);
-        const palette = ['#818cf8', '#c084fc', '#f472b6', '#22d3ee'].map(hex => new THREE.Color(hex));
-
         for (let i = 0; i < count; i++) {
             const radius = 6 + Math.random() * 10;
             const theta = Math.random() * Math.PI * 2;
@@ -52,41 +69,72 @@
             positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
             positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
             positions[i * 3 + 2] = radius * Math.cos(phi);
-
-            const color = palette[i % palette.length];
-            colors[i * 3] = color.r;
-            colors[i * 3 + 1] = color.g;
-            colors[i * 3 + 2] = color.b;
         }
 
         const pointsGeometry = new THREE.BufferGeometry();
         pointsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         pointsGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        const points = new THREE.Points(pointsGeometry, new THREE.PointsMaterial({
-            size: 0.09,
+        // Yumuşak yuvarlak nokta dokusu (kare noktalar yerine).
+        const dotCanvas = document.createElement('canvas');
+        dotCanvas.width = 64;
+        dotCanvas.height = 64;
+        const dotContext = dotCanvas.getContext('2d');
+        const gradient = dotContext.createRadialGradient(32, 32, 0, 32, 32, 32);
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+        gradient.addColorStop(0.45, 'rgba(255, 255, 255, 0.85)');
+        gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        dotContext.fillStyle = gradient;
+        dotContext.fillRect(0, 0, 64, 64);
+
+        const pointsMaterial = new THREE.PointsMaterial({
+            size: 0.11,
+            map: new THREE.CanvasTexture(dotCanvas),
             vertexColors: true,
             transparent: true,
-            opacity: 1,
             depthWrite: false,
-            blending: THREE.AdditiveBlending,
-        }));
+        });
+        const points = new THREE.Points(pointsGeometry, pointsMaterial);
         scene.add(points);
 
         // Tel kafes düğüm ve dış kabuk: arka planda derinlik hissi veren 3D odak noktası.
         const focusPosition = new THREE.Vector3(-6.6, -3.6, -6);
-        const knot = new THREE.Mesh(
-            new THREE.TorusKnotGeometry(1.15, 0.34, 220, 28),
-            new THREE.MeshBasicMaterial({ color: 0x8b8dff, wireframe: true, transparent: true, opacity: 0.38 })
-        );
+        const knotMaterial = new THREE.MeshBasicMaterial({ wireframe: true, transparent: true });
+        const knot = new THREE.Mesh(new THREE.TorusKnotGeometry(1.15, 0.34, 220, 28), knotMaterial);
         knot.position.copy(focusPosition);
         scene.add(knot);
 
-        const shell = new THREE.Mesh(
-            new THREE.IcosahedronGeometry(2.4, 1),
-            new THREE.MeshBasicMaterial({ color: 0xc084fc, wireframe: true, transparent: true, opacity: 0.16 })
-        );
+        const shellMaterial = new THREE.MeshBasicMaterial({ wireframe: true, transparent: true });
+        const shell = new THREE.Mesh(new THREE.IcosahedronGeometry(2.4, 1), shellMaterial);
         shell.position.copy(focusPosition);
         scene.add(shell);
+
+        // Tema renkleri ve karışım modu: ilk açılışta ve her tema değişiminde.
+        function applyTheme() {
+            const name = currentTheme();
+            const config = PALETTES[name];
+            const palette = config.points.map(hex => new THREE.Color(hex));
+            for (let i = 0; i < count; i++) {
+                const color = palette[i % palette.length];
+                colors[i * 3] = color.r;
+                colors[i * 3 + 1] = color.g;
+                colors[i * 3 + 2] = color.b;
+            }
+            pointsGeometry.attributes.color.needsUpdate = true;
+
+            pointsMaterial.blending = name === 'dark' ? THREE.AdditiveBlending : THREE.NormalBlending;
+            pointsMaterial.opacity = config.pointOpacity;
+            pointsMaterial.needsUpdate = true;
+
+            knotMaterial.color.setHex(config.knot);
+            knotMaterial.opacity = config.knotOpacity;
+            knotMaterial.needsUpdate = true;
+
+            shellMaterial.color.setHex(config.shell);
+            shellMaterial.opacity = config.shellOpacity;
+            shellMaterial.needsUpdate = true;
+        }
+        applyTheme();
+        window.addEventListener('themechange', applyTheme);
 
         // Fare konumu kamerayı hafifçe kaydırır (paralaks).
         let pointerX = 0;

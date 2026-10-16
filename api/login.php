@@ -4,8 +4,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonResponse(['success' => false, 'message' => 'Geçersiz istek'], 405);
 }
 $input = json_decode(file_get_contents('php://input'), true);
-$email = trim($input['email'] ?? '');
-$password = trim($input['password'] ?? '');
+$email = (is_string($input['email'] ?? null) ? trim($input['email']) : '');
+$password = (is_string($input['password'] ?? null) ? trim($input['password']) : '');
 if (empty($email) || empty($password)) {
     jsonResponse([
         'success' => false,

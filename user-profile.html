@@ -475,12 +475,12 @@
                             const movieId = m.tmdb_id || m.movie_id;
                             const posterUrl = m.poster_path
                                 ? `https://image.tmdb.org/t/p/w300${m.poster_path}`
-                                : 'https://placehold.co/150x200?text=Poster+Yok';
+                                : 'img/no-poster.svg';
                             const title = app.escapeHtml(m.title || 'Film');
 
                             moviesHtml += `
                                 <div class="content-item" onclick="goToDetail('movie', '${movieId}')" style="cursor: pointer;">
-                                    <img class="content-poster" src="${posterUrl}" alt="${title}" onerror="this.src='https://placehold.co/150x200?text=Poster+Yok'">
+                                    <img class="content-poster" src="${posterUrl}" alt="${title}" onerror="this.src='img/no-poster.svg'">
                                     <div class="content-title">${title}</div>
                                     ${m.rating ? `<div class="content-rating">⭐ ${m.rating}/10</div>` : ''}
                                 </div>
@@ -499,12 +499,12 @@
                             const bookId = b.google_books_id || b.book_id;
                             const coverUrl = b.cover_url
                                 ? b.cover_url.replace('http://', 'https://')
-                                : 'https://placehold.co/150x200?text=Kapak+Yok';
+                                : 'img/no-poster.svg';
                             const title = app.escapeHtml(b.title || 'Kitap');
 
                             booksHtml += `
                                 <div class="content-item" onclick="goToDetail('book', '${bookId}')" style="cursor: pointer;">
-                                    <img class="content-poster" src="${coverUrl}" alt="${title}" onerror="this.src='https://placehold.co/150x200?text=Kapak+Yok'">
+                                    <img class="content-poster" src="${coverUrl}" alt="${title}" onerror="this.src='img/no-poster.svg'">
                                     <div class="content-title">${title}</div>
                                     ${b.rating ? `<div class="content-rating">⭐ ${b.rating}/10</div>` : ''}
                                 </div>
@@ -644,7 +644,7 @@
                     content = data.content.map(item => ({
                         id: item.id,
                         title: item.title,
-                        poster: item.poster_path || item.cover_url || 'https://placehold.co/150x200?text=No+Image',
+                        poster: item.poster_path || item.cover_url || 'img/no-poster.svg',
                         rating: item.rating || 0
                     }));
                 }
@@ -678,7 +678,7 @@
             } else {
                 container.innerHTML = content.map(item => `
                     <div class="content-item" onclick="goToDetail('${type}', '${item.id}')">
-                        <img src="${item.poster}" alt="${app.escapeHtml(item.title)}" class="content-poster" onerror="this.src='https://placehold.co/150x200?text=No+Image'">
+                        <img src="${item.poster}" alt="${app.escapeHtml(item.title)}" class="content-poster" onerror="this.src='img/no-poster.svg'">
                         <div class="content-title">${app.escapeHtml(item.title)}</div>
                         <div class="content-rating">⭐ ${item.rating || 0}/10</div>
                     </div>

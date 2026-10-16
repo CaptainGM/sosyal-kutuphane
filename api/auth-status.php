@@ -9,7 +9,7 @@ if (isLoggedIn()) {
     );
 
     if ($user) {
-        jsonResponse([
+        jsonResponse(['realtime' => getenv('ENABLE_SSE') === '1', 
             'success' => true,
             'user' => [
                 'id' => $user->_id,
@@ -23,13 +23,13 @@ if (isLoggedIn()) {
             'csrf_token' => csrfToken()
         ]);
     } else {
-        jsonResponse([
+        jsonResponse(['realtime' => getenv('ENABLE_SSE') === '1', 
             'success' => false,
             'user' => null
         ]);
     }
 } else {
-    jsonResponse([
+    jsonResponse(['realtime' => getenv('ENABLE_SSE') === '1', 
         'success' => true,
         'user' => null
     ]);

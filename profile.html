@@ -486,7 +486,7 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Yeni Şifre</label>
-                        <input type="password" id="newPasswordInput" class="form-control" minlength="6" required>
+                        <input type="password" id="newPasswordInput" class="form-control" minlength="8" required placeholder="En az 8 karakter, büyük/küçük harf ve özel karakter">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Yeni Şifre (Tekrar)</label>
@@ -1262,13 +1262,13 @@
                 ${moviesWatched.map(m => {
                 const posterUrl = m.poster_path
                     ? `https://image.tmdb.org/t/p/w300${m.poster_path}`
-                    : 'https://placehold.co/200x300?text=Poster+Yok';
+                    : 'img/no-poster.svg';
                 return `
                         <div class="content-item" onclick="goToDetail('movie', '${m.tmdb_id || m.id}')" style="cursor: pointer;">
                             <img src="${posterUrl}" 
                                  alt="${m.title}" 
                                  style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;"
-                                 onerror="this.src='https://placehold.co/200x300?text=Poster+Yok'">
+                                 onerror="this.src='img/no-poster.svg'">
                             <div class="info" style="padding: 10px;">
                                 <h4 style="font-size: 13px; text-align: center;">${m.title}</h4>
                             </div>
@@ -1283,13 +1283,13 @@
                 ${moviesWatchlist.map(m => {
                 const posterUrl = m.poster_path
                     ? `https://image.tmdb.org/t/p/w300${m.poster_path}`
-                    : 'https://placehold.co/200x300?text=Poster+Yok';
+                    : 'img/no-poster.svg';
                 return `
                         <div class="content-item" onclick="goToDetail('movie', '${m.tmdb_id || m.id}')" style="cursor: pointer;">
                             <img src="${posterUrl}" 
                                  alt="${m.title}" 
                                  style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;"
-                                 onerror="this.src='https://placehold.co/200x300?text=Poster+Yok'">
+                                 onerror="this.src='img/no-poster.svg'">
                             <div class="info" style="padding: 10px;">
                                 <h4 style="font-size: 13px; text-align: center;">${m.title}</h4>
                             </div>
@@ -1306,13 +1306,13 @@
                 ${booksRead.map(b => {
                 const coverUrl = b.cover_url
                     ? b.cover_url.replace('http://', 'https://')
-                    : 'https://placehold.co/200x300?text=Kapak+Yok';
+                    : 'img/no-poster.svg';
                 return `
                         <div class="content-item" onclick="goToDetail('book', '${b.google_books_id || b.id}')" style="cursor: pointer;">
                             <img src="${coverUrl}" 
                                  alt="${b.title}" 
                                  style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;"
-                                 onerror="this.src='https://placehold.co/200x300?text=Kapak+Yok'">
+                                 onerror="this.src='img/no-poster.svg'">
                             <div class="info" style="padding: 10px;">
                                 <h4 style="font-size: 13px; text-align: center;">${b.title}</h4>
                             </div>
@@ -1327,13 +1327,13 @@
                 ${booksReadinglist.map(b => {
                 const coverUrl = b.cover_url
                     ? b.cover_url.replace('http://', 'https://')
-                    : 'https://placehold.co/200x300?text=Kapak+Yok';
+                    : 'img/no-poster.svg';
                 return `
                         <div class="content-item" onclick="goToDetail('book', '${b.google_books_id || b.id}')" style="cursor: pointer;">
                             <img src="${coverUrl}" 
                                  alt="${b.title}" 
                                  style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;"
-                                 onerror="this.src='https://placehold.co/200x300?text=Kapak+Yok'">
+                                 onerror="this.src='img/no-poster.svg'">
                             <div class="info" style="padding: 10px;">
                                 <h4 style="font-size: 13px; text-align: center;">${b.title}</h4>
                             </div>
@@ -1663,7 +1663,7 @@
                 if (contentType === 'movie') {
                     const posterUrl = item.poster_path
                         ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-                        : 'https://placehold.co/150x225?text=Poster+Yok';
+                        : 'img/no-poster.svg';
                     const title = item.title || 'Bilinmiyor';
 
                     html += `
@@ -1677,7 +1677,7 @@
                     const volumeInfo = item.volumeInfo || {};
                     const coverUrl = volumeInfo.imageLinks?.thumbnail
                         ? volumeInfo.imageLinks.thumbnail.replace('http://', 'https://')
-                        : 'https://placehold.co/150x225?text=Kapak+Yok';
+                        : 'img/no-poster.svg';
                     const title = volumeInfo.title || 'Bilinmiyor';
 
                     html += `
@@ -1773,7 +1773,7 @@
                                     <div id="listItemsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px;">
                                         ${items.map(item => `
                                             <div id="item-${item.id}" class="pick-card" style="cursor: default; display: flex; flex-direction: column; gap: 8px;">
-                                                <img src="https://placehold.co/140x200?text=Yükleniyor" alt="${app.escapeHtml(item.content_title)}" class="item-poster" data-item-id="${item.content_id}" data-item-type="${item.content_type}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 5px;">
+                                                <img src="img/no-poster.svg" alt="${app.escapeHtml(item.content_title)}" class="item-poster" data-item-id="${item.content_id}" data-item-type="${item.content_type}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 5px;">
                                                 <div style="font-size: 12px; font-weight: 600; word-break: break-word; line-height: 1.3;">${app.escapeHtml(item.content_title)}</div>
                                                 <button onclick="removeFromList('${listId}', '${item.id}')" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;">🗑️ Çıkar</button>
                                             </div>
@@ -1832,7 +1832,7 @@
         async function loadListItemPosters(items) {
             for (const item of items) {
                 try {
-                    let posterUrl = 'https://placehold.co/140x200?text=Resim+Yok';
+                    let posterUrl = 'img/no-poster.svg';
 
                     if (item.content_type === 'movie') {
                         const movie = await app.getMovieDetail(item.content_id);

@@ -139,7 +139,7 @@
                 } else {
                     grid.innerHTML = list.items.map(item => `
                         <div class="public-item-card" onclick="goToDetail('${item.content_type}', '${item.content_id}')">
-                            <img src="https://placehold.co/150x210?text=Yükleniyor" alt="${app.escapeHtml(item.content_title)}"
+                            <img src="img/no-poster.svg" alt="${app.escapeHtml(item.content_title)}"
                                  class="item-poster" data-item-id="${item.content_id}" data-item-type="${item.content_type}">
                             <div class="item-title">${app.escapeHtml(item.content_title)}</div>
                         </div>
@@ -158,7 +158,7 @@
         async function loadPosters(items) {
             for (const item of items) {
                 try {
-                    let posterUrl = 'https://placehold.co/150x210?text=Resim+Yok';
+                    let posterUrl = 'img/no-poster.svg';
 
                     if (item.content_type === 'movie') {
                         const movie = await app.getMovieDetail(item.content_id);
