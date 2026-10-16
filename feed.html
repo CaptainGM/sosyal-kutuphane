@@ -426,9 +426,9 @@
                 if (!data.success) return;
 
                 const items = [
-                    ...(data.movies || []).map(m => ({ ...m, type: 'movie', poster: m.poster_path ? `https://image.tmdb.org/t/p/w200${m.poster_path}` : 'https://placehold.co/110x160?text=Film' })),
-                    ...(data.series || []).map(s => ({ ...s, type: 'series', poster: s.poster_path ? `https://image.tmdb.org/t/p/w200${s.poster_path}` : 'https://placehold.co/110x160?text=Dizi' })),
-                    ...(data.books || []).map(b => ({ ...b, type: 'book', poster: b.cover_url || 'https://placehold.co/110x160?text=Kitap' }))
+                    ...(data.movies || []).map(m => ({ ...m, type: 'movie', poster: m.poster_path ? `https://image.tmdb.org/t/p/w200${m.poster_path}` : 'img/no-poster.svg' })),
+                    ...(data.series || []).map(s => ({ ...s, type: 'series', poster: s.poster_path ? `https://image.tmdb.org/t/p/w200${s.poster_path}` : 'img/no-poster.svg' })),
+                    ...(data.books || []).map(b => ({ ...b, type: 'book', poster: b.cover_url || 'img/no-poster.svg' }))
                 ];
 
                 if (items.length === 0) return;
@@ -436,7 +436,7 @@
                 document.getElementById('recoSection').style.display = 'block';
                 document.getElementById('recoScroll').innerHTML = items.map(item => `
                     <div class="reco-card" onclick="goToDetail('${item.type}', '${item.id}')">
-                        <img src="${item.poster}" alt="${app.escapeHtml(item.title)}" loading="lazy" onerror="this.src='https://placehold.co/110x160?text=Yok'">
+                        <img src="${item.poster}" alt="${app.escapeHtml(item.title)}" loading="lazy" onerror="this.src='img/no-poster.svg'">
                         <div class="reco-card-title">${app.escapeHtml(item.title)}</div>
                     </div>
                 `).join('');
@@ -628,7 +628,7 @@
                     : activity.contentType === 'series'
                         ? '<span class="content-type-badge badge-series">Dizi</span>'
                         : '<span class="content-type-badge badge-book">Kitap</span>';
-                let posterUrl = 'https://placehold.co/100x150?text=Yükleniyor';
+                let posterUrl = 'img/no-poster.svg';
                 if ((activity.contentType === 'movie' || activity.contentType === 'series') && activity.poster) {
                     posterUrl = `https://image.tmdb.org/t/p/w200${activity.poster}`;
                 } else if (activity.contentType === 'book' && activity.poster) {
@@ -651,7 +651,7 @@
 
 
                         <div class="activity-body" onclick="goToDetail('${activity.contentType}', '${activity.contentId}')">
-                            <img class="content-poster" src="${posterUrl}" alt="${safeContentTitle}" loading="lazy" onerror="this.src='https://placehold.co/100x150?text=Resim+Yok'">
+                            <img class="content-poster" src="${posterUrl}" alt="${safeContentTitle}" loading="lazy" onerror="this.src='img/no-poster.svg'">
                             <div class="content-info">
                                 ${typeBadge}
                                 <div class="content-title">${safeContentTitle}</div>

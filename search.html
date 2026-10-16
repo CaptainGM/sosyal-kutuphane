@@ -1229,7 +1229,7 @@
             results.slice(0, 12).forEach(item => {
                 const posterUrl = item.poster_path
                     ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-                    : 'https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok';
+                    : 'img/no-poster.svg';
                 const title = targetType === 'movie' ? (item.title || item.original_title) : (item.name || item.original_name);
                 const dateVal = targetType === 'movie' ? item.release_date : item.first_air_date;
                 const year = dateVal ? dateVal.split('-')[0] : 'Bilinmiyor';
@@ -1237,7 +1237,7 @@
                 cardsHtml += `
                     <div class="content-card" data-tilt onclick="goToDetail('${targetType}', '${item.id}')">
                         <img src="${posterUrl}" alt="${app.escapeHtml(title)}" loading="lazy"
-                             onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok'">
+                             onerror="this.src='img/no-poster.svg'">
                         <div class="info">
                             <h3>${app.escapeHtml(title)}</h3>
                             <div class="meta"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> ${year} | ${app.ratingPillHtml(item.vote_average)}</div>
@@ -1599,14 +1599,14 @@
                 if (type === 'movie') {
                     const posterUrl = item.poster_path
                         ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-                        : 'https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok';
+                        : 'img/no-poster.svg';
 
                     const year = item.release_date ? item.release_date.split('-')[0] : 'Bilinmiyor';
 
                     html += `
                         <div class="content-card" data-tilt onclick="goToDetail('movie', '${item.id}')">
                             <img src="${posterUrl}" alt="${item.title}" loading="lazy"
-                                 onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok'">
+                                 onerror="this.src='img/no-poster.svg'">
                             <div class="info">
                                 <h3>${item.title}</h3>
                                 <div class="meta"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> ${year} | ${app.ratingPillHtml(item.vote_average)}</div>
@@ -1616,14 +1616,14 @@
                 } else if (type === 'series') {
                     const posterUrl = item.poster_path
                         ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-                        : 'https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok';
+                        : 'img/no-poster.svg';
 
                     const year = item.first_air_date ? item.first_air_date.split('-')[0] : 'Bilinmiyor';
 
                     html += `
                         <div class="content-card" data-tilt onclick="goToDetail('series', '${item.id}')">
                             <img src="${posterUrl}" alt="${item.name}" loading="lazy"
-                                 onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok'">
+                                 onerror="this.src='img/no-poster.svg'">
                             <div class="info">
                                 <h3>${item.name}</h3>
                                 <div class="meta"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> ${year} | ${app.ratingPillHtml(item.vote_average)}</div>
@@ -1634,7 +1634,7 @@
                     const volumeInfo = item.volumeInfo || {};
                     const coverUrl = volumeInfo.imageLinks?.thumbnail
                         ? volumeInfo.imageLinks.thumbnail.replace('http://', 'https://')
-                        : 'https://placehold.co/150x225/764ba2/ffffff?text=Kapak+Yok';
+                        : 'img/no-poster.svg';
 
                     const authors = volumeInfo.authors ? volumeInfo.authors.join(', ') : 'Bilinmiyor';
                     const year = volumeInfo.publishedDate ? volumeInfo.publishedDate.split('-')[0] : 'Bilinmiyor';
@@ -1642,7 +1642,7 @@
                     html += `
                         <div class="content-card" data-tilt onclick="goToDetail('book', '${item.id}')">
                             <img src="${coverUrl}" alt="${volumeInfo.title}" loading="lazy"
-                                 onerror="this.src='https://placehold.co/150x225/764ba2/ffffff?text=Kapak+Yok'">
+                                 onerror="this.src='img/no-poster.svg'">
                             <div class="info">
                                 <h3>${volumeInfo.title}</h3>
                                 <div class="meta"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> ${authors}<br><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> ${year}</div>
@@ -1704,7 +1704,7 @@
                 const volumeInfo = item.volumeInfo || {};
                 const coverUrl = volumeInfo.imageLinks?.thumbnail
                     ? volumeInfo.imageLinks.thumbnail.replace('http://', 'https://')
-                    : 'https://placehold.co/150x225/764ba2/ffffff?text=Kapak+Yok';
+                    : 'img/no-poster.svg';
 
                 const authors = volumeInfo.authors ? volumeInfo.authors.join(', ') : 'Bilinmiyor';
                 const year = volumeInfo.publishedDate ? volumeInfo.publishedDate.split('-')[0] : 'Bilinmiyor';
@@ -1712,7 +1712,7 @@
                 html += `
                     <div class="content-card" data-tilt onclick="goToDetail('book', '${item.id}')">
                         <img src="${coverUrl}" alt="${volumeInfo.title || 'Kitap'}" loading="lazy"
-                             onerror="this.onerror=null; this.src='https://placehold.co/150x225/764ba2/ffffff?text=Kapak';">
+                             onerror="this.onerror=null; this.src='img/no-poster.svg';">
                         <div class="info">
                             <h3>${volumeInfo.title}</h3>
                             <div class="meta"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> ${authors}<br><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> ${year}</div>
@@ -1838,11 +1838,11 @@
                 if (type === 'movie' || type === 'series') {
                     posterUrl = item.poster_path
                         ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-                        : 'https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok';
+                        : 'img/no-poster.svg';
                 } else {
                     posterUrl = item.cover_url
                         ? item.cover_url.replace('http://', 'https://')
-                        : 'https://placehold.co/150x225/667eea/ffffff?text=Kapak+Yok';
+                        : 'img/no-poster.svg';
                 }
 
                 if (statKey === 'comment_count') {
@@ -1856,7 +1856,7 @@
                 html += `
                     <div class="content-card" data-tilt onclick="goToDetail('${type}', '${item.id}')">
                         <img src="${posterUrl}" alt="${item.title}" loading="lazy"
-                             onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Resim+Yok'">
+                             onerror="this.src='img/no-poster.svg'">
                         <div class="info">
                             <h3>${item.title}</h3>
                             <div class="meta" style="color: var(--color-accent); font-weight: 600;">${statValue}</div>
@@ -1881,14 +1881,14 @@
             results.forEach(movie => {
                 const posterUrl = movie.poster_path
                     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                    : 'https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok';
+                    : 'img/no-poster.svg';
 
                 const year = movie.release_date ? movie.release_date.split('-')[0] : 'Bilinmiyor';
 
                 html += `
                     <div class="content-card" data-tilt onclick="goToDetail('movie', '${movie.id}')">
                         <img src="${posterUrl}" alt="${movie.title}" loading="lazy"
-                             onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok'">
+                             onerror="this.src='img/no-poster.svg'">
                         <div class="info">
                             <h3>${movie.title}</h3>
                             <div class="meta"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> ${year} | ${app.ratingPillHtml(movie.vote_average)}</div>
@@ -1927,14 +1927,14 @@
             results.forEach(series => {
                 const posterUrl = series.poster_path
                     ? `https://image.tmdb.org/t/p/w500${series.poster_path}`
-                    : 'https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok';
+                    : 'img/no-poster.svg';
 
                 const year = series.first_air_date ? series.first_air_date.split('-')[0] : 'Bilinmiyor';
 
                 html += `
                     <div class="content-card" data-tilt onclick="goToDetail('series', '${series.id}')">
                         <img src="${posterUrl}" alt="${series.name}" loading="lazy"
-                             onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok'">
+                             onerror="this.src='img/no-poster.svg'">
                         <div class="info">
                             <h3>${series.name}</h3>
                             <div class="meta">${year} · ${app.ratingPillHtml(series.vote_average)}</div>
@@ -2026,7 +2026,7 @@
                         title: m.title || m.original_title,
                         year: m.release_date ? m.release_date.split('-')[0] : 'N/A',
                         rating: m.vote_average ? m.vote_average.toFixed(1) : null,
-                        poster: m.poster_path ? `https://image.tmdb.org/t/p/w200${m.poster_path}` : 'https://placehold.co/80x120?text=Poster'
+                        poster: m.poster_path ? `https://image.tmdb.org/t/p/w200${m.poster_path}` : 'img/no-poster.svg'
                     }));
 
                     // Akıllı Çapraz Tamamlama: Filmlerde az veya 0 sonuç varsa dizileri de tara (örn: Güç Yüzükleri)
@@ -2039,7 +2039,7 @@
                                 title: s.name || s.original_name,
                                 year: s.first_air_date ? s.first_air_date.split('-')[0] : 'N/A',
                                 rating: s.vote_average ? s.vote_average.toFixed(1) : null,
-                                poster: s.poster_path ? `https://image.tmdb.org/t/p/w200${s.poster_path}` : 'https://placehold.co/80x120?text=Poster'
+                                poster: s.poster_path ? `https://image.tmdb.org/t/p/w200${s.poster_path}` : 'img/no-poster.svg'
                             }));
                             items = [...items, ...sItems];
                         } catch (e) {
@@ -2054,7 +2054,7 @@
                         title: s.name || s.original_name,
                         year: s.first_air_date ? s.first_air_date.split('-')[0] : 'N/A',
                         rating: s.vote_average ? s.vote_average.toFixed(1) : null,
-                        poster: s.poster_path ? `https://image.tmdb.org/t/p/w200${s.poster_path}` : 'https://placehold.co/80x120?text=Poster'
+                        poster: s.poster_path ? `https://image.tmdb.org/t/p/w200${s.poster_path}` : 'img/no-poster.svg'
                     }));
 
                     // Akıllı Çapraz Tamamlama: Dizilerde az veya 0 sonuç varsa filmleri de tara
@@ -2067,7 +2067,7 @@
                                 title: m.title || m.original_title,
                                 year: m.release_date ? m.release_date.split('-')[0] : 'N/A',
                                 rating: m.vote_average ? m.vote_average.toFixed(1) : null,
-                                poster: m.poster_path ? `https://image.tmdb.org/t/p/w200${m.poster_path}` : 'https://placehold.co/80x120?text=Poster'
+                                poster: m.poster_path ? `https://image.tmdb.org/t/p/w200${m.poster_path}` : 'img/no-poster.svg'
                             }));
                             items = [...items, ...mItems];
                         } catch (e) {
@@ -2087,7 +2087,7 @@
                             title: info.title || 'İsimsiz Kitap',
                             year: info.publishedDate ? info.publishedDate.split('-')[0] : 'N/A',
                             rating: info.averageRating ? info.averageRating.toFixed(1) : null,
-                            poster: thumb || 'https://placehold.co/80x120?text=Kapak'
+                            poster: thumb || 'img/no-poster.svg'
                         };
                     });
                 }
@@ -2118,7 +2118,7 @@
 
                     html += `
                         <a href="detail.php?type=${item.type}&id=${item.id}" class="search-suggest-item">
-                            <img src="${item.poster}" alt="${app.escapeHtml(item.title)}" class="search-suggest-poster" onerror="this.src='https://placehold.co/80x120?text=Görsel'">
+                            <img src="${item.poster}" alt="${app.escapeHtml(item.title)}" class="search-suggest-poster" onerror="this.src='img/no-poster.svg'">
                             <div class="search-suggest-info">
                                 <div class="search-suggest-title">${app.escapeHtml(item.title)}</div>
                                 <div class="search-suggest-meta">

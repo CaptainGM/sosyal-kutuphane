@@ -47,7 +47,7 @@ jobs:
           # Canlı akış (SSE) açık ve çok süreçli sunucu: akış testi, sayfa isteklerinin bloklanmadığını doğrular.
           ENABLE_SSE=1 PHP_CLI_SERVER_WORKERS=4 php -S localhost:8000 &
           sleep 2
-          curl -sf http://localhost:8000/api/setup-db.php > /dev/null
+          php api/setup-db.php > /dev/null
 
       - name: PHPUnit testlerini çalıştır
         env:

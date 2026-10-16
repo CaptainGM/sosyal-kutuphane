@@ -4,13 +4,19 @@ Film, dizi ve kitaplar için yapılmış bir sosyal kütüphane ve paylaşım pl
 
 ![CI](https://github.com/CaptainGM/sosyal-kutuphane/actions/workflows/ci.yml/badge.svg)
 
-![Giriş ekranı](screenshot.png)
+![Giriş ekranı (açık tema)](docs/screenshots/giris-acik.png)
 
-Karanlık mod ve arama:
-![Karanlık mod](screenshot-dark.png)
+![Giriş ekranı (koyu tema)](docs/screenshots/giris-koyu.png)
 
-Mesajlaşma:
-![Mesajlaşma](screenshot-messages.png)
+![Yazım hatalı arama: "odysey" yazınca Odyssey bulunur](docs/screenshots/arama-yazim-hatasi.png)
+
+![Detay sayfası: tek satır aksiyonlar ve nerede izlenir](docs/screenshots/detay-aksiyonlar.png)
+
+![Spoiler koruması: buzlu cam, "Spoileri gör" ile açılır](docs/screenshots/spoiler-blur.png)
+
+![Rozetler ve ilerleme](docs/screenshots/rozetler.png)
+
+![Yeni çıkanlar ve hatırlatıcı](docs/screenshots/yeni-cikanlar.png)
 
 ## ✨ Öne Çıkan Özellikler
 
@@ -38,10 +44,13 @@ Mesajlaşma:
 - 🗓️ **Yeni Çıkanlar ve Hatırlatıcı**: Yakında vizyona girecek filmler (TMDB, Türkiye). Vizyon tarihi gelince bildirim alırsın
 - ⚡ **Canlı Bildirim ve Yazıyor Göstergesi**: Server-Sent Events ile anlık bildirim ve mesajlaşmada yazıyor bilgisi. Kapalıysa yoklamaya döner
 - 📥 **Letterboxd ve Goodreads İçe Aktarma**: watched / ratings / watchlist ve Goodreads CSV dosyalarını kütüphanene aktar
+- 🔎 **Yazım Toleranslı Arama**: "odysey" yazınca Odyssey bulunur; tam ad yazmak zorunlu değil, kısmi adlar da çalışır
+- 🔐 **Güçlü Şifre Politikası**: en az 8 karakter, büyük harf, küçük harf ve özel karakter; kayıt formunda canlı kontrol listesi
+- 🧭 **Nerede İzlenir Bağlantıları**: sağlayıcı rozetleri platformun arama sayfasına (yoksa TMDB'nin bölge sayfasına) götürür
 
 ## Kullanılan Teknolojiler
 
-PHP 8+, MongoDB (`mongodb/mongodb` paketi), HTML/CSS/JS, PHPMailer (şifre sıfırlama ve doğrulama kodları için). MongoDB yerelde ya da Atlas'ta çalışabilir, `.env` içindeki `MONGO_URI` değerini ayarlamak yeterli.
+PHP 8+, MongoDB (`mongodb/mongodb` paketi), HTML/CSS/JS, Three.js (giriş ekranı 3D sahnesi), PHPMailer (şifre sıfırlama ve doğrulama kodları için). Testler: PHPUnit, Playwright ve axe-core. MongoDB yerelde ya da Atlas'ta çalışabilir, `.env` içindeki `MONGO_URI` değerini ayarlamak yeterli.
 
 Film/dizi verisi TMDB'den, kitap verisi Google Books'tan geliyor. Tarayıcı bu servislere doğrudan gitmiyor, istekler `api/tmdb-proxy.php` ve `api/books-proxy.php` üzerinden geçip `api_cache` koleksiyonunda saklanıyor (popüler listeler 6 saat, arama 1 saat, detay 24 saat). Böylece API anahtarları tarayıcıda gizli kalıyor ve aynı veri tekrar tekrar indirilmiyor.
 
@@ -61,7 +70,7 @@ docker compose up
 2. `.env.example` dosyasını `.env` olarak kopyalayın (`copy .env.example .env`). Yerel MongoDB için varsayılanlar yeterlidir.
 3. `.env` içine `TMDB_API_KEY` yazın ([themoviedb.org](https://www.themoviedb.org/settings/api) üzerinden ücretsiz alınıyor), film ve dizi araması ile fragman/nerede izlenir özellikleri bu anahtarla çalışır. `GOOGLE_BOOKS_API_KEY` opsiyoneldir.
 4. Şifre sıfırlama e-postası için `SMTP_USERNAME` ve `SMTP_PASSWORD` doldurulabilir. Boş bırakılırsa sıfırlama linki sunucu loguna yazılır.
-5. Tarayıcıda `http://localhost:8000/api/setup-db.php` adresini bir kez açın, indeksleri ve demo hesapları oluşturur.
+5. Bir kez `php api/setup-db.php` komutunu çalıştırın; indeksleri ve demo hesapları oluşturur. Tarayıcıdan açmak isterseniz `ALLOW_WEB_SETUP=1` ayarlayın.
 6. `START.bat` (Windows) ya da `START.sh` (Mac/Linux) ile sunucuyu başlatıp `http://localhost:8000/index.html` adresine girin.
 
 ### Demo Hesaplar:
@@ -81,14 +90,18 @@ php scripts/make-admin.php kullanici@ornek.com
 
 Betik web üzerinden erişilemez; `MONGO_URI` ve `MONGO_DB` ayarlarıyla aynı veritabanına yazar.
 
-## Render'da Yayınlama
+## Canlıya Alma (Render + MongoDB Atlas)
 
-Repodaki `Dockerfile` Render'da doğrudan çalışmaktadır:
+Netlify gibi statik barındırıcılar PHP ve MongoDB çalıştırmaz. Bu proje için uygun ücretsiz seçenek [Render](https://render.com) (Docker) ve [MongoDB Atlas](https://www.mongodb.com/atlas) (ücretsiz küme).
 
-1. [render.com](https://render.com)'da GitHub ile girip **New > Web Service** ile bu repoyu seçin, Runtime olarak **Docker** seçilir.
-2. Environment sekmesine `.env` içindeki değerleri ekleyin: `MONGO_URI`, `MONGO_DB`, `TMDB_API_KEY`, `GOOGLE_BOOKS_API_KEY` (isteğe bağlı).
-3. `SITE_URL` olarak Render'ın verdiği `https://<servis-adi>.onrender.com` adresini girin ve yeniden deploy edin (CORS bu değere bakar).
-4. İlk açılışta `api/setup-db.php` indeksleri ve demo hesapları kendiliğinden oluşturur.
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/CaptainGM/sosyal-kutuphane)
+
+1. Atlas'ta ücretsiz bir küme açın, bağlantı dizesini (`MONGO_URI`) alın ve Network Access listesine `0.0.0.0/0` ekleyin.
+2. Düğmeye tıklayın. Render, depodaki `render.yaml` dosyasını okuyup servisi oluşturur ve gizli değerleri (`MONGO_URI`, `TMDB_API_KEY`, `SITE_URL`) sorar.
+3. `SITE_URL` olarak Render'ın verdiği adresi girin (örnek: `https://sosyal-kutuphane.onrender.com`).
+4. İlk açılışta `setup-db` indeksleri ve demo hesapları kendiliğinden oluşturur.
+
+Not: Yerel veritabanınızdaki veriler otomatik taşınmaz. İsterseniz `mongodump` ve `mongorestore` ile kopyalayabilirsiniz. Ücretsiz planda servis bir süre hareketsiz kalınca uyur; ilk açılış birkaç saniye sürebilir.
 
 ### Canlı bildirimler (SSE)
 
@@ -118,6 +131,10 @@ npx playwright test
 ```
 
 Yerelde kurulu Microsoft Edge ile çalıştırmak için `PW_CHANNEL=msedge npx playwright test` kullanabilirsin. Sunucu zaten ayaktaysa `E2E_BASE_URL=http://localhost:8000` ile yeniden kullanılır.
+
+#### Canlı duman testi
+
+Canlı siteyi test etmek için depo ayarlarında (Settings → Secrets and variables → Actions → Variables) `LIVE_URL` değişkenini tanımlayın. `Canlı duman testi` iş akışı sitenin uyanmasını bekler ve yalnızca okuma testlerini (giriş ekranı, erişilebilirlik) çalıştırır; veri değiştiren testler canlıda çalışmaz.
 
 ## Klasör Yapısı
 

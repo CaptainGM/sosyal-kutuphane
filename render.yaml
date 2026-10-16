@@ -1,0 +1,31 @@
+# Render Blueprint: README'deki "Deploy to Render" düğmesiyle tek adımda kurulum.
+# Gizli değerler (MONGO_URI, TMDB_API_KEY, SITE_URL vb.) Render panelinde girilir.
+services:
+  - type: web
+    name: sosyal-kutuphane
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    autoDeploy: true
+    healthCheckPath: /index.html
+    envVars:
+      - key: MONGO_DB
+        value: social_library
+      - key: ENABLE_SSE
+        value: "0"
+      - key: MONGO_URI
+        sync: false
+      - key: TMDB_API_KEY
+        sync: false
+      - key: GOOGLE_BOOKS_API_KEY
+        sync: false
+      - key: SITE_URL
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USERNAME
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false

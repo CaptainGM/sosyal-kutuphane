@@ -21,7 +21,7 @@ final class SeriesTest extends TestCase
     {
         $suffix = $this->uniqueSuffix();
         $client = new ApiClient(TEST_BASE_URL);
-        $client->register("phpunit_series_$suffix", "phpunit_series_$suffix@test.com", 'sifre123456');
+        $client->register("phpunit_series_$suffix", "phpunit_series_$suffix@test.com", 'Sifre123456!');
 
         $tmdbId = 500000 + random_int(1, 99999);
         $contentData = [

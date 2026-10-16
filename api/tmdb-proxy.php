@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/lib/search.php';
 
 // TMDB istekleri tarayıcıdan değil buradan geçer: ortak önbellek + gizli API anahtarı.
 $endpoint = $_GET['endpoint'] ?? null;
@@ -24,6 +25,32 @@ function tmdbFetch(string $url) {
 function isTmdbError($data) {
     return isset($data['success']) && $data['success'] === false;
 }
+// Az sonuçta yazım toleransı: sorgunun kısa önekiyle ek aday çekilir; yalnızca yakın eşleşmeler eklenir.
+// Film araması boş kaldığında dizi arşivine düşme akışı bu yüzden bozulmaz (bkz. api/lib/search.php).
+function tmdbFuzzyAugment($db, string $apiKey, string $tmdbType, string $type, string $query, array $results): array {
+    $prefix = mb_substr($query, 0, max(3, intdiv(mb_strlen($query), 2)));
+    $key = "tmdb:$type:search:" . mb_strtolower($prefix) . ":1";
+
+    $candidates = cacheGet($db, $key);
+    if ($candidates === null) {
+        $url = "https://api.themoviedb.org/3/search/$tmdbType?api_key=$apiKey&query=" . urlencode($prefix) . "&language=tr-TR&page=1";
+        $candidates = tmdbFetch($url);
+        if (!is_array($candidates) || isTmdbError($candidates)) {
+            return $results;
+        }
+        cacheSet($db, $key, $candidates, 3600);
+    }
+
+    $seen = array_flip(array_map(fn($item) => $item['id'] ?? null, $results));
+    $fresh = array_values(array_filter(
+        $candidates['results'] ?? [],
+        fn($item) => is_array($item) && isset($item['id']) && !isset($seen[$item['id']])
+    ));
+    $close = rankFuzzyResults($fresh, $query, fn($item) => $item['title'] ?? $item['name'] ?? '');
+
+    return array_slice(array_merge($results, $close), 0, 20);
+}
+
 
 if ($endpoint === 'search') {
     $query = trim($_GET['query'] ?? '');
@@ -32,7 +59,7 @@ if ($endpoint === 'search') {
         jsonResponse(['results' => []]);
     }
 
-    $cacheKey = "tmdb:$type:search:" . mb_strtolower($query) . ":$page";
+    $cacheKey = "tmdb:$type:search:v2:" . mb_strtolower($query) . ":$page"; // v2: bulanık eşleşme eklendi, eski girdiler kullanılmaz
     $cached = cacheGet($db, $cacheKey);
     if ($cached !== null) {
         jsonResponse($cached);
@@ -42,6 +69,9 @@ if ($endpoint === 'search') {
     $data = tmdbFetch($url);
     if ($data === null) {
         jsonResponse(['results' => []]);
+    }
+    if (!isTmdbError($data) && $page === 1 && mb_strlen($query) >= 4 && count($data['results'] ?? []) < 5) {
+        $data['results'] = tmdbFuzzyAugment($db, $apiKey, $tmdbType, $type, $query, $data['results'] ?? []);
     }
     if (!isTmdbError($data)) {
         cacheSet($db, $cacheKey, $data, 3600); // 1 saat — arama sonuçları sık değişmez

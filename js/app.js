@@ -18,6 +18,7 @@ const fetchOptions = {
 class SocialLibraryApp {
     constructor() {
         this.currentUser = null;
+        this.realtimeEnabled = false;
         this.initPromise = this.init();
     }
 
@@ -27,6 +28,7 @@ class SocialLibraryApp {
                 credentials: 'include'
             });
             const data = await response.json();
+            this.realtimeEnabled = data.realtime === true;
 
             if (data.success && data.user) {
                 this.currentUser = data.user;
@@ -59,6 +61,7 @@ class SocialLibraryApp {
         const next = current === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', next);
         localStorage.setItem('theme', next);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: next } }));
         document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
             btn.classList.toggle('is-dark', next === 'dark');
         });
@@ -201,7 +204,7 @@ class SocialLibraryApp {
     // Normal kapanışta (25 sn) tarayıcı kendiliğinden yeniden bağlanır; bu yüzden yalnızca CLOSED'da vazgeçilir.
     // conversationId verilmezse (undefined) mevcut konuşma değiştirilmez.
     openRealtime(handlers = {}) {
-        if (!('EventSource' in window) || this._realtimeFailed) {
+        if (!this.realtimeEnabled || !('EventSource' in window) || this._realtimeFailed) {
             if (handlers.onFallback) handlers.onFallback();
             return () => { };
         }

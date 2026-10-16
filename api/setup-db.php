@@ -1,4 +1,11 @@
 <?php
+// Kurulum yalnızca komut satırından çalışır (php api/setup-db.php). Web'den çalıştırmak için
+// ALLOW_WEB_SETUP=1 ayarlanmalıdır; varsayılan olarak herkese açık bir uç nokta olmasın.
+if (PHP_SAPI !== 'cli' && getenv('ALLOW_WEB_SETUP') !== '1') {
+    http_response_code(404);
+    exit;
+}
+
 require_once 'config.php';
 
 header('Content-Type: text/html; charset=utf-8');

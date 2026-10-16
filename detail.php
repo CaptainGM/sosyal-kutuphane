@@ -178,58 +178,6 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             color: var(--color-text);
         }
 
-        .user-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
-            margin-bottom: 30px;
-        }
-
-        .action-btn {
-            padding: 12px 16px;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            background: rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            color: var(--color-text);
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 13.5px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            user-select: none;
-        }
-
-        .action-btn svg {
-            width: 17px;
-            height: 17px;
-            flex-shrink: 0;
-            stroke-width: 2;
-        }
-
-        .action-btn:hover {
-            background: rgba(255, 255, 255, 0.09);
-            border-color: rgba(255, 255, 255, 0.28);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-            color: #ffffff;
-        }
-
-        .action-btn:active {
-            transform: translateY(0) scale(0.97);
-        }
-
-        .action-btn.active {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
-            border-color: transparent !important;
-            color: #ffffff !important;
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45) !important;
-        }
 
         .rating-input {
             display: flex;
@@ -498,9 +446,6 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 margin: 0 auto;
             }
 
-            .user-actions {
-                grid-template-columns: 1fr;
-            }
 
             .content-title {
                 font-size: 24px;
@@ -967,6 +912,19 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
         });
 
         /* --- Nerede İzlenir? (Watch Providers) --- */
+        // Platformun kendi arama sayfası (başlık bazlı). Eşleşmeyen platformda TMDB'nin bölge sayfası açılır.
+        const PROVIDER_SEARCH_URLS = [
+            { match: /netflix/i, url: (t) => `https://www.netflix.com/search?q=${t}` },
+            { match: /prime video|amazon/i, url: (t) => `https://www.primevideo.com/search?phrase=${t}` },
+            { match: /apple tv|itunes/i, url: (t) => `https://tv.apple.com/search?term=${t}` },
+            { match: /youtube/i, url: (t) => `https://www.youtube.com/results?search_query=${t}` },
+        ];
+
+        function providerLink(providerName, title, fallback) {
+            const rule = PROVIDER_SEARCH_URLS.find(r => r.match.test(providerName || ''));
+            return rule && title ? rule.url(encodeURIComponent(title)) : (fallback || '#');
+        }
+
         function displayWatchProviders(content) {
             const section = document.getElementById('providersSection');
             const list = document.getElementById('providersList');
@@ -1019,14 +977,17 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 heading.innerHTML = `📺 Nerede İzlenir? ${isFallbackUS ? '<span style="font-size:11px;font-weight:normal;opacity:0.7;">(Global)</span>' : '(Türkiye)'}`;
             }
 
+            const title = content.title || content.name || '';
+            const regionLink = trData.link || '';
             list.innerHTML = all.slice(0, 8).map(p => {
                 const logoUrl = p.logo_path ? `https://image.tmdb.org/t/p/w92${p.logo_path}` : '';
+                const href = providerLink(p.provider_name, title, regionLink);
                 return `
-                    <div class="provider-badge" title="${app.escapeHtml(p.provider_name)}">
+                    <a class="provider-badge" href="${app.escapeHtml(href)}" target="_blank" rel="noopener noreferrer" title="${app.escapeHtml(p.provider_name)} üzerinde ara">
                         ${logoUrl ? `<img src="${logoUrl}" class="provider-logo" alt="${app.escapeHtml(p.provider_name)}">` : ''}
                         <span>${app.escapeHtml(p.provider_name)}</span>
                         <span class="provider-type-tag">${p.typeLabel}</span>
-                    </div>
+                    </a>
                 `;
             }).join('');
 
@@ -1226,7 +1187,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                     items = (data.results || []).slice(0, 12).map(item => ({
                         id: item.id,
                         title: item.title || item.name || 'Bilinmiyor',
-                        poster: item.poster_path ? `https://image.tmdb.org/t/p/w200${item.poster_path}` : 'https://placehold.co/110x160?text=Yok',
+                        poster: item.poster_path ? `https://image.tmdb.org/t/p/w200${item.poster_path}` : 'img/no-poster.svg',
                         type
                     }));
                 } else {
@@ -1243,7 +1204,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                                 title: b.volumeInfo?.title || 'Bilinmiyor',
                                 poster: b.volumeInfo?.imageLinks?.thumbnail
                                     ? b.volumeInfo.imageLinks.thumbnail.replace('http://', 'https://')
-                                    : 'https://placehold.co/110x160?text=Kitap',
+                                    : 'img/no-poster.svg',
                                 type: 'book'
                             }));
                     }
@@ -1253,7 +1214,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 
                 scroll.innerHTML = items.map(item => `
                     <div class="reco-card" onclick="goToDetail('${item.type}', '${item.id}')">
-                        <img src="${item.poster}" alt="${app.escapeHtml(item.title)}" loading="lazy" onerror="this.src='https://placehold.co/110x160?text=Yok'">
+                        <img src="${item.poster}" alt="${app.escapeHtml(item.title)}" loading="lazy" onerror="this.src='img/no-poster.svg'">
                         <div class="reco-card-title">${app.escapeHtml(item.title)}</div>
                     </div>
                 `).join('');
@@ -1345,7 +1306,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 
             const posterUrl = movie.poster_path
                 ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                : 'https://placehold.co/300x450?text=Poster+Yok';
+                : 'img/no-poster.svg';
             document.getElementById('contentPoster').src = posterUrl;
 
             const year = movie.release_date ? movie.release_date.split('-')[0] : 'Bilinmiyor';
@@ -1399,7 +1360,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 
             const posterUrl = series.poster_path
                 ? `https://image.tmdb.org/t/p/w500${series.poster_path}`
-                : 'https://placehold.co/300x450?text=Poster+Yok';
+                : 'img/no-poster.svg';
             document.getElementById('contentPoster').src = posterUrl;
 
             const year = series.first_air_date ? series.first_air_date.split('-')[0] : 'Bilinmiyor';
@@ -1474,7 +1435,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 
             const coverUrl = volumeInfo.imageLinks?.thumbnail
                 ? volumeInfo.imageLinks.thumbnail.replace('http://', 'https://')
-                : 'https://placehold.co/300x450?text=Kapak+Yok';
+                : 'img/no-poster.svg';
             document.getElementById('contentPoster').src = coverUrl;
 
             const authors = volumeInfo.authors ? volumeInfo.authors.join(', ') : 'Bilinmiyor';
@@ -1833,7 +1794,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                             ` : safeText;
                         const commentBodyHtml = comment.has_spoiler ? `
                             <div class="spoiler-wrap" id="spoiler-${comment.id}">
-                                <button type="button" class="spoiler-reveal-btn" onclick="document.getElementById('spoiler-${comment.id}').classList.add('spoiler-revealed')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg><span>Spoiler İçerik — Görmek İçin Tıklayın</span></button>
+                                <button type="button" class="spoiler-reveal-btn" onclick="document.getElementById('spoiler-${comment.id}').classList.add('spoiler-revealed')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg><span>Spoileri gör</span></button>
                                 <div class="spoiler-content">${commentBodyInner}</div>
                             </div>
                         ` : commentBodyInner;
@@ -1904,7 +1865,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                             const safeReplyText = app.escapeHtml(reply.comment_text);
                             const replyBodyHtml = reply.has_spoiler ? `
                                 <div class="spoiler-wrap" id="spoiler-reply-${reply.id}">
-                                    <button type="button" class="spoiler-reveal-btn" onclick="document.getElementById('spoiler-reply-${reply.id}').classList.add('spoiler-revealed')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg><span>Spoiler İçerik — Görmek İçin Tıklayın</span></button>
+                                    <button type="button" class="spoiler-reveal-btn" onclick="document.getElementById('spoiler-reply-${reply.id}').classList.add('spoiler-revealed')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg><span>Spoileri gör</span></button>
                                     <div class="spoiler-content">${safeReplyText}</div>
                                 </div>
                             ` : safeReplyText;

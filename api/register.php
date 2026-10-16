@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/lib/password.php';
 require_once 'mail-config.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
@@ -53,8 +54,8 @@ function sendRegistrationCodeEmail(string $toEmail, string $username, string $co
 }
 
 if ($action === 'verify') {
-    $email = trim($input['email'] ?? '');
-    $code = trim($input['code'] ?? '');
+    $email = (is_string($input['email'] ?? null) ? trim($input['email']) : '');
+    $code = (is_string($input['code'] ?? null) ? trim($input['code']) : '');
 
     if (!$email || !$code) {
         jsonResponse(['success' => false, 'message' => 'E-posta ve kod gereklidir'], 400);
@@ -111,7 +112,7 @@ if ($action === 'verify') {
     ], 201);
 
 } elseif ($action === 'resend') {
-    $email = trim($input['email'] ?? '');
+    $email = (is_string($input['email'] ?? null) ? trim($input['email']) : '');
     $pending = $db->pending_registrations->findOne(['email' => $email]);
     if (!$pending) {
         jsonResponse(['success' => false, 'message' => 'Bekleyen bir kayıt bulunamadı, lütfen yeniden kayıt olun'], 404);
@@ -135,9 +136,9 @@ if ($action === 'verify') {
     jsonResponse(['success' => true, 'message' => 'Yeni kod gönderildi']);
 
 } else {
-    $username = trim($input['username'] ?? '');
-    $email = trim($input['email'] ?? '');
-    $password = trim($input['password'] ?? '');
+    $username = (is_string($input['username'] ?? null) ? trim($input['username']) : '');
+    $email = (is_string($input['email'] ?? null) ? trim($input['email']) : '');
+    $password = (is_string($input['password'] ?? null) ? trim($input['password']) : '');
 
     if (empty($username) || empty($email) || empty($password)) {
         jsonResponse(['success' => false, 'message' => 'Tüm alanlar gereklidir!'], 400);
@@ -148,8 +149,9 @@ if ($action === 'verify') {
     if (!preg_match('/^[\p{L}0-9_.]+$/u', $username)) {
         jsonResponse(['success' => false, 'message' => 'Kullanıcı adı yalnızca harf, rakam, alt çizgi ve nokta içerebilir!'], 400);
     }
-    if (strlen($password) < 6) {
-        jsonResponse(['success' => false, 'message' => 'Şifre en az 6 karakter olmalıdır!'], 400);
+    $passwordError = passwordPolicyError($password);
+    if ($passwordError !== null) {
+        jsonResponse(['success' => false, 'message' => $passwordError], 400);
     }
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         jsonResponse(['success' => false, 'message' => 'Geçerli bir e-posta adresi giriniz!'], 400);
