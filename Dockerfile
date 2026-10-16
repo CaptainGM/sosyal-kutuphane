@@ -14,5 +14,10 @@ COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-interaction --optimize-autoloader
 
 COPY . .
+# Çok süreçli sunucu: eşzamanlı istekler birbirini beklemez.
+# Canlı akış (SSE) varsayılan olarak kapalı: her açık akış bir süreci tutar (bkz. README).
+ENV PHP_CLI_SERVER_WORKERS=4
+ENV ENABLE_SSE=0
+
 EXPOSE 8000
 CMD php api/setup-db.php && php -S 0.0.0.0:${PORT:-8000}

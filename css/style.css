@@ -12,7 +12,7 @@
     --color-surface-2: #f1f3fb;
     --color-text: #0b1020;
     --color-text-muted: #4b5570;
-    --color-text-faint: #7d86a3;
+    --color-text-faint: #636d8c;
     --color-border: #dde1ee;
     --color-accent: #5b5bd6;
     --color-accent-2: #9333ea;
@@ -43,7 +43,7 @@
     --color-surface-2: #161c30;
     --color-text: #eef2ff;
     --color-text-muted: #9aa3bd;
-    --color-text-faint: #6b7592;
+    --color-text-faint: #848ca8;
     --color-border: rgba(148, 163, 255, 0.13);
     --color-accent: #8b8dff;
     --color-accent-2: #c084fc;
@@ -71,7 +71,7 @@
         --color-surface-2: #161c30;
         --color-text: #eef2ff;
         --color-text-muted: #9aa3bd;
-        --color-text-faint: #6b7592;
+        --color-text-faint: #848ca8;
         --color-border: rgba(148, 163, 255, 0.13);
         --color-accent: #8b8dff;
         --color-accent-2: #c084fc;

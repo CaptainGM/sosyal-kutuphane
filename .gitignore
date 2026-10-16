@@ -14,3 +14,6 @@ api/database-view.php
 detail.html
 schema.sql
 scratch/
+node_modules/
+test-results/
+playwright-report/
