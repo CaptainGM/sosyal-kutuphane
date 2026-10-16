@@ -9,6 +9,7 @@
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <title>Giriş & Kayıt - Sosyal Kütüphane</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="js/motion.js"></script>
     <style>
         /* Giriş sayfasına özel stiller. Ortak token'lar ve bileşenler css/style.css içinde. */
 
@@ -90,23 +91,37 @@
             color: var(--color-accent);
         }
 
-        /* --- 3D poster halkası (CSS 3D, WebGL gerektirmez) --- */
+        /* --- 3D poster halkası (CSS 3D, WebGL gerektirmez) ---
+           Tam harekette halka döner, fareyle eğilir ve üzerine gelince durur. Azaltılmış harekette (sistem ya da
+           kullanıcı tercihi) aynı afişler donmuş bir kare yerine, ortadaki öne çıkan bir yelpaze olarak dizilir. */
         .stage3d {
             position: relative;
-            height: 300px;
-            margin-top: 40px;
-            perspective: 1100px;
+            height: 340px;
+            margin-top: 34px;
+            perspective: 1500px;
+        }
+
+        .ring-tilt {
+            position: absolute;
+            inset: 0;
+            transform-style: preserve-3d;
+            transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+            transition: transform 0.25s ease-out;
         }
 
         .ring {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 170px;
-            height: 240px;
-            margin: -120px 0 0 -85px;
+            width: 168px;
+            height: 252px;
+            margin: -126px 0 0 -84px;
             transform-style: preserve-3d;
-            animation: ring-spin 34s linear infinite;
+            animation: ring-spin 42s linear infinite;
+        }
+
+        .stage3d:hover .ring {
+            animation-play-state: paused;
         }
 
         .poster {
@@ -122,7 +137,7 @@
             background: var(--poster);
             color: #ffffff;
             box-shadow: 0 30px 60px -22px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.35);
-            transform: rotateY(calc(var(--i) * 72deg)) translateZ(240px);
+            transform: rotateY(calc(var(--i) * 51.4286deg)) translateZ(300px);
             backface-visibility: hidden;
         }
 
@@ -165,6 +180,78 @@
         @keyframes ring-spin {
             from { transform: rotateY(0deg); }
             to { transform: rotateY(360deg); }
+        }
+
+        /* Azaltılmış hareket: halka dönmez, afişler yelpaze olur (ortadaki en önde). */
+        :root[data-motion="reduced"] .ring {
+            animation: none;
+            transform: none;
+        }
+
+        :root[data-motion="reduced"] .ring-tilt {
+            transform: none;
+        }
+
+        :root[data-motion="reduced"] .poster {
+            transform: translateX(calc(var(--o) * 66px)) translateZ(calc(var(--a) * -70px)) rotateY(calc(var(--o) * -8deg));
+            backface-visibility: visible;
+        }
+
+        /* Hareket denetimi: azaltılmış modda belirgin bir "aç" düğmesi, tam harekette sessiz bir "durdur" bağlantısı. */
+        .motion-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .motion-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            padding: 11px 18px;
+            border: 1px solid transparent;
+            border-radius: var(--radius-pill);
+            background: var(--color-accent-gradient);
+            color: #ffffff;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 14px 32px -14px rgba(var(--color-accent-rgb), 0.95);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .motion-cta:hover {
+            transform: translateY(-2px);
+        }
+
+        .motion-cta:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb), 0.55);
+        }
+
+        .motion-cta svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .motion-note {
+            max-width: 330px;
+            color: var(--color-text-faint);
+            font-size: 12.5px;
+            line-height: 1.45;
+        }
+
+        :root[data-motion="full"] .motion-cta {
+            padding: 7px 14px;
+            border-color: var(--color-border);
+            background: var(--color-surface);
+            color: var(--color-text-muted);
+            font-size: 12.5px;
+            font-weight: 700;
+            box-shadow: none;
         }
 
         /* --- Sağ: cam giriş kartı --- */
@@ -567,28 +654,43 @@
             <p class="hero-lead reveal">İzlediklerini, okuduklarını ve puanlarını tek yerde topla. Arkadaşlarını takip et, nerede izleyeceğini bul, hikâye kartını paylaş.</p>
 
             <div class="stage3d reveal" aria-hidden="true">
-                <div class="ring">
-                    <div class="poster" style="--i: 0; --poster: linear-gradient(160deg, #4f46e5, #7c3aed 55%, #db2777);">
-                        <span class="poster-kind">Film</span>
-                        <div class="poster-body"><strong>Dune</strong><small>Puan 9.1 · 2021</small></div>
-                    </div>
-                    <div class="poster" style="--i: 1; --poster: linear-gradient(160deg, #0891b2, #2563eb 60%, #7c3aed);">
-                        <span class="poster-kind">Dizi</span>
-                        <div class="poster-body"><strong>Dark</strong><small>3 sezon · Netflix</small></div>
-                    </div>
-                    <div class="poster" style="--i: 2; --poster: linear-gradient(160deg, #f59e0b, #ef4444 60%, #9d174d);">
-                        <span class="poster-kind">Kitap</span>
-                        <div class="poster-body"><strong>Sapiens</strong><small>Okudum · 9/10</small></div>
-                    </div>
-                    <div class="poster" style="--i: 3; --poster: linear-gradient(160deg, #10b981, #0ea5e9 60%, #4338ca);">
-                        <span class="poster-kind">Film</span>
-                        <div class="poster-body"><strong>Interstellar</strong><small>İzledim · 9.4</small></div>
-                    </div>
-                    <div class="poster" style="--i: 4; --poster: linear-gradient(160deg, #e11d48, #a21caf 60%, #1e1b4b);">
-                        <span class="poster-kind">Kitap</span>
-                        <div class="poster-body"><strong>Kürk Mantolu Madonna</strong><small>Okuyacaklarım</small></div>
+                <div class="ring-tilt">
+                    <div class="ring">
+                        <div class="poster" style="--i: 0; --o: 0; --a: 0; --poster: linear-gradient(160deg, #4f46e5, #7c3aed 55%, #db2777);">
+                            <span class="poster-kind">Film</span>
+                            <div class="poster-body"><strong>Dune</strong><small>Puan 9.1 · 2021</small></div>
+                        </div>
+                        <div class="poster" style="--i: 1; --o: 1; --a: 1; --poster: linear-gradient(160deg, #0891b2, #2563eb 60%, #7c3aed);">
+                            <span class="poster-kind">Dizi</span>
+                            <div class="poster-body"><strong>Dark</strong><small>3 sezon · Netflix</small></div>
+                        </div>
+                        <div class="poster" style="--i: 2; --o: 2; --a: 2; --poster: linear-gradient(160deg, #f59e0b, #ef4444 60%, #9d174d);">
+                            <span class="poster-kind">Kitap</span>
+                            <div class="poster-body"><strong>Sapiens</strong><small>Okudum · 9/10</small></div>
+                        </div>
+                        <div class="poster" style="--i: 3; --o: 3; --a: 3; --poster: linear-gradient(160deg, #10b981, #0ea5e9 60%, #4338ca);">
+                            <span class="poster-kind">Film</span>
+                            <div class="poster-body"><strong>Interstellar</strong><small>İzledim · 9.4</small></div>
+                        </div>
+                        <div class="poster" style="--i: 4; --o: -3; --a: 3; --poster: linear-gradient(160deg, #e11d48, #a21caf 60%, #1e1b4b);">
+                            <span class="poster-kind">Kitap</span>
+                            <div class="poster-body"><strong>Kürk Mantolu Madonna</strong><small>Okuyacaklarım</small></div>
+                        </div>
+                        <div class="poster" style="--i: 5; --o: -2; --a: 2; --poster: linear-gradient(160deg, #14b8a6, #0d9488 55%, #134e4a);">
+                            <span class="poster-kind">Dizi</span>
+                            <div class="poster-body"><strong>Breaking Bad</strong><small>5 sezon · 9.5</small></div>
+                        </div>
+                        <div class="poster" style="--i: 6; --o: -1; --a: 1; --poster: linear-gradient(160deg, #6366f1, #8b5cf6 55%, #ec4899);">
+                            <span class="poster-kind">Film</span>
+                            <div class="poster-body"><strong>Parasite</strong><small>İzledim · 8.6</small></div>
+                        </div>
                     </div>
                 </div>
+            </div>
+
+            <div class="motion-row reveal">
+                <button type="button" class="motion-cta" id="motionCta"></button>
+                <span class="motion-note" id="motionNote"></span>
             </div>
 
             <ul class="feature-chips reveal">
@@ -1097,26 +1199,73 @@
                 showError('forgotError', 'Bağlantı hatası: ' + error.message);
             }
         }
-        // Giriş ekranındaki 3D halka: gerçek popüler film afişleri (TMDB). Alınamazsa tasarımdaki gradyan posterler kalır.
+        // Giriş ekranındaki 3D halka: gerçek popüler film ve dizi afişleri (TMDB). Alınamazsa tasarımdaki gradyan posterler kalır.
         async function loadRingPosters() {
             try {
-                const res = await fetch('/api/tmdb-proxy.php?endpoint=list&type=movie&list=popular&page=1', { credentials: 'include' });
-                const data = await res.json();
-                const movies = (data.results || []).filter(movie => movie.poster_path).slice(0, 5);
+                const fetchList = (type) => fetch('/api/tmdb-proxy.php?endpoint=list&type=' + type + '&list=popular&page=1', { credentials: 'include' })
+                    .then(res => res.json())
+                    .then(data => (data.results || []).filter(item => item.poster_path));
+                const [movies, series] = await Promise.all([fetchList('movie'), fetchList('series')]);
+                // Film ve dizi sırayla karışır: 4 film + 3 dizi.
+                const picks = [];
+                for (let i = 0; picks.length < 7 && (i < movies.length || i < series.length); i++) {
+                    if (movies[i]) picks.push({ item: movies[i], kind: 'Film' });
+                    if (picks.length < 7 && series[i]) picks.push({ item: series[i], kind: 'Dizi' });
+                }
                 document.querySelectorAll('.ring .poster').forEach((el, index) => {
-                    const movie = movies[index];
-                    if (!movie) return;
-                    const poster = "url('https://image.tmdb.org/t/p/w342" + movie.poster_path + "')";
+                    const pick = picks[index];
+                    if (!pick) return;
+                    const poster = "url('https://image.tmdb.org/t/p/w342" + pick.item.poster_path + "')";
                     el.style.setProperty('--poster', 'linear-gradient(180deg, rgba(5, 6, 11, 0) 35%, rgba(5, 6, 11, 0.85) 100%), ' + poster + ' center / cover no-repeat');
-                    el.querySelector('.poster-kind').textContent = 'Popüler';
-                    el.querySelector('strong').textContent = movie.title;
-                    el.querySelector('small').textContent = movie.vote_average ? 'Puan ' + movie.vote_average.toFixed(1) : 'Yeni eklendi';
+                    el.querySelector('.poster-kind').textContent = pick.kind;
+                    el.querySelector('strong').textContent = pick.item.title || pick.item.name;
+                    el.querySelector('small').textContent = pick.item.vote_average ? 'Puan ' + pick.item.vote_average.toFixed(1) : 'Yeni eklendi';
                 });
             } catch (error) {
                 // Ağ ya da anahtar yoksa gradyan posterler olduğu gibi kalır.
             }
         }
         loadRingPosters();
+
+        // Hareket denetimi: azaltılmış modda belirgin bir "Animasyonları aç" düğmesi, tam harekette sessiz bir "durdur" düğmesi.
+        (function wireMotionControl() {
+            const button = document.getElementById('motionCta');
+            const note = document.getElementById('motionNote');
+            const motion = window.SKMotion;
+            if (!button || !motion) return;
+
+            const playIcon = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
+            if (motion.isReduced()) {
+                button.innerHTML = playIcon + 'Animasyonları aç';
+                note.textContent = motion.systemReduced && !motion.userChoice
+                    ? 'Windows\'ta "Animasyon efektleri" kapalı olduğu için sayfa durağan gösteriliyor.'
+                    : 'Animasyonları siz kapattınız.';
+            } else {
+                button.textContent = 'Animasyonları durdur';
+                note.textContent = '';
+            }
+            button.addEventListener('click', () => motion.toggle());
+        })();
+
+        // Fare konumuna göre halka hafifçe eğilir (yalnızca tam hareket ve ince işaretçi).
+        (function wireRingTilt() {
+            if (window.SKMotion && window.SKMotion.isReduced()) return;
+            if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+            const stage = document.querySelector('.stage3d');
+            const tilt = document.querySelector('.ring-tilt');
+            if (!stage || !tilt) return;
+            stage.addEventListener('pointermove', (event) => {
+                const rect = stage.getBoundingClientRect();
+                const x = (event.clientX - rect.left) / rect.width - 0.5;
+                const y = (event.clientY - rect.top) / rect.height - 0.5;
+                tilt.style.setProperty('--tilt-y', (x * 14).toFixed(2) + 'deg');
+                tilt.style.setProperty('--tilt-x', (y * -10).toFixed(2) + 'deg');
+            });
+            stage.addEventListener('pointerleave', () => {
+                tilt.style.setProperty('--tilt-y', '0deg');
+                tilt.style.setProperty('--tilt-x', '0deg');
+            });
+        })();
     </script>
     <script src="js/escape-html.js"></script>
     <script src="js/password-rules.js"></script>

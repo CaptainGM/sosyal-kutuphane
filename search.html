@@ -9,619 +9,303 @@
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <title>Arama & Keşfet - Sosyal Kütüphane</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/ui.css">
+    <script src="js/motion.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* Keşfet sayfasına özel stiller. Ortak bileşenler css/style.css ve css/ui.css içinde. */
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 30px 20px;
-        }
-
-        .search-box {
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-            box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            padding: 30px;
-            margin-bottom: 30px;
-            transition: all 0.2s ease;
-        }
-
-        :root[data-theme="light"] .search-box {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.08);
+        .search-panel {
+            display: grid;
+            gap: 20px;
+            padding: 24px;
         }
 
         .search-controls {
             display: flex;
             gap: 12px;
-            margin-bottom: 20px;
         }
 
-        .tab-buttons {
+        .search-field {
+            position: relative;
             display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            padding: 5px;
-            border-radius: 14px;
-            width: fit-content;
-        }
-
-        :root[data-theme="light"] .tab-buttons {
-            background: #f1f5f9;
-            border: 1px solid #e2e8f0;
-        }
-
-        .tab-btn {
-            padding: 9px 20px;
-            border: 1px solid transparent;
-            background: transparent;
-            color: #94a3b8;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        :root[data-theme="light"] .tab-btn {
-            color: #64748b;
-        }
-
-        .tab-btn:hover {
-            color: #ffffff;
-            background: rgba(255, 255, 255, 0.06);
-            transform: translateY(-1px);
-        }
-
-        :root[data-theme="light"] .tab-btn:hover {
-            color: #0f172a;
-            background: #e2e8f0;
-        }
-
-        .tab-btn:active {
-            transform: translateY(0) scale(0.98);
-        }
-
-        .tab-btn.active {
-            background: rgba(255, 255, 255, 0.14) !important;
-            border-color: rgba(255, 255, 255, 0.22) !important;
-            color: #ffffff !important;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
-            backdrop-filter: blur(10px);
-        }
-
-        :root[data-theme="light"] .tab-btn.active {
-            background: #0f172a !important;
-            border-color: #0f172a !important;
-            color: #ffffff !important;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2) !important;
-        }
-
-        input[type="text"],
-        select {
-            padding: 13px 16px;
-            border-radius: 12px;
-            font-size: 14px;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            font-family: inherit;
-        }
-
-        :root[data-theme="dark"] input[type="text"],
-        :root:not([data-theme="light"]) input[type="text"],
-        :root[data-theme="dark"] select,
-        :root:not([data-theme="light"]) select {
-            border: 1px solid rgba(255, 255, 255, 0.12) !important;
-            background: rgba(10, 15, 26, 0.75) !important;
-            color: #ffffff !important;
-        }
-
-        :root[data-theme="light"] input[type="text"],
-        :root[data-theme="light"] select {
-            border: 1px solid #cbd5e1 !important;
-            background: #f8fafc !important;
-            color: #0f172a !important;
-        }
-
-        input[type="text"] {
             flex: 1;
+            align-items: center;
         }
 
-        input[type="text"]:focus,
-        select:focus {
+        .search-field > svg {
+            position: absolute;
+            left: 20px;
+            width: 19px;
+            height: 19px;
+            color: var(--color-text-faint);
+            pointer-events: none;
+        }
+
+        .search-field input[type="text"] {
+            width: 100%;
+            padding: 17px 22px 17px 52px;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-pill);
+            background: color-mix(in srgb, var(--color-surface-2) 80%, transparent);
+            color: var(--color-text);
+            font: inherit;
+            font-size: 16px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .search-field input[type="text"]:focus {
             outline: none;
-            border-color: #6366f1 !important;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+            border-color: rgba(var(--color-accent-rgb), 0.7);
+            box-shadow: var(--focus-ring);
         }
 
         button.search-btn {
-            padding: 13px 24px;
-            background: #1e293b;
-            color: #f8fafc;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        :root[data-theme="light"] button.search-btn {
-            background: #0f172a;
-            border-color: #0f172a;
+            gap: 9px;
+            padding: 0 30px;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: var(--radius-pill);
+            background: var(--color-accent-gradient);
             color: #ffffff;
-            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);
+            font: inherit;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 16px 34px -16px rgba(var(--color-accent-rgb), 0.95);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
         button.search-btn:hover {
-            background: #334155;
-            border-color: rgba(255, 255, 255, 0.3);
-            transform: translateY(-1px);
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+            transform: translateY(-2px);
         }
 
-        :root[data-theme="light"] button.search-btn:hover {
-            background: #1e293b;
-            border-color: #1e293b;
+        button.search-btn:focus-visible {
+            outline: none;
+            box-shadow: var(--focus-ring);
         }
 
-        button.search-btn:active {
-            transform: translateY(0) scale(0.98);
-        }
-
-        /* Canlı arama öneri açılır menüsü */
         .search-autocomplete-dropdown {
             position: absolute;
-            top: calc(100% + 8px);
-            left: 0;
+            top: calc(100% + 10px);
             right: 0;
-            background: rgba(15, 23, 42, 0.96);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            border-radius: 16px;
-            box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
-            z-index: 1000;
+            left: 0;
+            z-index: 60;
             overflow: hidden;
-            padding: 8px;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            background: var(--color-surface);
+            box-shadow: var(--shadow-hover);
         }
 
         .search-suggest-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 8px 12px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: background-color 0.15s ease, transform 0.1s ease;
+            gap: 14px;
+            padding: 10px 16px;
+            color: var(--color-text);
             text-decoration: none;
-            color: #f1f5f9;
+            transition: background-color 0.15s ease;
         }
 
-        .search-suggest-item:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateX(2px);
+        .search-suggest-item:hover,
+        .search-suggest-item:focus-visible {
+            background: rgba(var(--color-accent-rgb), 0.12);
+            outline: none;
         }
 
         .search-suggest-poster {
-            width: 38px;
-            height: 56px;
-            border-radius: 6px;
+            width: 42px;
+            height: 62px;
+            flex: none;
+            border-radius: 8px;
             object-fit: cover;
-            flex-shrink: 0;
-            background: #1e293b;
+            background: var(--color-surface-2);
         }
 
         .search-suggest-info {
-            flex: 1;
+            display: grid;
+            gap: 3px;
             min-width: 0;
         }
 
         .search-suggest-title {
-            font-size: 13.5px;
-            font-weight: 600;
-            white-space: nowrap;
             overflow: hidden;
+            font-size: 14.5px;
+            font-weight: 800;
             text-overflow: ellipsis;
-            color: #f8fafc;
+            white-space: nowrap;
         }
 
         .search-suggest-meta {
-            font-size: 11.5px;
-            color: #94a3b8;
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
-            gap: 8px;
-            margin-top: 3px;
+            gap: 10px;
+            color: var(--color-text-faint);
+            font-size: 12.5px;
         }
 
         .search-suggest-footer {
-            padding: 10px 12px;
-            margin-top: 4px;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 12px;
-            color: #818cf8;
-            font-weight: 600;
+            padding: 13px 16px;
+            border-top: 1px solid var(--glass-border);
+            color: var(--color-accent);
+            font-size: 13.5px;
+            font-weight: 800;
+            text-align: center;
             cursor: pointer;
-            border-radius: 8px;
-            transition: background-color 0.15s;
         }
 
         .search-suggest-footer:hover {
-            background: rgba(99, 102, 241, 0.1);
+            background: rgba(var(--color-accent-rgb), 0.1);
         }
 
-        :root[data-theme="light"] .search-autocomplete-dropdown {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.15);
-        }
-
-        :root[data-theme="light"] .search-suggest-item {
-            color: #0f172a;
-        }
-
-        :root[data-theme="light"] .search-suggest-item:hover {
-            background: #f1f5f9;
-        }
-
-        :root[data-theme="light"] .search-suggest-title {
-            color: #0f172a;
-        }
-
-        :root[data-theme="light"] .search-suggest-footer {
-            border-top: 1px solid #e2e8f0;
-            color: #4f46e5;
-        }
-
-        :root[data-theme="light"] .search-suggest-footer:hover {
-            background: #f1f5f9;
-        }
-
-        /* Filtreleme ve sıralama butonları */
         .filter-section {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 22px;
-            border-radius: 16px;
-            margin-bottom: 20px;
             display: none;
-            transition: all 0.2s ease;
-        }
-
-        :root[data-theme="light"] .filter-section {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
+            gap: 18px;
         }
 
         .filter-section.active {
-            display: block;
+            display: grid;
+        }
+
+        .sort-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .sort-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 15px;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-pill);
+            background: color-mix(in srgb, var(--color-surface-2) 75%, transparent);
+            color: var(--color-text-muted);
+            font: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: border-color 0.2s ease, color 0.2s ease;
+        }
+
+        .sort-btn:hover {
+            border-color: rgba(var(--color-accent-rgb), 0.55);
+            color: var(--color-text);
+        }
+
+        .sort-btn:focus-visible {
+            outline: none;
+            box-shadow: var(--focus-ring);
+        }
+
+        .sort-btn.active {
+            border-color: transparent;
+            background: var(--color-accent-gradient);
+            color: #ffffff;
+            box-shadow: 0 10px 22px -12px rgba(var(--color-accent-rgb), 0.95);
         }
 
         .filter-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 15px;
+            gap: 14px;
         }
 
         .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            display: grid;
+            gap: 7px;
         }
 
         .filter-group label {
-            font-weight: 600;
-            color: var(--color-text);
-            font-size: 13.5px;
+            color: var(--color-text-muted);
+            font-size: 13px;
+            font-weight: 700;
         }
 
         .filter-group select {
             width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            background: color-mix(in srgb, var(--color-surface-2) 80%, transparent);
+            color: var(--color-text);
+            font: inherit;
+            font-size: 14.5px;
         }
 
-        .sort-controls {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-        }
-
-        .sort-btn {
-            padding: 7px 15px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #94a3b8;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 13px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        :root[data-theme="light"] .sort-btn {
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            color: #64748b;
-        }
-
-        .sort-btn:hover {
-            background: rgba(255, 255, 255, 0.08);
-            color: #ffffff;
-            border-color: rgba(255, 255, 255, 0.18);
-            transform: translateY(-1px);
-        }
-
-        :root[data-theme="light"] .sort-btn:hover {
-            background: #f1f5f9;
-            color: #0f172a;
-            border-color: #94a3b8;
-        }
-
-        .sort-btn:active {
-            transform: translateY(0) scale(0.98);
-        }
-
-        .sort-btn.active {
-            background: #ffffff !important;
-            color: #090d16 !important;
-            border: 1px solid #ffffff !important;
-            font-weight: 600 !important;
-            box-shadow: 0 2px 10px rgba(255, 255, 255, 0.25) !important;
-        }
-
-        :root[data-theme="light"] .sort-btn.active {
-            background: #0f172a !important;
-            color: #ffffff !important;
-            border: 1px solid #0f172a !important;
-            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.25) !important;
+        .filter-group select:focus {
+            outline: none;
+            border-color: rgba(var(--color-accent-rgb), 0.7);
+            box-shadow: var(--focus-ring);
         }
 
         .filter-action-row {
             display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 15px;
             flex-wrap: wrap;
+            gap: 10px;
         }
 
-        .filter-apply-btn {
-            padding: 10px 22px;
-            background: #0f172a;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #ffffff;
-            border-radius: 10px;
-            font-size: 13.5px;
-            font-weight: 600;
-            cursor: pointer;
+        .filter-apply-btn,
+        .filter-reset-btn {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-            transition: all 0.2s ease;
+            padding: 10px 20px;
+            border-radius: var(--radius-pill);
+            font: inherit;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.2s ease, border-color 0.2s ease;
         }
 
-        :root[data-theme="dark"] .filter-apply-btn,
-        :root:not([data-theme="light"]) .filter-apply-btn {
-            background: #1e293b;
+        .filter-apply-btn {
             border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .filter-apply-btn:hover {
-            filter: brightness(1.15);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+            background: var(--color-accent-gradient);
+            color: #ffffff;
+            box-shadow: 0 14px 30px -14px rgba(var(--color-accent-rgb), 0.95);
         }
 
         .filter-reset-btn {
-            padding: 10px 16px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #94a3b8;
-            border-radius: 10px;
-            font-size: 13.5px;
-            font-weight: 500;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s ease;
-        }
-
-        :root[data-theme="light"] .filter-reset-btn {
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            color: #64748b;
-        }
-
-        .filter-reset-btn:hover {
-            background: rgba(255, 255, 255, 0.08);
-            color: #f8fafc;
-            border-color: rgba(255, 255, 255, 0.18);
-        }
-
-        :root[data-theme="light"] .filter-reset-btn:hover {
-            background: #f1f5f9;
-            color: #0f172a;
-        }
-
-        /* ✅ Pagination */
-        .pagination {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 30px 0;
-            flex-wrap: wrap;
-        }
-
-        .pagination button,
-        .pagination span {
-            padding: 10px 15px;
-            border: 1px solid var(--color-border);
-            border-radius: 5px;
-            cursor: pointer;
-            background: var(--color-surface);
-            color: var(--color-text);
-            transition: all 0.3s;
-        }
-
-        .pagination button:hover {
-            background: var(--color-accent);
-            color: white;
-            border-color: var(--color-accent);
-        }
-
-        .pagination .active {
-            background: var(--color-accent);
-            color: white;
-            border-color: var(--color-accent);
-        }
-
-        .pagination .disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
-            margin-top: 30px;
-        }
-
-        .content-card {
-            background: var(--color-surface);
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-
-        .content-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        .content-card img {
-            width: 100%;
-            height: 220px;
-            object-fit: cover;
-            flex-shrink: 0;
-        }
-
-        .content-card .info {
-            padding: 12px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .content-card h3 {
-            font-size: 13px;
-            margin-bottom: 8px;
-            color: var(--color-text);
-            line-height: 1.3;
-            height: 32px;
-            overflow: hidden;
-        }
-
-        .content-card .meta {
-            font-size: 11px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
             color: var(--color-text-muted);
-            margin-top: auto;
         }
 
-        .loading {
-            text-align: center;
-            padding: 40px;
-            font-size: 18px;
-            color: var(--color-accent);
+        .filter-apply-btn:hover,
+        .filter-reset-btn:hover {
+            transform: translateY(-2px);
         }
 
-        .no-results {
-            text-align: center;
-            padding: 60px;
-            color: var(--color-text-faint);
+        .filter-apply-btn:focus-visible,
+        .filter-reset-btn:focus-visible {
+            outline: none;
+            box-shadow: var(--focus-ring);
         }
 
-        .section-title {
-            font-size: 24px;
-            margin: 40px 0 20px 0;
-            color: var(--color-text);
+        #resultsContainer {
+            margin-top: 28px;
         }
 
-        .showcase-section {
-            margin: 50px 0;
-        }
-
-        .showcase-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .showcase-title {
-            font-size: 28px;
-            color: var(--color-text);
-        }
-
-        .error-message {
-            background: var(--color-danger-bg);
-            color: var(--color-danger);
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-            text-align: center;
-        }
-
-        @media (max-width: 768px) {
-            .results-grid {
-                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-                gap: 12px;
+        @media (max-width: 720px) {
+            .search-controls {
+                flex-direction: column;
             }
 
-            .content-card img {
-                height: 200px;
-            }
-
-            .filter-grid {
-                grid-template-columns: 1fr;
+            button.search-btn {
+                justify-content: center;
+                padding: 14px 24px;
             }
         }
     </style>
 </head>
 
 <body>
-    <nav class="navbar">
+    <a class="skip-link" href="#main">İçeriğe geç</a>
+<nav class="navbar" aria-label="Ana gezinme">
     <div class="navbar-inner">
         <a href="search.html" class="logo">
             <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="m10 14 5 3-5 3v-6Z"/></svg></span>
@@ -629,11 +313,13 @@
         </a>
         <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button>
         <div class="nav-links">
-            <a href="search.html" class="nav-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>Keşfet</a>
-            <a href="feed.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h6"/></svg>Akış</a>
-            <a href="social.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Sosyal</a>
-            <a href="profile.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profilim</a>
-            <a href="messages.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Mesajlar</a>
+            <a href="search.html" class="nav-link active" data-nav="search" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>Keşfet</a>
+            <a href="tonight.html" class="nav-link" data-nav="tonight"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg>Ne izlesem?</a>
+            <a href="feed.html" class="nav-link" data-nav="feed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h6"/></svg>Akış</a>
+            <a href="social.html" class="nav-link" data-nav="social"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Sosyal</a>
+            <a href="profile.html" class="nav-link" data-nav="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profilim</a>
+            <a href="messages.html" class="nav-link" data-nav="messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Mesajlar</a>
+            <a href="admin.html" class="nav-link" data-nav="admin" id="navAdminLink" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>Yönetim</a>
             <div class="nav-icon-wrap">
                 <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="nav-badge" id="notifBadge"></span></button>
                 <div class="nav-panel" id="notifPanel">
@@ -648,65 +334,69 @@
     <span id="userWelcome" style="display:none;"></span>
 </nav>
 
-    <div class="container">
-        <div class="page-actions reveal">
-            <a class="btn btn-glass" href="upcoming.html">
-                <svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-                Yeni çıkanlar
-            </a>
-        </div>
+    <main id="main" class="page">
+        <header class="page-head">
+            <div>
+                <span class="eyebrow"><span class="dot"></span>Keşfet</span>
+                <h1 class="page-title">Sıradaki <span class="gradient-text">favorini</span> bul.</h1>
+                <p class="page-sub">Film, dizi ve kitaplarda ara. Yazım hatası yapsan bile bulur; beğendiğini tek tıkla kütüphanene ekle.</p>
+            </div>
+            <div class="page-actions">
+                <a class="btn-glass" href="tonight.html">
+                    <svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg>
+                    Ne izlesem?
+                </a>
+                <a class="btn-glass" href="upcoming.html">
+                    <svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                    Yeni çıkanlar
+                </a>
+            </div>
+        </header>
 
-        <div class="search-box">
-            <div class="tab-buttons">
-                <button class="tab-btn active" onclick="switchTab('movie')">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="2.18" ry="2.18"/><line x1="7" x2="7" y1="2" y2="22"/><line x1="17" x2="17" y1="2" y2="22"/><line x1="2" x2="22" y1="12" y2="12"/><line x1="2" x2="7" y1="7" y2="7"/><line x1="2" x2="7" y1="17" y2="17"/><line x1="17" x2="22" y1="17" y2="17"/><line x1="17" x2="22" y1="7" y2="7"/></svg>
+        <section class="panel search-panel" aria-label="Arama ve filtreler">
+            <div class="seg tab-buttons" role="group" aria-label="İçerik türü">
+                <button type="button" class="tab-btn active" aria-pressed="true" onclick="switchTab('movie', this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="20" x="2" y="2" rx="2.18" ry="2.18"/><line x1="7" x2="7" y1="2" y2="22"/><line x1="17" x2="17" y1="2" y2="22"/><line x1="2" x2="22" y1="12" y2="12"/><line x1="2" x2="7" y1="7" y2="7"/><line x1="2" x2="7" y1="17" y2="17"/><line x1="17" x2="22" y1="17" y2="17"/><line x1="17" x2="22" y1="7" y2="7"/></svg>
                     Filmler
                 </button>
-                <button class="tab-btn" onclick="switchTab('series')">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
+                <button type="button" class="tab-btn" aria-pressed="false" onclick="switchTab('series', this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
                     Diziler
                 </button>
-                <button class="tab-btn" onclick="switchTab('book')">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
+                <button type="button" class="tab-btn" aria-pressed="false" onclick="switchTab('book', this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
                     Kitaplar
                 </button>
             </div>
 
             <div class="search-controls">
-                <div style="position: relative; flex: 1; display: flex; align-items: center;">
-                    <svg style="position: absolute; left: 16px; width: 18px; height: 18px; color: #64748b; pointer-events: none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                    <input type="text" id="searchInput" placeholder="Film ara..." autocomplete="off" onkeypress="handleKeyPress(event)" style="padding-left: 46px;">
+                <div class="search-field">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    <input type="text" id="searchInput" placeholder="Film ara..." aria-label="Arama" autocomplete="off" onkeypress="handleKeyPress(event)">
                     <div id="searchAutocompleteDropdown" class="search-autocomplete-dropdown" style="display: none;"></div>
                 </div>
-                <button class="search-btn" onclick="performSearch()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <button type="button" class="search-btn" onclick="performSearch()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                     <span>Ara</span>
                 </button>
             </div>
 
             <div class="filter-section" id="filterSection">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-                    <h3 style="margin: 0; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/></svg>
-                        Sıralama ve Filtreler
-                    </h3>
-                </div>
-
-                <div class="sort-controls">
-                    <button class="sort-btn active" onclick="setSortBy('relevance', event)">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <div class="sort-controls" role="group" aria-label="Sıralama">
+                    <button type="button" class="sort-btn active" onclick="setSortBy('relevance', event)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                         Alakalılık
                     </button>
-                    <button class="sort-btn" onclick="setSortBy('rating', event)">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>
+                    <button type="button" class="sort-btn" onclick="setSortBy('rating', event)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>
                         En Yüksek Puan
                     </button>
-                    <button class="sort-btn" onclick="setSortBy('year', event)">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                    <button type="button" class="sort-btn" onclick="setSortBy('year', event)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
                         En Yeni
                     </button>
-                    <button class="sort-btn" onclick="setSortBy('popularity', event)">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                    <button type="button" class="sort-btn" onclick="setSortBy('popularity', event)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
                         Popülarite
                     </button>
                 </div>
@@ -714,110 +404,103 @@
                 <div class="filter-grid" id="filterGrid"></div>
 
                 <div class="filter-action-row">
-                    <button class="filter-apply-btn" onclick="applyFilters()">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <button type="button" class="filter-apply-btn" onclick="applyFilters()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
                         <span>Filtreyi Uygula</span>
                     </button>
-                    <button class="filter-reset-btn" onclick="resetFilters()">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                    <button type="button" class="filter-reset-btn" onclick="resetFilters()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
                         <span>Filtreleri Sıfırla</span>
                     </button>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <div id="resultsContainer"></div>
+        <div id="resultsContainer" aria-live="polite"></div>
 
         <div class="pagination" id="pagination" style="display: none;"></div>
 
-        <div class="showcase-section" id="topRatedSection">
-            <div class="showcase-header">
-                <h2 class="showcase-title">
-                    <span class="showcase-badge" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                    </span>
-                    En Yüksek Puanlı Filmler
+        <section class="showcase-section" id="topRatedSection">
+            <div class="section-head">
+                <h2 class="section-title">
+                    <span class="section-badge" style="--badge-bg: rgba(245, 158, 11, 0.15); --badge-color: #f59e0b; --badge-border: rgba(245, 158, 11, 0.35);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
+                    <span class="section-label">En Yüksek Puanlı Filmler</span>
                 </h2>
+                <button type="button" class="btn-glass btn-sm showcase-shuffle" data-showcase-shuffle="topRated">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="16 3 21 3 21 8"/><line x1="4" x2="21" y1="20" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" x2="21" y1="15" y2="21"/><line x1="4" x2="9" y1="4" y2="9"/></svg>
+                    <span>Karıştır</span>
+                </button>
             </div>
-            <div id="topRatedMovies" class="results-grid">
-                <div class="loading">En iyi filmler yükleniyor...</div>
-            </div>
-        </div>
+            <div id="topRatedMovies"><div class="loading">En iyi filmler yükleniyor...</div></div>
+        </section>
 
-        <div class="showcase-section" id="popularSection">
-            <div class="showcase-header">
-                <h2 class="showcase-title">
-                    <span class="showcase-badge" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
-                    </span>
-                    En Popüler Filmler
+        <section class="showcase-section" id="popularSection">
+            <div class="section-head">
+                <h2 class="section-title">
+                    <span class="section-badge" style="--badge-bg: rgba(239, 68, 68, 0.15); --badge-color: #ef4444; --badge-border: rgba(239, 68, 68, 0.35);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></span>
+                    <span class="section-label">En Popüler Filmler</span>
                 </h2>
+                <button type="button" class="btn-glass btn-sm showcase-shuffle" data-showcase-shuffle="popular">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="16 3 21 3 21 8"/><line x1="4" x2="21" y1="20" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" x2="21" y1="15" y2="21"/><line x1="4" x2="9" y1="4" y2="9"/></svg>
+                    <span>Karıştır</span>
+                </button>
             </div>
-            <div id="popularMovies" class="results-grid">
-                <div class="loading">Popüler filmler yükleniyor...</div>
-            </div>
-        </div>
+            <div id="popularMovies"><div class="loading">Popüler filmler yükleniyor...</div></div>
+        </section>
 
         <!-- Platform İçi Popüler İçerikler -->
-        <div class="showcase-section" id="mostCommentedSection">
-            <div class="showcase-header">
-                <h2 class="showcase-title">
-                    <span class="showcase-badge" style="background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                    </span>
-                    En Çok Yorum Alan
+        <section class="showcase-section" id="mostCommentedSection">
+            <div class="section-head">
+                <h2 class="section-title">
+                    <span class="section-badge" style="--badge-bg: rgba(99, 102, 241, 0.15); --badge-color: #818cf8; --badge-border: rgba(99, 102, 241, 0.35);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                    <span class="section-label">En Çok Yorum Alan</span>
                 </h2>
             </div>
             <div id="mostCommentedContent" class="results-grid">
                 <div class="loading">Yükleniyor...</div>
             </div>
-        </div>
+        </section>
 
-        <div class="showcase-section" id="mostAddedSection">
-            <div class="showcase-header">
-                <h2 class="showcase-title">
-                    <span class="showcase-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
-                    </span>
-                    En Çok Listeye Eklenen
+        <section class="showcase-section" id="mostAddedSection">
+            <div class="section-head">
+                <h2 class="section-title">
+                    <span class="section-badge" style="--badge-bg: rgba(16, 185, 129, 0.15); --badge-color: #34d399; --badge-border: rgba(16, 185, 129, 0.35);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg></span>
+                    <span class="section-label">En Çok Listeye Eklenen</span>
                 </h2>
             </div>
             <div id="mostAddedContent" class="results-grid">
                 <div class="loading">Yükleniyor...</div>
             </div>
-        </div>
+        </section>
 
-        <div class="showcase-section" id="topUserRatedSection">
-            <div class="showcase-header">
-                <h2 class="showcase-title">
-                    <span class="showcase-badge" style="background: rgba(217, 70, 239, 0.15); color: #e879f9; border: 1px solid rgba(217, 70, 239, 0.3); border-radius: 8px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-                    </span>
-                    Kullanıcıların En Beğendiği
+        <section class="showcase-section" id="topUserRatedSection">
+            <div class="section-head">
+                <h2 class="section-title">
+                    <span class="section-badge" style="--badge-bg: rgba(217, 70, 239, 0.15); --badge-color: #e879f9; --badge-border: rgba(217, 70, 239, 0.35);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></span>
+                    <span class="section-label">Kullanıcıların En Beğendiği</span>
                 </h2>
             </div>
             <div id="topUserRatedContent" class="results-grid">
                 <div class="loading">Yükleniyor...</div>
             </div>
-        </div>
+        </section>
 
-        <div class="showcase-section" id="allMoviesSection">
-            <div class="showcase-header">
-                <h2 class="showcase-title">
-                    <span class="showcase-badge" style="background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="2.18" ry="2.18"/><line x1="7" x2="7" y1="2" y2="22"/><line x1="17" x2="17" y1="2" y2="22"/><line x1="2" x2="22" y1="12" y2="12"/></svg>
-                    </span>
-                    Tüm Filmler
+        <section class="showcase-section" id="allMoviesSection">
+            <div class="section-head">
+                <h2 class="section-title">
+                    <span class="section-badge" style="--badge-bg: rgba(99, 102, 241, 0.15); --badge-color: #a5b4fc; --badge-border: rgba(99, 102, 241, 0.35);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="20" x="2" y="2" rx="2.18" ry="2.18"/><line x1="7" x2="7" y1="2" y2="22"/><line x1="17" x2="17" y1="2" y2="22"/><line x1="2" x2="22" y1="12" y2="12"/></svg></span>
+                    <span class="section-label">Tüm Filmler</span>
                 </h2>
             </div>
             <div id="allMoviesContainer" class="results-grid">
                 <div class="loading">Filmler yükleniyor...</div>
             </div>
-        </div>
-    </div>
+        </section>
+    </main>
 
     <script src="js/escape-html.js"></script>
-    <script src="js/app.js?v=20261016_v3"></script>
+    <script src="js/app.js"></script>
+    <script src="js/strips.js"></script>
     <script>
         let currentTab = 'movie';
         let currentPage = 1;
@@ -933,6 +616,47 @@
             }
         }
 
+        // Bölüm başlıklarının yalnızca metni değişir; rozet ve düğmeler yerinde kalır.
+        function setSectionLabels(labels) {
+            Object.entries(labels).forEach(([sectionId, text]) => {
+                const label = document.querySelector(`#${sectionId} .section-label`);
+                if (label) label.textContent = text;
+            });
+        }
+
+        function ratingOptionsHtml() {
+            return `
+                <option value="">Tümü</option>
+                <option value="9">9+ ve üzeri</option>
+                <option value="8">8+ ve üzeri</option>
+                <option value="7">7+ ve üzeri</option>
+                <option value="6">6+ ve üzeri</option>`;
+        }
+
+        function screenFiltersHtml(genres) {
+            return `
+                <div class="filter-group">
+                    <label for="genreFilter">Tür</label>
+                    <select id="genreFilter" onchange="updateFilters()">
+                        <option value="">Tümü</option>
+                        ${genres.map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="yearFilter">Yıl</label>
+                    <select id="yearFilter" onchange="updateFilters()">
+                        <option value="">Tümü</option>
+                        ${getYearOptionsHtml()}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="ratingFilter">Minimum Puan</label>
+                    <select id="ratingFilter" onchange="updateFilters()">
+                        ${ratingOptionsHtml()}
+                    </select>
+                </div>`;
+        }
+
         function switchTab(tab, btnElement) {
             currentTab = tab;
             currentPage = 1;
@@ -940,17 +664,12 @@
             isFiltering = false;
             currentSortBy = 'relevance';
 
+            const activeBtn = btnElement || document.querySelector(`.tab-btn[onclick*="'${tab}'"]`);
             document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
+                const isActive = btn === activeBtn;
+                btn.classList.toggle('active', isActive);
+                btn.setAttribute('aria-pressed', String(isActive));
             });
-            if (btnElement) {
-                btnElement.classList.add('active');
-            } else if (window.event && window.event.target && window.event.target.closest('.tab-btn')) {
-                window.event.target.closest('.tab-btn').classList.add('active');
-            } else {
-                const targetBtn = document.querySelector(`.tab-btn[onclick*="'${tab}'"]`);
-                if (targetBtn) targetBtn.classList.add('active');
-            }
 
             const input = document.getElementById('searchInput');
             input.placeholder = tab === 'movie' ? 'Film ara...' : tab === 'series' ? 'Dizi ara...' : 'Kitap ara...';
@@ -964,95 +683,31 @@
             const popularSection = document.getElementById('popularSection');
             const allMoviesSection = document.getElementById('allMoviesSection');
 
+            filterSection.classList.add('active');
             if (tab === 'movie') {
-                filterSection.classList.add('active');
-                filterGrid.innerHTML = `
-                    <div class="filter-group">
-                        <label>Tür</label>
-                        <select id="genreFilter" aria-label="Tür" onchange="updateFilters()">
-                            <option value="">Tümü</option>
-                            ${MOVIE_GENRES.map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Yıl</label>
-                        <select id="yearFilter" aria-label="Yıl" onchange="updateFilters()">
-                            <option value="">Tümü</option>
-                            ${getYearOptionsHtml()}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Minimum Puan</label>
-                        <select id="ratingFilter" aria-label="Minimum puan" onchange="updateFilters()">
-                            <option value="">Tümü</option>
-                            <option value="9">9+ ve üzeri</option>
-                            <option value="8">8+ ve üzeri</option>
-                            <option value="7">7+ ve üzeri</option>
-                            <option value="6">6+ ve üzeri</option>
-                        </select>
-                    </div>
-                `;
-                const tr = document.getElementById('topRatedSection')?.querySelector('h2');
-                if (tr) tr.innerHTML = `<span class="showcase-badge" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>En Yüksek Puanlı Filmler`;
-                const pop = document.getElementById('popularSection')?.querySelector('h2');
-                if (pop) pop.innerHTML = `<span class="showcase-badge" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></span>En Popüler Filmler`;
-                const all = document.getElementById('allMoviesSection')?.querySelector('h2');
-                if (all) all.innerHTML = `<span class="showcase-badge" style="background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px;"><rect width="20" height="20" x="2" y="2" rx="2.18" ry="2.18"/><line x1="7" x2="7" y1="2" y2="22"/><line x1="17" x2="17" y1="2" y2="22"/><line x1="2" x2="22" y1="12" y2="12"/></svg></span>Tüm Filmler`;
+                filterGrid.innerHTML = screenFiltersHtml(MOVIE_GENRES);
+                setSectionLabels({ topRatedSection: 'En Yüksek Puanlı Filmler', popularSection: 'En Popüler Filmler', allMoviesSection: 'Tüm Filmler' });
                 topRatedSection.style.display = 'block';
                 popularSection.style.display = 'block';
                 allMoviesSection.style.display = 'block';
                 loadShowcaseMovies();
             } else if (tab === 'series') {
-                filterSection.classList.add('active');
-                filterGrid.innerHTML = `
-                    <div class="filter-group">
-                        <label>Tür</label>
-                        <select id="genreFilter" aria-label="Tür" onchange="updateFilters()">
-                            <option value="">Tümü</option>
-                            ${SERIES_GENRES.map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Yıl</label>
-                        <select id="yearFilter" aria-label="Yıl" onchange="updateFilters()">
-                            <option value="">Tümü</option>
-                            ${getYearOptionsHtml()}
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Minimum Puan</label>
-                        <select id="ratingFilter" aria-label="Minimum puan" onchange="updateFilters()">
-                            <option value="">Tümü</option>
-                            <option value="9">9+ ve üzeri</option>
-                            <option value="8">8+ ve üzeri</option>
-                            <option value="7">7+ ve üzeri</option>
-                            <option value="6">6+ ve üzeri</option>
-                        </select>
-                    </div>
-                `;
-                const tr = document.getElementById('topRatedSection')?.querySelector('h2');
-                if (tr) tr.innerHTML = `<span class="showcase-badge" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>En Yüksek Puanlı Diziler`;
-                const pop = document.getElementById('popularSection')?.querySelector('h2');
-                if (pop) pop.innerHTML = `<span class="showcase-badge" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></span>En Popüler Diziler`;
+                filterGrid.innerHTML = screenFiltersHtml(SERIES_GENRES);
+                setSectionLabels({ topRatedSection: 'En Yüksek Puanlı Diziler', popularSection: 'En Popüler Diziler' });
                 topRatedSection.style.display = 'block';
                 popularSection.style.display = 'block';
                 allMoviesSection.style.display = 'none';
                 loadShowcaseSeries();
             } else {
-                filterSection.classList.add('active');
                 filterGrid.innerHTML = `
                     <div class="filter-group">
-                        <label>Kategori</label>
+                        <label for="categoryFilter">Kategori</label>
                         <select id="categoryFilter" onchange="updateFilters()">
                             <option value="">Tümü</option>
                             ${BOOK_CATEGORIES.map(c => `<option value="${c.value}">${c.name}</option>`).join('')}
                         </select>
-                    </div>
-                `;
-                const tr = document.getElementById('topRatedSection')?.querySelector('h2');
-                if (tr) tr.innerHTML = `<span class="showcase-badge" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>En Çok Okunan Kitaplar`;
-                const all = document.getElementById('allMoviesSection')?.querySelector('h2');
-                if (all) all.innerHTML = `<span class="showcase-badge" style="background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px;"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg></span>Tüm Kitaplar`;
+                    </div>`;
+                setSectionLabels({ topRatedSection: 'En Çok Okunan Kitaplar', allMoviesSection: 'Tüm Kitaplar' });
                 topRatedSection.style.display = 'block';
                 allMoviesSection.style.display = 'block';
                 popularSection.style.display = 'none';
@@ -1771,13 +1426,72 @@
             }
         });
 
+        // Vitrin şeritleri (js/strips.js): her satır 5 sayfalık havuzdan bir seçki alır. Seçki saat dilimine göre sabittir
+        // (aynı saatte tüm hesaplarda aynı, saat değişince değişir); "Karıştır" anında yeni bir seçki gösterir.
+        // "En popüler" satırı TMDB'nin popülerlik puanından gelir (oylamadan bağımsızdır); düşük puanlı yapımlar elenir.
+        const SHOWCASE_PICK_COUNT = 16;
+        const SHOWCASE_ROWS = {
+            topRated: { containerId: 'topRatedMovies', list: 'top_rated', reverse: false, minRating: 0, label: 'En yüksek puanlı' },
+            popular: { containerId: 'popularMovies', list: 'popular', reverse: true, minRating: 6, label: 'En popüler' },
+        };
+        const showcasePools = {};
+        let showcaseType = 'movie';
+
+        async function fetchShowcasePool(type, list, minRating) {
+            const key = `${type}:${list}`;
+            if (!showcasePools[key]) {
+                const responses = await Promise.all([1, 2, 3, 4, 5].map(page =>
+                    fetch(`${TMDB_PROXY_URL}?endpoint=list&type=${type}&list=${list}&page=${page}`)
+                        .then(response => (response.ok ? response.json() : { results: [] }))
+                        .catch(() => ({ results: [] }))
+                ));
+                const seen = new Set();
+                showcasePools[key] = responses
+                    .flatMap(data => data.results || [])
+                    .filter(item => {
+                        if (!item.poster_path || seen.has(item.id)) return false;
+                        if (minRating > 0 && !(item.vote_average >= minRating && item.vote_count >= 100)) return false;
+                        seen.add(item.id);
+                        return true;
+                    });
+            }
+            return showcasePools[key];
+        }
+
+        function showcaseItem(item, type) {
+            const title = item.title || item.name || '';
+            const year = (item.release_date || item.first_air_date || '').split('-')[0] || 'Bilinmiyor';
+            return {
+                href: `detail.php?type=${type}&id=${Number(item.id)}`,
+                image: `https://image.tmdb.org/t/p/w342${item.poster_path}`,
+                title,
+                subtitle: `${year} · ★ ${Number(item.vote_average || 0).toFixed(1)}`,
+            };
+        }
+
+        async function showShowcaseRow(rowKey, shuffle = false) {
+            const row = SHOWCASE_ROWS[rowKey];
+            const pool = await fetchShowcasePool(showcaseType, row.list, row.minRating);
+            const seed = shuffle ? Math.floor(Math.random() * 2147483647) : SKStrip.windowSeed(`${showcaseType}:${row.list}`);
+            const items = SKStrip.seededShuffle(pool, seed).slice(0, SHOWCASE_PICK_COUNT).map(item => showcaseItem(item, showcaseType));
+            SKStrip.render(document.getElementById(row.containerId), items, {
+                reverse: row.reverse,
+                label: `${row.label} ${showcaseType === 'series' ? 'diziler' : 'filmler'}`,
+                emptyText: showcaseType === 'series' ? 'Dizi bulunamadı' : 'Film bulunamadı',
+            });
+        }
+
+        document.addEventListener('click', (event) => {
+            const button = event.target.closest('[data-showcase-shuffle]');
+            if (button) {
+                showShowcaseRow(button.dataset.showcaseShuffle, true);
+            }
+        });
+
         async function loadShowcaseMovies() {
             try {
-                const topRated = await app.getTopRatedMovies();
-                displayShowcaseResults(topRated, 'topRatedMovies');
-
-                const popular = await app.getPopularMovies();
-                displayShowcaseResults(popular, 'popularMovies');
+                showcaseType = 'movie';
+                await Promise.all([showShowcaseRow('topRated'), showShowcaseRow('popular')]);
 
                 loadPlatformPopularContent('movie');
 
@@ -1902,48 +1616,13 @@
 
         async function loadShowcaseSeries() {
             try {
-                const topRated = await app.getTopRatedSeries();
-                displayShowcaseSeries(topRated, 'topRatedMovies');
-
-                const popular = await app.getPopularSeries();
-                displayShowcaseSeries(popular, 'popularMovies');
+                showcaseType = 'series';
+                await Promise.all([showShowcaseRow('topRated'), showShowcaseRow('popular')]);
 
                 loadPlatformPopularContent('series');
             } catch (error) {
                 console.error('Dizi vitrini yükleme hatası:', error);
             }
-        }
-
-        function displayShowcaseSeries(results, containerId) {
-            const container = document.getElementById(containerId);
-
-            if (!results || results.length === 0) {
-                container.innerHTML = '<div class="no-results">Dizi bulunamadı</div>';
-                return;
-            }
-
-            let html = '';
-
-            results.forEach(series => {
-                const posterUrl = series.poster_path
-                    ? `https://image.tmdb.org/t/p/w500${series.poster_path}`
-                    : 'img/no-poster.svg';
-
-                const year = series.first_air_date ? series.first_air_date.split('-')[0] : 'Bilinmiyor';
-
-                html += `
-                    <div class="content-card" data-tilt onclick="goToDetail('series', '${series.id}')">
-                        <img src="${posterUrl}" alt="${series.name}" loading="lazy"
-                             onerror="this.src='img/no-poster.svg'">
-                        <div class="info">
-                            <h3>${series.name}</h3>
-                            <div class="meta">${year} · ${app.ratingPillHtml(series.vote_average)}</div>
-                        </div>
-                    </div>
-                `;
-            });
-
-            container.innerHTML = html;
         }
 
         function displayMockShowcase() {
@@ -1974,13 +1653,6 @@
 
         function showError(container, message) {
             container.innerHTML = `<div class="error-message">${message}</div>`;
-        }
-
-        function logout() {
-            if (app) {
-                app.logout();
-            }
-            window.location.href = 'index.html';
         }
 
         // Canlı Arama (Autocomplete / Öneri Açılır Menüsü)
