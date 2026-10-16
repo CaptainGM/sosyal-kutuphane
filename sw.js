@@ -1,7 +1,7 @@
 // Sadece statik varlıklar (CSS/JS/ikon) önbellekten karşılanır.
 // /api/* ve GET dışı istekler asla önbelleğe girmez. Sayfalar ağ öncelikli,
 // çevrimdışıyken offline.html'e düşer.
-const CACHE_NAME = 'sosyal-kutuphane-v1';
+const CACHE_NAME = 'sosyal-kutuphane-v2';
 const STATIC_ASSETS = [
     'css/style.css',
     'js/app.js',

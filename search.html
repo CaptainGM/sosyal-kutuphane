@@ -5,59 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#667eea">
+    <meta name="theme-color" content="#05060b">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <title>Arama & Keşfet - Sosyal Kütüphane</title>
-    <link rel="stylesheet" href="css/style.css?v=20261016_v3">
+    <link rel="stylesheet" href="css/style.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-        }
-
-        :root[data-theme="light"] .navbar {
-            background: rgba(255, 255, 255, 0.96) !important;
-            border-bottom: 1px solid #e2e8f0 !important;
-            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06) !important;
-        }
-
-        :root[data-theme="light"] .logo {
-            color: #0f172a !important;
-        }
-
-        :root[data-theme="light"] .nav-link {
-            color: #475569 !important;
-        }
-
-        :root[data-theme="light"] .nav-link:hover {
-            background: #f1f5f9 !important;
-            color: #0f172a !important;
-        }
-
-        :root[data-theme="light"] .nav-link.active {
-            background: #f1f5f9 !important;
-            color: #4f46e5 !important;
-        }
-
-        :root[data-theme="light"] .logout-btn {
-            background: #f1f5f9 !important;
-            color: #0f172a !important;
-            border-color: #cbd5e1 !important;
-        }
-
-        :root[data-theme="light"] .nav-icon-btn {
-            background: #f1f5f9 !important;
-            border-color: #cbd5e1 !important;
-            color: #475569 !important;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--color-bg);
-            color: var(--color-text);
-            min-height: 100vh;
-            transition: background-color 0.2s ease, color 0.2s ease;
         }
 
         .container {
@@ -666,55 +622,31 @@
 
 <body>
     <nav class="navbar">
-        <div class="navbar-inner">
-            <a href="search.html" class="logo" style="display: inline-flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: -0.4px;">
-                <div style="width: 36px; height: 36px; border-radius: 11px; background: linear-gradient(135deg, #6366f1, #8b5cf6, #d946ef); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45); flex-shrink: 0;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="m10 14 5 3-5 3v-6Z"/></svg>
+    <div class="navbar-inner">
+        <a href="search.html" class="logo">
+            <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="m10 14 5 3-5 3v-6Z"/></svg></span>
+            <span>Sosyal Kütüphane</span>
+        </a>
+        <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button>
+        <div class="nav-links">
+            <a href="search.html" class="nav-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>Keşfet</a>
+            <a href="feed.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h6"/></svg>Akış</a>
+            <a href="social.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Sosyal</a>
+            <a href="profile.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profilim</a>
+            <a href="messages.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Mesajlar</a>
+            <div class="nav-icon-wrap">
+                <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="nav-badge" id="notifBadge"></span></button>
+                <div class="nav-panel" id="notifPanel">
+                    <div class="nav-panel-header">Bildirimler</div>
+                    <div class="nav-panel-empty">Yükleniyor...</div>
                 </div>
-                <span>Sosyal Kütüphane</span>
-            </a>
-            <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
-            </button>
-            <div class="nav-links">
-                <a href="search.html" class="nav-link active">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                    Keşfet
-                </a>
-                <a href="feed.html" class="nav-link">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
-                    Akış
-                </a>
-                <a href="social.html" class="nav-link">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                    Sosyal
-                </a>
-                <a href="profile.html" class="nav-link">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                    Profilim
-                </a>
-                <a href="messages.html" class="nav-link">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                    Mesajlar
-                </a>
-                <div class="nav-icon-wrap">
-                    <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-                        <span class="nav-badge" id="notifBadge"></span>
-                    </button>
-                    <div class="nav-panel" id="notifPanel">
-                        <div class="nav-panel-header">Bildirimler</div>
-                        <div class="nav-panel-empty">Yükleniyor...</div>
-                    </div>
-                </div>
-                <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-                </button>
-                <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
             </div>
+            <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir"><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
+            <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
         </div>
-        <span id="userWelcome" style="display:none;"></span>
-    </nav>
+    </div>
+    <span id="userWelcome" style="display:none;"></span>
+</nav>
 
     <div class="container">
         <div class="search-box">
@@ -1140,7 +1072,7 @@
             topRatedSection.style.display = 'none';
             popularSection.style.display = 'none';
             allMoviesSection.style.display = 'none';
-            resultsContainer.innerHTML = '<div class="loading">🔍 Aranıyor...</div>';
+            resultsContainer.innerHTML = '<div class="loading"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> Aranıyor...</div>';
             currentPage = 1;
             isFiltering = false;
 
@@ -1159,7 +1091,7 @@
                         displayPaginatedResults(results, currentTab, 1);
                     } else {
                         // Akıllı Çapraz Kategori Kontrolü: Aranan kelime belki bir dizidir? (Örn: Güç Yüzükleri)
-                        resultsContainer.innerHTML = '<div class="loading">🔍 Filmlerde bulunamadı, diziler taranıyor...</div>';
+                        resultsContainer.innerHTML = '<div class="loading"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> Filmlerde bulunamadı, diziler taranıyor...</div>';
                         try {
                             const seriesData = await app.searchSeries(query);
                             const seriesResults = seriesData.results || [];
@@ -1173,7 +1105,7 @@
 
                         resultsContainer.innerHTML = `
                             <div class="no-results">
-                                😕 "${app.escapeHtml(query)}" için film bulunamadı
+                                <svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg> "${app.escapeHtml(query)}" için film bulunamadı
                             </div>
                         `;
                         document.getElementById('pagination').style.display = 'none';
@@ -1190,7 +1122,7 @@
                         displayPaginatedResults(results, currentTab, 1);
                     } else {
                         // Akıllı Çapraz Kategori Kontrolü: Aranan kelime belki bir filmdir?
-                        resultsContainer.innerHTML = '<div class="loading">🔍 Dizilerde bulunamadı, filmler taranıyor...</div>';
+                        resultsContainer.innerHTML = '<div class="loading"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> Dizilerde bulunamadı, filmler taranıyor...</div>';
                         try {
                             const movieData = await app.searchMovies(query);
                             const movieResults = movieData.results || [];
@@ -1204,7 +1136,7 @@
 
                         resultsContainer.innerHTML = `
                             <div class="no-results">
-                                😕 "${app.escapeHtml(query)}" için dizi bulunamadı
+                                <svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg> "${app.escapeHtml(query)}" için dizi bulunamadı
                             </div>
                         `;
                         document.getElementById('pagination').style.display = 'none';
@@ -1249,7 +1181,7 @@
                         const label = query ? `"${app.escapeHtml(query)}" için` : 'Bu kategoride';
                         resultsContainer.innerHTML = `
                             <div class="no-results">
-                                😕 ${label} kitap bulunamadı
+                                <svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg> ${label} kitap bulunamadı
                             </div>
                         `;
                         document.getElementById('pagination').style.display = 'none';
@@ -1270,7 +1202,7 @@
             let bannerHtml = `
                 <div class="cross-search-notice" style="background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.35); border-radius: 16px; padding: 20px 24px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
                     <div style="display: flex; align-items: center; gap: 14px;">
-                        <span style="font-size: 28px; line-height: 1;">💡</span>
+                        <span style="font-size: 28px; line-height: 1;"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg></span>
                         <div>
                             <div style="font-size: 15px; font-weight: 700; color: var(--color-text);">
                                 "${app.escapeHtml(query)}" ${currentLabel} bulunamadı, ancak <strong>${targetLabel}ler</strong> kategorisinde ${results.length} sonuç bulundu!
@@ -1281,7 +1213,7 @@
                         </div>
                     </div>
                     <button onclick="switchTabTo('${targetType}', '${app.escapeHtml(query).replace(/'/g, "\\'")}')" class="filter-apply-btn" style="padding: 10px 18px; font-size: 13.5px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
-                        ${targetType === 'movie' ? '🎬' : '📺'} ${targetLabel}ler Sekmesine Geç
+                        ${targetType === 'movie' ? '<svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><rect width="20" height="20" x="2" y="2" rx="2.18" ry="2.18"/><line x1="7" x2="7" y1="2" y2="22"/><line x1="17" x2="17" y1="2" y2="22"/><line x1="2" x2="22" y1="12" y2="12"/><line x1="2" x2="7" y1="7" y2="7"/><line x1="2" x2="7" y1="17" y2="17"/><line x1="17" x2="22" y1="17" y2="17"/><line x1="17" x2="22" y1="7" y2="7"/></svg>' : '<svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>'} ${targetLabel}ler Sekmesine Geç
                     </button>
                 </div>
             `;
@@ -1296,12 +1228,12 @@
                 const year = dateVal ? dateVal.split('-')[0] : 'Bilinmiyor';
 
                 cardsHtml += `
-                    <div class="content-card" onclick="goToDetail('${targetType}', '${item.id}')">
+                    <div class="content-card" data-tilt onclick="goToDetail('${targetType}', '${item.id}')">
                         <img src="${posterUrl}" alt="${app.escapeHtml(title)}" loading="lazy"
                              onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok'">
                         <div class="info">
                             <h3>${app.escapeHtml(title)}</h3>
-                            <div class="meta">📅 ${year} | ${app.ratingPillHtml(item.vote_average)}</div>
+                            <div class="meta"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> ${year} | ${app.ratingPillHtml(item.vote_average)}</div>
                         </div>
                     </div>
                 `;
@@ -1370,7 +1302,7 @@
             popularSection.style.display = 'none';
             allMoviesSection.style.display = 'none';
 
-            resultsContainer.innerHTML = '<div class="loading">🔍 Filmler keşfediliyor...</div>';
+            resultsContainer.innerHTML = '<div class="loading"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> Filmler keşfediliyor...</div>';
             currentPage = page;
             isFiltering = true;
 
@@ -1390,7 +1322,7 @@
                 if (results.length === 0) {
                     resultsContainer.innerHTML = `
                         <div class="no-results">
-                            😕 Seçilen filtrelere uygun film bulunamadı
+                            <svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg> Seçilen filtrelere uygun film bulunamadı
                         </div>
                     `;
                     document.getElementById('pagination').style.display = 'none';
@@ -1402,7 +1334,7 @@
 
             } catch (error) {
                 console.error('Film keşif filtreleme hatası:', error);
-                resultsContainer.innerHTML = '<div class="error-message">❌ Filtreleme sırasında hata oluştu!</div>';
+                resultsContainer.innerHTML = '<div class="error-message"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg> Filtreleme sırasında hata oluştu!</div>';
             }
         }
 
@@ -1416,7 +1348,7 @@
             popularSection.style.display = 'none';
             allMoviesSection.style.display = 'none';
 
-            resultsContainer.innerHTML = '<div class="loading">🔍 Diziler keşfediliyor...</div>';
+            resultsContainer.innerHTML = '<div class="loading"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> Diziler keşfediliyor...</div>';
             currentPage = page;
             isFiltering = true;
 
@@ -1436,7 +1368,7 @@
                 if (results.length === 0) {
                     resultsContainer.innerHTML = `
                         <div class="no-results">
-                            😕 Seçilen filtrelere uygun dizi bulunamadı
+                            <svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg> Seçilen filtrelere uygun dizi bulunamadı
                         </div>
                     `;
                     document.getElementById('pagination').style.display = 'none';
@@ -1448,7 +1380,7 @@
 
             } catch (error) {
                 console.error('Dizi keşif filtreleme hatası:', error);
-                resultsContainer.innerHTML = '<div class="error-message">❌ Filtreleme sırasında hata oluştu!</div>';
+                resultsContainer.innerHTML = '<div class="error-message"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg> Filtreleme sırasında hata oluştu!</div>';
             }
         }
 
@@ -1551,7 +1483,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', async function () {
-            document.getElementById('userWelcome').textContent = `Hoş geldin!`;
+ document.getElementById('userWelcome').textContent = `Hoş geldin!`;
             const firstTabBtn = document.querySelector('.tab-btn');
             if (firstTabBtn) {
                 firstTabBtn.click();
@@ -1648,7 +1580,7 @@
             if (!results || results.length === 0) {
                 resultsContainer.innerHTML = `
                     <div class="no-results">
-                        😕 Sonuç bulunamadı
+                        <svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg> Sonuç bulunamadı
                     </div>
                 `;
                 return;
@@ -1665,12 +1597,12 @@
                     const year = item.release_date ? item.release_date.split('-')[0] : 'Bilinmiyor';
 
                     html += `
-                        <div class="content-card" onclick="goToDetail('movie', '${item.id}')">
+                        <div class="content-card" data-tilt onclick="goToDetail('movie', '${item.id}')">
                             <img src="${posterUrl}" alt="${item.title}" loading="lazy"
                                  onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok'">
                             <div class="info">
                                 <h3>${item.title}</h3>
-                                <div class="meta">📅 ${year} | ${app.ratingPillHtml(item.vote_average)}</div>
+                                <div class="meta"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> ${year} | ${app.ratingPillHtml(item.vote_average)}</div>
                             </div>
                         </div>
                     `;
@@ -1682,12 +1614,12 @@
                     const year = item.first_air_date ? item.first_air_date.split('-')[0] : 'Bilinmiyor';
 
                     html += `
-                        <div class="content-card" onclick="goToDetail('series', '${item.id}')">
+                        <div class="content-card" data-tilt onclick="goToDetail('series', '${item.id}')">
                             <img src="${posterUrl}" alt="${item.name}" loading="lazy"
                                  onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok'">
                             <div class="info">
                                 <h3>${item.name}</h3>
-                                <div class="meta">📅 ${year} | ${app.ratingPillHtml(item.vote_average)}</div>
+                                <div class="meta"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> ${year} | ${app.ratingPillHtml(item.vote_average)}</div>
                             </div>
                         </div>
                     `;
@@ -1701,12 +1633,12 @@
                     const year = volumeInfo.publishedDate ? volumeInfo.publishedDate.split('-')[0] : 'Bilinmiyor';
 
                     html += `
-                        <div class="content-card" onclick="goToDetail('book', '${item.id}')">
+                        <div class="content-card" data-tilt onclick="goToDetail('book', '${item.id}')">
                             <img src="${coverUrl}" alt="${volumeInfo.title}" loading="lazy"
                                  onerror="this.src='https://placehold.co/150x225/764ba2/ffffff?text=Kapak+Yok'">
                             <div class="info">
                                 <h3>${volumeInfo.title}</h3>
-                                <div class="meta">✍️ ${authors}<br>📅 ${year}</div>
+                                <div class="meta"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> ${authors}<br><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> ${year}</div>
                             </div>
                         </div>
                     `;
@@ -1719,8 +1651,8 @@
 
         async function loadShowcaseBooks() {
             try {
-                document.getElementById('topRatedSection').querySelector('h2').textContent = '📚 En İyi Kitaplar';
-                document.getElementById('allMoviesSection').querySelector('h2').textContent = '📖 Tüm Kitaplar';
+ document.getElementById('topRatedSection').querySelector('h2').textContent = ' En İyi Kitaplar';
+ document.getElementById('allMoviesSection').querySelector('h2').textContent = ' Tüm Kitaplar';
                 document.getElementById('topRatedSection').style.display = 'block';
                 document.getElementById('allMoviesSection').style.display = 'block';
                 document.getElementById('popularSection').style.display = 'none';
@@ -1771,12 +1703,12 @@
                 const year = volumeInfo.publishedDate ? volumeInfo.publishedDate.split('-')[0] : 'Bilinmiyor';
 
                 html += `
-                    <div class="content-card" onclick="goToDetail('book', '${item.id}')">
+                    <div class="content-card" data-tilt onclick="goToDetail('book', '${item.id}')">
                         <img src="${coverUrl}" alt="${volumeInfo.title || 'Kitap'}" loading="lazy"
                              onerror="this.onerror=null; this.src='https://placehold.co/150x225/764ba2/ffffff?text=Kapak';">
                         <div class="info">
                             <h3>${volumeInfo.title}</h3>
-                            <div class="meta">✍️ ${authors}<br>📅 ${year}</div>
+                            <div class="meta"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> ${authors}<br><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> ${year}</div>
                         </div>
                     </div>
                 `;
@@ -1818,7 +1750,7 @@
 
             } catch (error) {
                 console.error('Film yükleme hatası:', error);
-                container.innerHTML = '<div class="error-message">❌ Filmler yüklenirken hata oluştu</div>';
+                container.innerHTML = '<div class="error-message"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg> Filmler yüklenirken hata oluştu</div>';
             }
         }
 
@@ -1854,7 +1786,7 @@
                 const commentsRes = await fetch(`/api/popular-content.php?type=${type}&sort=comments&limit=10`, { credentials: 'include' });
                 const commentsData = await commentsRes.json();
                 if (commentsData.success && commentsData.data && commentsData.data.length > 0) {
-                    displayPlatformResults(commentsData.data, 'mostCommentedContent', type, 'comment_count', '💬');
+                    displayPlatformResults(commentsData.data, 'mostCommentedContent', type, 'comment_count', '<svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>');
                     document.getElementById('mostCommentedSection').style.display = 'block';
                 } else {
                     document.getElementById('mostCommentedSection').style.display = 'none';
@@ -1863,7 +1795,7 @@
                 const listsRes = await fetch(`/api/popular-content.php?type=${type}&sort=lists&limit=10`, { credentials: 'include' });
                 const listsData = await listsRes.json();
                 if (listsData.success && listsData.data && listsData.data.length > 0) {
-                    displayPlatformResults(listsData.data, 'mostAddedContent', type, 'list_count', '📋');
+                    displayPlatformResults(listsData.data, 'mostAddedContent', type, 'list_count', '<svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>');
                     document.getElementById('mostAddedSection').style.display = 'block';
                 } else {
                     document.getElementById('mostAddedSection').style.display = 'none';
@@ -1872,7 +1804,7 @@
                 const ratingsRes = await fetch(`/api/popular-content.php?type=${type}&sort=ratings&limit=10`, { credentials: 'include' });
                 const ratingsData = await ratingsRes.json();
                 if (ratingsData.success && ratingsData.data && ratingsData.data.length > 0) {
-                    displayPlatformResults(ratingsData.data, 'topUserRatedContent', type, 'avg_rating', '⭐');
+                    displayPlatformResults(ratingsData.data, 'topUserRatedContent', type, 'avg_rating', '<svg class="ui-i is-fill" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>');
                     document.getElementById('topUserRatedSection').style.display = 'block';
                 } else {
                     document.getElementById('topUserRatedSection').style.display = 'none';
@@ -1915,7 +1847,7 @@
                 }
 
                 html += `
-                    <div class="content-card" onclick="goToDetail('${type}', '${item.id}')">
+                    <div class="content-card" data-tilt onclick="goToDetail('${type}', '${item.id}')">
                         <img src="${posterUrl}" alt="${item.title}" loading="lazy"
                              onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Resim+Yok'">
                         <div class="info">
@@ -1947,12 +1879,12 @@
                 const year = movie.release_date ? movie.release_date.split('-')[0] : 'Bilinmiyor';
 
                 html += `
-                    <div class="content-card" onclick="goToDetail('movie', '${movie.id}')">
+                    <div class="content-card" data-tilt onclick="goToDetail('movie', '${movie.id}')">
                         <img src="${posterUrl}" alt="${movie.title}" loading="lazy"
                              onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok'">
                         <div class="info">
                             <h3>${movie.title}</h3>
-                            <div class="meta">📅 ${year} | ${app.ratingPillHtml(movie.vote_average)}</div>
+                            <div class="meta"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg> ${year} | ${app.ratingPillHtml(movie.vote_average)}</div>
                         </div>
                     </div>
                 `;
@@ -1993,7 +1925,7 @@
                 const year = series.first_air_date ? series.first_air_date.split('-')[0] : 'Bilinmiyor';
 
                 html += `
-                    <div class="content-card" onclick="goToDetail('series', '${series.id}')">
+                    <div class="content-card" data-tilt onclick="goToDetail('series', '${series.id}')">
                         <img src="${posterUrl}" alt="${series.name}" loading="lazy"
                              onerror="this.src='https://placehold.co/150x225/667eea/ffffff?text=Poster+Yok'">
                         <div class="info">
@@ -2041,7 +1973,7 @@
             if (app) {
                 app.logout();
             }
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         }
 
         // Canlı Arama (Autocomplete / Öneri Açılır Menüsü)
@@ -2185,7 +2117,7 @@
                                 <div class="search-suggest-meta">
                                     <span style="background: ${typeBg}; color: ${typeColor}; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 10.5px;">${typeLabel}</span>
                                     <span>${item.year}</span>
-                                    ${item.rating ? `<span style="color: #fbbf24; font-weight: 600;">★ ${item.rating}</span>` : ''}
+                                    ${item.rating ? `<span style="color: #fbbf24; font-weight: 600;"><svg class="ui-i is-fill" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> ${item.rating}</span>` : ''}
                                 </div>
                             </div>
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="m9 18 6-6-6-6"/></svg>
