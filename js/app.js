@@ -357,6 +357,44 @@ class SocialLibraryApp {
         }
     }
 
+    async discoverMovies(filters = {}, page = 1) {
+        try {
+            const qs = new URLSearchParams({
+                endpoint: 'discover',
+                type: 'movie',
+                page: page,
+                year: filters.year || '',
+                genre: filters.genre || '',
+                min_rating: filters.min_rating || '',
+                sort_by: filters.sort_by || 'popularity'
+            }).toString();
+            const response = await fetch(`${TMDB_PROXY_URL}?${qs}`);
+            return await response.json();
+        } catch (error) {
+            console.error('Film keşif hatası:', error);
+            return { results: [], total_pages: 0, total_results: 0 };
+        }
+    }
+
+    async discoverSeries(filters = {}, page = 1) {
+        try {
+            const qs = new URLSearchParams({
+                endpoint: 'discover',
+                type: 'series',
+                page: page,
+                year: filters.year || '',
+                genre: filters.genre || '',
+                min_rating: filters.min_rating || '',
+                sort_by: filters.sort_by || 'popularity'
+            }).toString();
+            const response = await fetch(`${TMDB_PROXY_URL}?${qs}`);
+            return await response.json();
+        } catch (error) {
+            console.error('Dizi keşif hatası:', error);
+            return { results: [], total_pages: 0, total_results: 0 };
+        }
+    }
+
     async searchBooks(query) {
         try {
             const url = `${BOOKS_PROXY_URL}?action=search&q=${encodeURIComponent('intitle:' + query)}&maxResults=40&orderBy=relevance`;

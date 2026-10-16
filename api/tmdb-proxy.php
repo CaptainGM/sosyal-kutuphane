@@ -131,6 +131,67 @@ if ($endpoint === 'search') {
     }
     jsonResponse($data);
 
+} elseif ($endpoint === 'discover') {
+    $page = max(1, min(20, (int) ($_GET['page'] ?? 1)));
+    $year = trim($_GET['year'] ?? '');
+    $genre = trim($_GET['genre'] ?? '');
+    $minRating = (float) ($_GET['min_rating'] ?? 0);
+    $sortByRaw = trim($_GET['sort_by'] ?? 'popularity');
+
+    $params = [
+        'api_key' => $apiKey,
+        'language' => 'tr-TR',
+        'page' => $page
+    ];
+
+    // Sıralama eşlemesi
+    if ($sortByRaw === 'rating') {
+        $params['sort_by'] = 'vote_average.desc';
+        $params['vote_count.gte'] = 50; // anlamsız 1 oylu sahte içerikleri ele
+    } elseif ($sortByRaw === 'year') {
+        $params['sort_by'] = $type === 'series' ? 'first_air_date.desc' : 'primary_release_date.desc';
+    } else {
+        $params['sort_by'] = 'popularity.desc';
+    }
+
+    // Yıl filtresi
+    if ($year !== '') {
+        if ($type === 'series') {
+            $params['first_air_date_year'] = (int) $year;
+        } else {
+            $params['primary_release_year'] = (int) $year;
+        }
+    }
+
+    // Tür filtresi
+    if ($genre !== '') {
+        $params['with_genres'] = $genre;
+    }
+
+    // Minimum puan filtresi
+    if ($minRating > 0) {
+        $params['vote_average.gte'] = $minRating;
+        if (!isset($params['vote_count.gte'])) {
+            $params['vote_count.gte'] = 10;
+        }
+    }
+
+    $cacheKey = "tmdb:$type:discover:" . md5(json_encode($params));
+    $cached = cacheGet($db, $cacheKey);
+    if ($cached !== null) {
+        jsonResponse($cached);
+    }
+
+    $url = "https://api.themoviedb.org/3/discover/$tmdbType?" . http_build_query($params);
+    $data = tmdbFetch($url);
+    if ($data === null) {
+        jsonResponse(['results' => [], 'total_pages' => 0, 'total_results' => 0]);
+    }
+    if (!isTmdbError($data)) {
+        cacheSet($db, $cacheKey, $data, 7200); // 2 saat önbellek
+    }
+    jsonResponse($data);
+
 } else {
     jsonResponse(['success' => false, 'message' => 'Geçersiz endpoint'], 400);
 }
