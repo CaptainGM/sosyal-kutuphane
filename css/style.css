@@ -1679,3 +1679,244 @@ h3 {
 .content-card:hover::after {
     opacity: 1;
 }
+
+/* --- Sayfa üstü aksiyonlar ve sayfa başlığı --- */
+.page-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 18px;
+}
+
+.page-main {
+    padding-top: 36px;
+    padding-bottom: 80px;
+}
+
+.page-head h1 {
+    margin-top: 10px;
+    font-size: clamp(34px, 5vw, 56px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+}
+
+.page-kicker {
+    color: var(--color-accent);
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.page-lead {
+    max-width: 620px;
+    margin-top: 10px;
+    color: var(--color-text-muted);
+}
+
+.page-status {
+    min-height: 1.6em;
+    margin: 20px 0;
+    color: var(--color-text-muted);
+}
+
+/* --- Yeni çıkanlar ızgarası --- */
+.upcoming-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 22px;
+}
+
+.upcoming-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+}
+
+.upcoming-poster img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+}
+
+.upcoming-noposter {
+    aspect-ratio: 2 / 3;
+    background: linear-gradient(160deg, #4f46e5, #7c3aed 55%, #db2777);
+}
+
+.upcoming-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+}
+
+.upcoming-title {
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.upcoming-title a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.upcoming-title a:hover {
+    color: var(--color-accent);
+}
+
+.upcoming-date {
+    color: var(--color-accent);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.upcoming-overview {
+    display: -webkit-box;
+    overflow: hidden;
+    color: var(--color-text-muted);
+    font-size: 13px;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+.upcoming-remind {
+    width: 100%;
+    margin-top: auto;
+}
+
+.pager {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 32px;
+}
+
+.pager-info {
+    min-width: 64px;
+    color: var(--color-text-muted);
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* --- Rozetler --- */
+.badges-section {
+    margin: 28px 0 8px;
+}
+
+.section-head h2 {
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.section-head p {
+    color: var(--color-text-muted);
+    font-size: 14px;
+}
+
+.badges-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+}
+
+.badge-card {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 16px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    opacity: 0.6;
+    filter: grayscale(0.7);
+    transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+.badge-card.is-unlocked {
+    border-color: rgba(var(--color-accent-rgb), 0.45);
+    box-shadow: 0 12px 30px -18px rgba(var(--color-accent-rgb), 0.8);
+    opacity: 1;
+    filter: none;
+}
+
+.badge-icon {
+    display: grid;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    place-items: center;
+    background: var(--color-surface-2);
+    border-radius: 12px;
+    color: var(--color-text-muted);
+}
+
+.badge-icon .ui-i {
+    width: 20px;
+    height: 20px;
+}
+
+.badge-card.is-unlocked .badge-icon {
+    background: var(--color-accent-gradient);
+    color: #ffffff;
+}
+
+.badge-title {
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.badge-desc {
+    color: var(--color-text-muted);
+    font-size: 12.5px;
+}
+
+.badge-bar {
+    height: 6px;
+    margin-top: 8px;
+    overflow: hidden;
+    background: var(--color-surface-2);
+    border-radius: 999px;
+}
+
+.badge-bar span {
+    display: block;
+    height: 100%;
+    background: var(--color-accent-gradient);
+}
+
+.badge-count {
+    margin-top: 6px;
+    color: var(--color-text-faint);
+    font-size: 12px;
+}
+
+/* --- Letterboxd / Goodreads içe aktarma kartı --- */
+.csv-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.csv-file-input {
+    display: block;
+    margin: 6px 0 14px;
+    color: var(--color-text-muted);
+    font-size: 14px;
+}
+
+.csv-status {
+    min-height: 1.4em;
+    margin-top: 12px;
+    color: var(--color-text-muted);
+    font-size: 13px;
+}

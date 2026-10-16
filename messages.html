@@ -296,7 +296,7 @@
                 if (activeConversationId) loadThread(activeConversationId, false);
             }, 5000);
 
-            typingPollTimer = setInterval(pollTypingStatus, 2000);
+            connectRealtime();
         });
 
         let typingSendCooldown = null;
@@ -313,6 +313,33 @@
             }).catch(() => { });
         }
 
+        let realtimeHandle = null;
+
+        // "yazıyor" göstergesini aç/kapat. Adı aktif konuşmadaki karşı taraftan alır.
+        function setTypingIndicator(isTyping) {
+            const indicator = document.getElementById('typingIndicator');
+            if (!indicator) return;
+            if (isTyping) {
+                const name = activeOtherUser?.username ? app.escapeHtml(activeOtherUser.username) : 'Kullanıcı';
+                indicator.textContent = `${name} yazıyor...`;
+                indicator.style.display = 'block';
+            } else {
+                indicator.style.display = 'none';
+            }
+        }
+
+        // Canlı akış: "yazıyor" bilgisi SSE ile gelir. Akış kapalıysa 2 saniyelik yoklama devreye girer.
+        function connectRealtime() {
+            if (realtimeHandle) realtimeHandle();
+            realtimeHandle = app.openRealtime({
+                conversationId: activeConversationId,
+                onTyping: (isTyping) => setTypingIndicator(isTyping),
+                onFallback: () => {
+                    if (!typingPollTimer) typingPollTimer = setInterval(pollTypingStatus, 2000);
+                },
+            });
+        }
+
         async function pollTypingStatus() {
             const indicator = document.getElementById('typingIndicator');
             if (!indicator || !activeConversationId) return;
@@ -320,13 +347,7 @@
             try {
                 const res = await fetch(`/api/typing-status.php?conversation_id=${activeConversationId}`, { credentials: 'include' });
                 const data = await res.json();
-                if (data.success && data.typing) {
-                    const name = activeOtherUser?.username ? app.escapeHtml(activeOtherUser.username) : 'Kullanıcı';
-                    indicator.textContent = `${name} yazıyor...`;
-                    indicator.style.display = 'block';
-                } else {
-                    indicator.style.display = 'none';
-                }
+                setTypingIndicator(Boolean(data.success && data.typing));
             } catch (error) { }
         }
 
@@ -376,6 +397,7 @@
                     openConversation(data.conversation_id, otherUserId, null);
                 } else {
                     activeConversationId = null;
+                    connectRealtime();
                     activeOtherUser = { id: otherUserId, username: null };
                     renderEmptyThreadForNewUser(otherUserId);
                 }
@@ -398,6 +420,7 @@
 
         async function openConversation(conversationId, otherUserId, otherUsername) {
             activeConversationId = conversationId;
+            connectRealtime();
             activeOtherUser = { id: otherUserId, username: otherUsername };
             document.querySelectorAll('.conv-item').forEach(el => el.classList.remove('active'));
             const existingIndicator = document.getElementById('typingIndicator');
@@ -479,6 +502,7 @@
                 if (data.success) {
                     input.value = '';
                     activeConversationId = data.conversation_id;
+                    connectRealtime();
                     await loadThread(activeConversationId, false);
                     loadConversations();
                 } else {

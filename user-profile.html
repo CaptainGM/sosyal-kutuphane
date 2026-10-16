@@ -357,6 +357,14 @@
                     </div>
                 </div>
 
+        <section class="badges-section" aria-labelledby="badgesHeading">
+            <div class="section-head">
+                <h2 id="badgesHeading">Rozetler</h2>
+                <p>Kazanılan rozetler ve ilerleme.</p>
+            </div>
+            <div id="badgesGrid" class="badges-grid"></div>
+        </section>
+
                 <div class="rating-histogram" id="ratingHistogram" style="display:none;">
                     <div class="rating-histogram-title">⭐ Puan Dağılımı</div>
                     <div class="rating-histogram-bars" id="ratingHistogramBars"></div>
@@ -437,6 +445,8 @@
             } else {
                 isOwnProfile = (parseInt(profileUserId) === app?.currentUser?.id);
             }
+
+            app.renderBadges(document.getElementById('badgesGrid'), profileUserId);
 
             await loadUserProfile();
         });
