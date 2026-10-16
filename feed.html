@@ -7,355 +7,154 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#05060b">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-    <title>Sosyal Akış - Sosyal Kütüphane</title>
+    <title>Akış - Sosyal Kütüphane</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/ui.css">
+    <script src="js/motion.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* Akış sayfasına özel stiller: hareket kartları ve öneri satırları. Ortak parçalar css/ui.css'te. */
+
+        .act-card {
+            display: grid;
+            gap: 14px;
+            padding: 18px 20px;
         }
 
-        .container {
-            max-width: 700px;
-            margin: 0 auto;
-            padding: 30px 20px;
-        }
-
-        .page-title {
-            text-align: center;
-            margin-bottom: 30px;
-            color: var(--color-text);
-            font-size: 28px;
-        }
-
-        /* Aktivite Kartı */
-        .activity-card {
-            background: var(--color-surface);
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            margin-bottom: 25px;
-            transition: transform 0.3s;
-        }
-
-        .activity-card:hover {
-            transform: translateY(-3px);
-        }
-
-        /* Üst Bilgi (Header) */
-        .activity-header {
-            padding: 15px 20px;
+        .act-head {
             display: flex;
             align-items: center;
-            gap: 15px;
-            border-bottom: 1px solid var(--color-border);
+            justify-content: space-between;
+            gap: 12px;
         }
 
-        .user-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--color-accent-gradient);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 24px;
-            cursor: pointer;
-            overflow: hidden;
-        }
-
-        .user-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .header-info {
-            flex: 1;
-        }
-
-        .username-link {
-            font-weight: bold;
-            color: var(--color-accent);
+        .act-head .person {
+            color: inherit;
             text-decoration: none;
-            cursor: pointer;
         }
 
-        .username-link:hover {
-            text-decoration: underline;
-        }
-
-        .action-text {
-            color: var(--color-text-muted);
-            font-size: 14px;
-            margin-top: 3px;
-        }
-
-        .activity-date {
-            color: var(--color-text-faint);
-            font-size: 12px;
-            margin-top: 3px;
-        }
-
-        /* Ana İçerik (Body) */
-        .activity-body {
-            padding: 20px;
-            background: var(--color-surface-2);
-            display: flex;
-            gap: 20px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .activity-body:hover {
-            background: var(--color-border);
-        }
-
-        .content-poster {
-            width: 100px;
-            height: 150px;
-            border-radius: 10px;
-            object-fit: cover;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .content-info {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .content-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--color-text);
-            margin-bottom: 10px;
-        }
-
-        .content-type-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            width: fit-content;
-        }
-
-        .badge-movie {
-            background: #e3f2fd;
-            color: #1976d2;
-        }
-
-        .badge-book {
-            background: #e8f5e9;
-            color: #388e3c;
-        }
-
-        .badge-series {
-            background: #f3e5f5;
-            color: #8e24aa;
-        }
-
-        .rating-display {
-            color: #f39c12;
-            font-size: 16px;
-            font-weight: bold;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root:not([data-theme="light"]) .badge-movie {
-                background: rgba(25, 118, 210, 0.25);
-                color: #8ab4f8;
-            }
-
-            :root:not([data-theme="light"]) .badge-book {
-                background: rgba(56, 142, 60, 0.25);
-                color: #81c995;
-            }
-
-            :root:not([data-theme="light"]) .badge-series {
-                background: rgba(142, 36, 170, 0.25);
-                color: #d7aefb;
-            }
-        }
-
-        :root[data-theme="dark"] .badge-movie {
-            background: rgba(25, 118, 210, 0.25);
-            color: #8ab4f8;
-        }
-
-        :root[data-theme="dark"] .badge-book {
-            background: rgba(56, 142, 60, 0.25);
-            color: #81c995;
-        }
-
-        :root[data-theme="dark"] .badge-series {
-            background: rgba(142, 36, 170, 0.25);
-            color: #d7aefb;
-        }
-
-        .comment-preview {
-            color: var(--color-text-muted);
-            font-style: italic;
-            line-height: 1.5;
-            border-left: 3px solid var(--color-accent);
-            padding-left: 12px;
-            margin-top: 10px;
-        }
-
-        /* Alt Bilgi (Footer) */
-        .activity-footer {
-            padding: 12px 20px;
-            border-top: 1px solid var(--color-border);
-            display: flex;
-            gap: 15px;
-        }
-
-        .footer-btn {
-            background: none;
-            border: none;
-            color: var(--color-text-muted);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 15px;
-            border-radius: 8px;
-            transition: transform 0.1s ease, background-color 0.2s ease, color 0.2s ease;
-            font-size: 14px;
-        }
-
-        .footer-btn:hover {
-            background: var(--color-surface-2);
+        .act-head .person-name:hover {
             color: var(--color-accent);
         }
 
-        .footer-btn:active {
-            transform: scale(0.95);
-        }
-
-        .footer-btn.liked {
-            color: var(--color-danger);
-        }
-
-        /* Boş Durum */
-        .empty-state {
-            text-align: center;
-            padding: 80px 20px;
+        .act-time {
+            flex: none;
             color: var(--color-text-faint);
+            font-size: 13px;
         }
 
-        .empty-state h2 {
-            margin-bottom: 15px;
-            color: var(--color-text-muted);
+        .act-body {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 10px 14px 10px 10px;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            background: color-mix(in srgb, var(--color-surface-2) 55%, transparent);
+            color: inherit;
+            text-decoration: none;
+            transition: border-color 0.2s ease, transform 0.2s ease;
         }
 
-        .empty-state p {
-            margin-bottom: 25px;
+        .act-body:hover,
+        .act-body:focus-visible {
+            border-color: rgba(var(--color-accent-rgb), 0.5);
+            outline: none;
+            transform: translateX(4px);
         }
 
-        .empty-state a {
-            display: inline-flex;
+        .act-poster {
+            flex: none;
+            width: 56px;
+            aspect-ratio: 2 / 3;
+            border-radius: 8px;
+            background: var(--color-surface-2);
+            object-fit: cover;
+        }
+
+        .act-info {
+            display: grid;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        .act-title {
+            overflow: hidden;
+            font-size: 16px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .act-meta {
+            display: flex;
+            flex-wrap: wrap;
             align-items: center;
             gap: 8px;
-            padding: 11px 22px;
-            background: #0f172a;
-            color: #f8fafc;
-            border: 1px solid rgba(255, 255, 255, 0.16);
+        }
+
+        .feed-filters {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .reco-list {
+            display: grid;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .reco-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 6px;
+            border-radius: 10px;
+            color: inherit;
             text-decoration: none;
-            border-radius: 9999px;
-            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+
+        .reco-row:hover,
+        .reco-row:focus-visible {
+            background: rgba(var(--color-accent-rgb), 0.1);
+            outline: none;
+        }
+
+        .reco-row img {
+            flex: none;
+            width: 40px;
+            aspect-ratio: 2 / 3;
+            border-radius: 6px;
+            background: var(--color-surface-2);
+            object-fit: cover;
+        }
+
+        .reco-row-text {
+            display: grid;
+            min-width: 0;
+        }
+
+        .reco-row-title {
+            overflow: hidden;
             font-size: 14px;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
-            transition: all 0.2s ease;
+            font-weight: 700;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
-        .empty-state a:hover {
-            background: #1e293b;
-            border-color: rgba(255, 255, 255, 0.3);
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-            color: #ffffff;
+        .more-wrap {
+            display: grid;
+            justify-items: center;
+            gap: 8px;
+            margin-top: 8px;
         }
-
-        .loading {
-            text-align: center;
-            padding: 60px;
-            color: var(--color-accent);
-            font-size: 18px;
-        }
-
-        .load-more-container {
-            text-align: center;
-            padding: 30px;
-        }
-
-        .load-more-btn {
-            background: var(--color-accent-gradient);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            border-radius: 30px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 3px 12px rgba(var(--color-accent-rgb), 0.35);
-            transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.15s ease;
-        }
-
-        .load-more-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(var(--color-accent-rgb), 0.45);
-        }
-
-        .load-more-btn:active {
-            transform: translateY(0) scale(0.98);
-            filter: brightness(0.94);
-        }
-
-        .load-more-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .no-more-activities {
-            color: var(--color-text-faint);
-            font-size: 14px;
-        }
-
-        @media (max-width: 600px) {
-            .activity-body {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-            }
-
-            .content-poster {
-                width: 150px;
-                height: 225px;
-            }
-
-            .comment-preview {
-                border-left: none;
-                border-top: 3px solid var(--color-accent);
-                padding-left: 0;
-                padding-top: 12px;
-            }
-        }
-
     </style>
 </head>
 
 <body>
-    
-    <nav class="navbar">
+<a class="skip-link" href="#main">İçeriğe geç</a>
+<nav class="navbar" aria-label="Ana gezinme">
     <div class="navbar-inner">
         <a href="search.html" class="logo">
             <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="m10 14 5 3-5 3v-6Z"/></svg></span>
@@ -363,11 +162,13 @@
         </a>
         <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button>
         <div class="nav-links">
-            <a href="search.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>Keşfet</a>
-            <a href="feed.html" class="nav-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h6"/></svg>Akış</a>
-            <a href="social.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Sosyal</a>
-            <a href="profile.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profilim</a>
-            <a href="messages.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Mesajlar</a>
+            <a href="search.html" class="nav-link" data-nav="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>Keşfet</a>
+            <a href="tonight.html" class="nav-link" data-nav="tonight"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg>Ne izlesem?</a>
+            <a href="feed.html" class="nav-link active" data-nav="feed" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h6"/></svg>Akış</a>
+            <a href="social.html" class="nav-link" data-nav="social"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Sosyal</a>
+            <a href="profile.html" class="nav-link" data-nav="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profilim</a>
+            <a href="messages.html" class="nav-link" data-nav="messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Mesajlar</a>
+            <a href="admin.html" class="nav-link" data-nav="admin" id="navAdminLink" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>Yönetim</a>
             <div class="nav-icon-wrap">
                 <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="nav-badge" id="notifBadge"></span></button>
                 <div class="nav-panel" id="notifPanel">
@@ -381,44 +182,216 @@
     </div>
     <span id="userWelcome" style="display:none;"></span>
 </nav>
-
-    
-    <div class="container">
-        <div class="reco-section" id="recoSection" style="display:none;">
-            <h2 class="reco-title">✨ Sana Özel Öneriler</h2>
-            <div class="reco-scroll" id="recoScroll"></div>
+    <main id="main" class="page">
+        <div class="page-head">
+            <div>
+                <span class="eyebrow"><span class="dot"></span>Takip akışı</span>
+                <h1 class="page-title">Akış</h1>
+                <p class="page-sub">Takip ettiklerinin izlediklerini, okuduklarını ve yazdığı yorumları tek akışta gör.</p>
+            </div>
+            <div class="page-actions">
+                <a class="btn-glass" href="social.html">
+                    <svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
+                    Kişi bul
+                </a>
+            </div>
         </div>
 
-        <h1 class="page-title" style="display: flex; align-items: center; gap: 10px;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-accent);"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
-            Sosyal Akış
-        </h1>
-        <div id="feedContainer">
-            <div class="loading">Aktiviteler yükleniyor...</div>
+        <div class="split">
+            <div class="stack">
+                <div class="feed-filters" role="group" aria-label="Akış süzgeci">
+                    <button type="button" class="chip" data-filter="all" aria-pressed="true">Hepsi</button>
+                    <button type="button" class="chip" data-filter="comment" aria-pressed="false">Yorumlar</button>
+                    <button type="button" class="chip" data-filter="status" aria-pressed="false">İzleme ve okuma</button>
+                </div>
+                <div id="feedContainer" class="stack" aria-live="polite">
+                    <div class="loading">Aktiviteler yükleniyor...</div>
+                </div>
+            </div>
+
+            <aside class="sticky-side" aria-label="Öneriler">
+                <section class="panel" id="recoSection" hidden>
+                    <h2 class="panel-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+                        Sana özel öneriler
+                    </h2>
+                    <div class="reco-list" id="recoList"></div>
+                </section>
+            </aside>
         </div>
-    </div>
+    </main>
 
     <script src="js/escape-html.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/comment-view.js"></script>
     <script>
-        let allActivities = [];
-        let currentPage = 1;
-        const ITEMS_PER_PAGE = 10;
+        const esc = (value) => app.escapeHtml(value);
+        const PAGE_SIZE = 12;
+        const TYPE_LABEL = { movie: 'Film', series: 'Dizi', book: 'Kitap' };
+
+        let feedItems = [];
+        let visibleCount = PAGE_SIZE;
+        let activeFilter = 'all';
+        let followingCount = 0;
 
         document.addEventListener('DOMContentLoaded', async function () {
             if (typeof app !== 'undefined' && app.initPromise) {
                 await app.initPromise;
             }
-
-            if (!app?.currentUser) {
+            if (!app || !app.currentUser) {
                 window.location.href = 'index.html';
                 return;
             }
 
+            document.querySelectorAll('[data-filter]').forEach(button => {
+                button.addEventListener('click', () => setFilter(button.dataset.filter));
+            });
             loadFeed();
             loadRecommendations();
         });
 
+        function setFilter(name) {
+            activeFilter = name;
+            visibleCount = PAGE_SIZE;
+            document.querySelectorAll('[data-filter]').forEach(button => {
+                button.setAttribute('aria-pressed', button.dataset.filter === name ? 'true' : 'false');
+            });
+            renderFeed();
+        }
+
+        function emptyBlock(iconName, title, hint, cta) {
+            return `<div class="empty">
+                <div class="empty-icon">${app.icon(iconName)}</div>
+                <div class="empty-title">${esc(title)}</div>
+                <p>${esc(hint)}</p>
+                ${cta ? `<a class="btn btn-primary" href="${esc(cta.href)}">${esc(cta.label)}</a>` : ''}
+            </div>`;
+        }
+
+        function posterOf(type, poster) {
+            if (!poster) return 'img/no-poster.svg';
+            return type === 'book' ? String(poster).replace('http://', 'https://') : poster;
+        }
+
+        // --- Veri: izleme/okuma hareketleri ve yorumlar iki istekle gelir, tek akışta birleşir ---
+        async function loadFeed() {
+            const container = document.getElementById('feedContainer');
+            try {
+                const [activityResponse, commentResponse] = await Promise.all([
+                    fetch('/api/feed.php?limit=40', { credentials: 'include' }),
+                    fetch('/api/comments.php?following=true', { credentials: 'include' })
+                ]);
+                const activityData = await activityResponse.json();
+                const commentData = await commentResponse.json();
+                if (!activityData.success) throw new Error(activityData.message || 'Akış alınamadı');
+
+                followingCount = activityData.following_count || 0;
+                const activities = (activityData.activities || []).map(activity => ({ kind: 'status', at: activity.at, data: activity }));
+                const comments = (commentData.success && Array.isArray(commentData.comments) ? commentData.comments : [])
+                    .map(comment => ({ kind: 'comment', at: comment.created_at, data: comment }));
+
+                feedItems = [...activities, ...comments].sort((a, b) => new Date(b.at) - new Date(a.at));
+                renderFeed();
+            } catch (error) {
+                console.error('Akış yükleme hatası:', error);
+                container.innerHTML = '<div class="error-message">Akış yüklenemedi. Sayfayı yenilemeyi dene.</div>';
+            }
+        }
+
+        // --- Görünüm ---
+        function statusLine(activity) {
+            const rated = activity.rating !== null && activity.rating !== undefined;
+            if (activity.type === 'movie') return rated ? 'filmini puanladı' : 'filmini izledi';
+            if (activity.type === 'series') {
+                if (rated) return 'dizisini puanladı';
+                return activity.status === 'watching' ? 'dizisini izliyor' : 'dizisini izledi';
+            }
+            return rated ? 'kitabını puanladı' : 'kitabını okudu';
+        }
+
+        function statusCard(activity) {
+            const user = activity.user;
+            const href = `detail.php?type=${encodeURIComponent(activity.type)}&id=${encodeURIComponent(activity.content_id)}`;
+            return `<article class="panel act-card">
+                <div class="act-head">
+                    <a class="person" href="user-profile.html?id=${Number(user.id)}">
+                        ${app.avatarMarkup(user.avatar_url, user.username, 'sm')}
+                        <span class="person-text"><span class="person-name">${esc(user.username)}</span><span class="person-sub">${esc(statusLine(activity))}</span></span>
+                    </a>
+                    <time class="act-time" datetime="${esc(activity.at)}">${esc(app.getTimeAgo(activity.at))}</time>
+                </div>
+                <a class="act-body" href="${esc(href)}">
+                    <img class="act-poster" src="${esc(posterOf(activity.type, activity.poster))}" alt="" loading="lazy" onerror="this.onerror=null;this.src='img/no-poster.svg'">
+                    <span class="act-info">
+                        <strong class="act-title">${esc(activity.title)}</strong>
+                        <span class="act-meta">
+                            <span class="chip">${esc(TYPE_LABEL[activity.type] || 'İçerik')}</span>
+                            ${activity.rating ? `<span class="chip chip--warm">★ ${esc(activity.rating)}/10</span>` : ''}
+                        </span>
+                    </span>
+                </a>
+            </article>`;
+        }
+
+        function commentCardHtml(comment) {
+            const viewerId = app.currentUser ? app.currentUser.id : null;
+            const actions = `
+                <button type="button" class="cv-action${comment.liked_by_me ? ' is-liked' : ''}" onclick="likeComment(${Number(comment.id)})" aria-label="Beğen">
+                    ${CommentView.heartIcon(comment.liked_by_me)} <span>${Number(comment.likes_count) || 0}</span>
+                </button>`;
+            return CommentView.card(comment, { viewerId, actions, withContent: true });
+        }
+
+        function renderFeed() {
+            const container = document.getElementById('feedContainer');
+
+            if (followingCount === 0) {
+                container.innerHTML = emptyBlock('users', 'Henüz kimseyi takip etmiyorsun',
+                    'Birilerini takip ettiğinde onların izlediklerini, okuduklarını ve yorumlarını burada görürsün.',
+                    { href: 'social.html', label: 'Sana uyan kişileri bul' });
+                return;
+            }
+
+            const items = feedItems.filter(item => activeFilter === 'all' || item.kind === activeFilter);
+            if (items.length === 0) {
+                container.innerHTML = emptyBlock('sparkles', 'Bu süzgeçte gösterecek bir şey yok',
+                    'Takip ettiklerin yeni bir şey izleyip yorum yazdıkça burada görünür.');
+                return;
+            }
+
+            const visible = items.slice(0, visibleCount);
+            const html = visible.map(item => (item.kind === 'status' ? statusCard(item.data) : `<div class="cv-list">${commentCardHtml(item.data)}</div>`)).join('');
+            const more = items.length > visibleCount
+                ? `<div class="more-wrap"><button type="button" class="btn btn-outline" onclick="showMore()">Daha fazla göster</button><span class="faint" style="font-size: 13px;">${visibleCount} / ${items.length}</span></div>`
+                : (items.length > PAGE_SIZE ? '<div class="more-wrap"><span class="faint">Hepsi bu kadar.</span></div>' : '');
+            container.innerHTML = html + more;
+        }
+
+        function showMore() {
+            visibleCount += PAGE_SIZE;
+            renderFeed();
+        }
+
+        async function likeComment(commentId) {
+            try {
+                const response = await fetch('/api/like-comment.php', {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ comment_id: commentId })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    loadFeed();
+                } else {
+                    app.toast(data.message || 'Beğeni eklenemedi', 'error');
+                }
+            } catch (error) {
+                console.error('Beğenme hatası:', error);
+            }
+        }
+
+        // --- Öneriler ---
         async function loadRecommendations() {
             try {
                 const response = await fetch('/api/recommendations.php', { credentials: 'include' });
@@ -426,366 +399,27 @@
                 if (!data.success) return;
 
                 const items = [
-                    ...(data.movies || []).map(m => ({ ...m, type: 'movie', poster: m.poster_path ? `https://image.tmdb.org/t/p/w200${m.poster_path}` : 'img/no-poster.svg' })),
-                    ...(data.series || []).map(s => ({ ...s, type: 'series', poster: s.poster_path ? `https://image.tmdb.org/t/p/w200${s.poster_path}` : 'img/no-poster.svg' })),
-                    ...(data.books || []).map(b => ({ ...b, type: 'book', poster: b.cover_url || 'img/no-poster.svg' }))
-                ];
-
+                    ...(data.movies || []).map(m => ({ ...m, type: 'movie', cover: m.poster_path ? `https://image.tmdb.org/t/p/w154${m.poster_path}` : null })),
+                    ...(data.series || []).map(s => ({ ...s, type: 'series', cover: s.poster_path ? `https://image.tmdb.org/t/p/w154${s.poster_path}` : null })),
+                    ...(data.books || []).map(b => ({ ...b, type: 'book', cover: b.cover_url || null }))
+                ].slice(0, 8);
                 if (items.length === 0) return;
 
-                document.getElementById('recoSection').style.display = 'block';
-                document.getElementById('recoScroll').innerHTML = items.map(item => `
-                    <div class="reco-card" onclick="goToDetail('${item.type}', '${item.id}')">
-                        <img src="${item.poster}" alt="${app.escapeHtml(item.title)}" loading="lazy" onerror="this.src='img/no-poster.svg'">
-                        <div class="reco-card-title">${app.escapeHtml(item.title)}</div>
-                    </div>
+                document.getElementById('recoList').innerHTML = items.map(item => `
+                    <a class="reco-row" href="detail.php?type=${encodeURIComponent(item.type)}&id=${encodeURIComponent(item.id)}">
+                        <img src="${esc(posterOf(item.type, item.cover))}" alt="" loading="lazy" onerror="this.onerror=null;this.src='img/no-poster.svg'">
+                        <span class="reco-row-text">
+                            <span class="reco-row-title">${esc(item.title)}</span>
+                            <span class="person-sub">${esc(TYPE_LABEL[item.type])}</span>
+                        </span>
+                    </a>
                 `).join('');
+                document.getElementById('recoSection').hidden = false;
             } catch (error) {
                 console.error('Öneri yükleme hatası:', error);
             }
-        }
-
-        async function loadFeed() {
-            const container = document.getElementById('feedContainer');
-
-            try {
-                const followingRes = await fetch('/api/get-following.php', { credentials: 'include' });
-                const followingData = await followingRes.json();
-
-                if (!followingData.success || !followingData.following || followingData.following.length === 0) {
-                    showEmptyState('Henüz kimseyi takip etmiyorsunuz', 'Kullanıcıları takip ederek aktivitelerini burada görebilirsiniz.');
-                    return;
-                }
-
-                const followingUsers = followingData.following;
-                const userMap = {};
-                followingUsers.forEach(u => {
-                    userMap[u.id] = u;
-                    userMap[u.username] = u;
-                });
-                let activities = [];
-                for (const user of followingUsers) {
-                    try {
-                        const contentRes = await fetch(`/api/get-user-content.php?user_id=${user.id}`, { credentials: 'include' });
-                        const contentData = await contentRes.json();
-
-                        if (contentData.success && contentData.watched) {
-                            contentData.watched.forEach(movie => {
-                                activities.push({
-                                    type: 'movie_watched',
-                                    userId: user.id,
-                                    username: user.username,
-                                    avatar: user.avatar_url || user.avatar,
-                                    contentType: 'movie',
-                                    contentId: movie.tmdb_id || movie.movie_id,
-                                    contentTitle: movie.title || 'Film',
-                                    poster: movie.poster_path,
-                                    rating: movie.rating,
-                                    likes: 0,
-                                    date: movie.updated_at || new Date().toISOString()
-                                });
-                            });
-                        }
-
-                        if (contentData.success && contentData.read) {
-                            contentData.read.forEach(book => {
-                                activities.push({
-                                    type: 'book_read',
-                                    userId: user.id,
-                                    username: user.username,
-                                    avatar: user.avatar_url || user.avatar,
-                                    contentType: 'book',
-                                    contentId: book.google_books_id || book.book_id,
-                                    contentTitle: book.title || 'Kitap',
-                                    poster: book.cover_url,
-                                    rating: book.rating,
-                                    likes: 0,
-                                    date: book.updated_at || new Date().toISOString()
-                                });
-                            });
-                        }
-
-                        if (contentData.success && contentData.series) {
-                            contentData.series.forEach(series => {
-                                activities.push({
-                                    type: 'series_watching',
-                                    userId: user.id,
-                                    username: user.username,
-                                    avatar: user.avatar_url || user.avatar,
-                                    contentType: 'series',
-                                    contentId: series.tmdb_id || series.series_id,
-                                    contentTitle: series.title || 'Dizi',
-                                    poster: series.poster_path,
-                                    rating: series.rating,
-                                    likes: 0,
-                                    date: series.updated_at || new Date().toISOString()
-                                });
-                            });
-                        }
-                    } catch (e) {
-                        console.error('İçerik yüklenemedi:', e);
-                    }
-                    try {
-                        const commentsRes = await fetch(`/api/comments.php?user_id=${user.id}`, { credentials: 'include' });
-                        const commentsData = await commentsRes.json();
-
-                        if (commentsData.success && commentsData.comments) {
-                            for (const comment of commentsData.comments) {
-                                let contentTitle = 'İçerik';
-                                let poster = null;
-
-                                try {
-                                    if (comment.content_type === 'movie') {
-                                        const movieData = await app.getMovieDetail(comment.content_id);
-                                        if (movieData) {
-                                            contentTitle = movieData.title;
-                                            poster = movieData.poster_path;
-                                        }
-                                    } else if (comment.content_type === 'book') {
-                                        const bookData = await app.getBookDetail(comment.content_id);
-                                        if (bookData?.volumeInfo) {
-                                            contentTitle = bookData.volumeInfo.title;
-                                            poster = bookData.volumeInfo.imageLinks?.thumbnail;
-                                        }
-                                    } else if (comment.content_type === 'series') {
-                                        const seriesData = await app.getSeriesDetail(comment.content_id);
-                                        if (seriesData) {
-                                            contentTitle = seriesData.name;
-                                            poster = seriesData.poster_path;
-                                        }
-                                    }
-                                } catch (e) {
-                                    console.error('İçerik bilgisi alınamadı:', e);
-                                }
-
-                                activities.push({
-                                    type: 'comment',
-                                    userId: user.id,
-                                    username: user.username,
-                                    avatar: user.avatar_url || user.avatar,
-                                    contentType: comment.content_type,
-                                    contentId: comment.content_id,
-                                    contentTitle: contentTitle,
-                                    poster: poster,
-                                    commentText: comment.comment_text,
-                                    likes: 0,
-                                    date: comment.created_at
-                                });
-                            }
-                        }
-                    } catch (e) {
-                        console.error('Yorumlar yüklenemedi:', e);
-                    }
-                }
-                activities.sort((a, b) => new Date(b.date) - new Date(a.date));
-                allActivities = activities;
-                currentPage = 1;
-                const ITEMS_PER_PAGE = 10;
-
-                if (activities.length === 0) {
-                    showEmptyState('Takip ettiklerinizin aktivitesi yok', 'Takip ettiğiniz kullanıcılar film/dizi izleyip kitap okudukça burada görünecek.');
-                    return;
-                }
-                const initialActivities = activities.slice(0, ITEMS_PER_PAGE);
-                displayActivities(initialActivities, activities.length > ITEMS_PER_PAGE);
-
-            } catch (error) {
-                console.error('Feed yükleme hatası:', error);
-                container.innerHTML = '<div class="empty-state"><h2>❌ Bir hata oluştu</h2><p>Lütfen sayfayı yenileyin.</p></div>';
-            }
-        }
-
-        function showEmptyState(title, message) {
-            const container = document.getElementById('feedContainer');
-            container.innerHTML = `
-                <div class="empty-state">
-                    <div style="width: 56px; height: 56px; margin: 0 auto 16px; border-radius: 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; color: var(--color-text-muted);">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                    </div>
-                    <h2>${title}</h2>
-                    <p>${message}</p>
-                    <a href="social.html">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
-                        Kullanıcıları Keşfet
-                    </a>
-                </div>
-            `;
-        }
-
-        function displayActivities(activities, hasMore = false) {
-            const container = document.getElementById('feedContainer');
-            let html = '';
-
-            activities.forEach((activity, idx) => {
-                const avatarContent = getAvatarContent(activity.avatar, activity.username);
-                const safeUsername = app.escapeHtml(activity.username);
-                const safeContentTitle = app.escapeHtml(activity.contentTitle);
-                const safeCommentText = app.escapeHtml(activity.commentText);
-                const timeAgo = getTimeAgo(activity.date);
-                const actionText = getActionText(activity);
-                const typeBadge = activity.contentType === 'movie'
-                    ? '<span class="content-type-badge badge-movie">Film</span>'
-                    : activity.contentType === 'series'
-                        ? '<span class="content-type-badge badge-series">Dizi</span>'
-                        : '<span class="content-type-badge badge-book">Kitap</span>';
-                let posterUrl = 'img/no-poster.svg';
-                if ((activity.contentType === 'movie' || activity.contentType === 'series') && activity.poster) {
-                    posterUrl = `https://image.tmdb.org/t/p/w200${activity.poster}`;
-                } else if (activity.contentType === 'book' && activity.poster) {
-                    posterUrl = activity.poster.replace('http://', 'https://');
-                }
-
-                html += `
-                    <div class="activity-card">
-                        
-                        <div class="activity-header">
-                            <div class="user-avatar" onclick="goToUserProfile(${activity.userId})">
-                                ${avatarContent}
-                            </div>
-                            <div class="header-info">
-                                <span class="username-link" onclick="goToUserProfile(${activity.userId})">${safeUsername}</span>
-                                <div class="action-text">${actionText}</div>
-                                <div class="activity-date">${timeAgo}</div>
-                            </div>
-                        </div>
-
-
-                        <div class="activity-body" onclick="goToDetail('${activity.contentType}', '${activity.contentId}')">
-                            <img class="content-poster" src="${posterUrl}" alt="${safeContentTitle}" loading="lazy" onerror="this.src='img/no-poster.svg'">
-                            <div class="content-info">
-                                ${typeBadge}
-                                <div class="content-title">${safeContentTitle}</div>
-                                ${activity.rating ? `<div class="rating-display">⭐ ${activity.rating}/10 puan verdi</div>` : ''}
-                                ${activity.commentText ? `<div class="comment-preview">"${safeCommentText.substring(0, 150)}${safeCommentText.length > 150 ? '...' : ''}"<br><a href="detail.php?type=${activity.contentType}&id=${activity.contentId}" style="color:var(--color-accent);">daha fazlasını oku</a></div>` : ''}
-                            </div>
-                        </div>
-                        
-                        
-                        <div class="activity-footer">
-                            <button class="footer-btn" data-likes="${activity.likes || 0}" onclick="likeActivity(this)">
-                                ❤️ Beğen (${activity.likes || 0})
-                            </button>
-                            <button class="footer-btn" onclick="goToDetail('${activity.contentType}', '${activity.contentId}')">
-                                💬 Yorum Yap
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-            if (hasMore) {
-                html += `
-                    <div class="load-more-container">
-                        <button class="load-more-btn" onclick="loadMoreActivities()">
-                            📥 Daha Fazla Yükle
-                        </button>
-                    </div>
-                `;
-            } else if (allActivities.length > ITEMS_PER_PAGE) {
-                html += `
-                    <div class="load-more-container">
-                        <p class="no-more-activities">✅ Tüm aktiviteler yüklendi</p>
-                    </div>
-                `;
-            }
-
-            container.innerHTML = html;
-        }
-        function loadMoreActivities() {
-            currentPage++;
-            const startIdx = 0;
-            const endIdx = currentPage * ITEMS_PER_PAGE;
-            const activitiesToShow = allActivities.slice(startIdx, endIdx);
-            const hasMore = endIdx < allActivities.length;
-            displayActivities(activitiesToShow, hasMore);
-            window.scrollTo({
-                top: document.body.scrollHeight - 800,
-                behavior: 'smooth'
-            });
-        }
-
-        function getAvatarContent(avatar, username) {
-            const safeUsername = app.escapeHtml(username);
-            if (avatar && avatar.startsWith('http')) {
-                return `<img src="${app.escapeHtml(avatar)}" alt="${safeUsername}">`;
-            } else if (avatar && avatar.trim() !== '') {
-                // avatar_url artık sunucu tarafında yalnızca http(s) URL olarak doğrulanıyor
-                // (bkz. api/user-profile.php); buraya düşen serbest metin/emoji kısmını da kaçışlıyoruz.
-                return `<span style="font-size: 28px;">${app.escapeHtml(avatar)}</span>`;
-            } else {
-                return safeUsername.charAt(0).toUpperCase();
-            }
-        }
-
-        function getActionText(activity) {
-            const title = app.escapeHtml(activity.contentTitle);
-            switch (activity.type) {
-                case 'movie_watched':
-                    return activity.rating
-                        ? `🎬 <strong>${title}</strong> filmini oyladı`
-                        : `🎬 <strong>${title}</strong> filmini izledi`;
-                case 'book_read':
-                    return activity.rating
-                        ? `📚 <strong>${title}</strong> kitabını oyladı`
-                        : `📚 <strong>${title}</strong> kitabını okudu`;
-                case 'series_watching':
-                    return activity.rating
-                        ? `📺 <strong>${title}</strong> dizisini oyladı`
-                        : `📺 <strong>${title}</strong> dizisini izliyor`;
-                case 'comment':
-                    return `💬 <strong>${title}</strong> hakkında yorum yaptı`;
-                default:
-                    return 'bir aktivite gerçekleştirdi';
-            }
-        }
-
-        function getTimeAgo(dateString) {
-            const date = new Date(dateString);
-            const now = new Date();
-            const diffMs = now - date;
-            const diffMins = Math.floor(diffMs / 60000);
-            const diffHours = Math.floor(diffMs / 3600000);
-            const diffDays = Math.floor(diffMs / 86400000);
-
-            if (diffMins < 1) return 'az önce';
-            if (diffMins < 60) return `${diffMins} dakika önce`;
-            if (diffHours < 24) return `${diffHours} saat önce`;
-            if (diffDays < 7) return `${diffDays} gün önce`;
-            if (diffDays < 30) return `${Math.floor(diffDays / 7)} hafta önce`;
-
-            return date.toLocaleDateString('tr-TR');
-        }
-
-        function goToUserProfile(userId) {
-            window.location.href = `user-profile.html?id=${userId}`;
-        }
-
-        function goToDetail(type, id) {
-            window.location.href = `detail.php?type=${type}&id=${id}`;
-        }
-
-        function likeActivity(btn) {
-            btn.classList.toggle('liked');
-            let currentLikes = parseInt(btn.dataset.likes) || 0;
-
-            if (btn.classList.contains('liked')) {
-                currentLikes++;
-                btn.dataset.likes = currentLikes;
-                btn.innerHTML = `❤️ Beğenildi (${currentLikes})`;
-            } else {
-                currentLikes = Math.max(0, currentLikes - 1);
-                btn.dataset.likes = currentLikes;
-                btn.innerHTML = `❤️ Beğen (${currentLikes})`;
-            }
-        }
-
-        function logout() {
-            if (app) {
-                app.logout();
-            }
-            window.location.href = 'index.html';
         }
     </script>
 </body>
 
 </html>
-
