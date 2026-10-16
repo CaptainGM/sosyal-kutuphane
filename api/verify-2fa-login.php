@@ -1,6 +1,7 @@
 <?php
 require_once 'config.php';
 require_once 'totp.php';
+require_once __DIR__ . '/lib/audit.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonResponse(['success' => false, 'message' => 'Geçersiz istek'], 405);
@@ -51,9 +52,14 @@ if (!$verified) {
 clearLoginAttempts($db, $rateLimitKey);
 unset($_SESSION['pending_2fa_user_id']);
 
+if (($user->status ?? 'active') === 'suspended') {
+    jsonResponse(['success' => false, 'message' => 'Hesabınız askıya alındı. Destek için yönetici ile iletişime geçin.', 'suspended' => true], 403);
+}
+
 $_SESSION['user_id'] = $user->_id;
 $_SESSION['username'] = $user->username;
 $_SESSION['email'] = $user->email;
+recordLogin($db, $user->_id);
 
 jsonResponse([
     'success' => true,

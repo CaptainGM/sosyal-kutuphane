@@ -7,6 +7,7 @@ if (PHP_SAPI !== 'cli' && getenv('ALLOW_WEB_SETUP') !== '1') {
 }
 
 require_once 'config.php';
+require_once __DIR__ . '/lib/demo-seed.php';
 
 header('Content-Type: text/html; charset=utf-8');
 echo "<h2>📋 MongoDB İndeksleri Oluşturuluyor...</h2>";
@@ -37,6 +38,8 @@ $indexPlans = [
     ],
     'comments' => [
         ['key' => ['content_type' => 1, 'content_id' => 1]],
+        ['key' => ['content_type' => 1, 'content_id' => 1, 'season_number' => 1, 'episode_number' => 1]],
+        ['key' => ['user_id' => 1, 'created_at' => -1]],
         ['key' => ['parent_comment_id' => 1]],
         ['key' => ['user_id' => 1]],
     ],
@@ -95,6 +98,26 @@ $indexPlans = [
     'release_reminders' => [
         ['key' => ['user_id' => 1, 'tmdb_id' => 1], 'unique' => true],
     ],
+    // Sezon sohbeti: kullanıcının izlediğini işaretlediği bölümler.
+    'user_episode_progress' => [
+        ['key' => ['user_id' => 1, 'series_id' => 1, 'season' => 1, 'episode' => 1], 'unique' => true],
+    ],
+    // Yönetici geçmişi: düzenleme sürümleri, silinen yorum arşivi, işlem günlüğü ve giriş geçmişi.
+    'comment_revisions' => [
+        ['key' => ['comment_id' => 1, 'created_at' => 1]],
+    ],
+    'deleted_comments' => [
+        ['key' => ['deleted_at' => -1]],
+        ['key' => ['comment.user_id' => 1]],
+    ],
+    'audit_log' => [
+        ['key' => ['created_at' => -1]],
+        ['key' => ['target_type' => 1, 'target_id' => 1, 'created_at' => -1]],
+    ],
+    'login_history' => [
+        ['key' => ['user_id' => 1, 'at' => -1]],
+        ['key' => ['at' => 1], 'expireAfterSeconds' => 7776000], // 90 gün
+    ],
 ];
 
 $successCount = 0;
@@ -148,6 +171,11 @@ foreach ($demoUsers as [$username, $email, $bio]) {
         'updated_at' => new MongoDB\BSON\UTCDateTime(),
     ]);
     echo "✅ Kullanıcı eklendi: $username (şifre: 123456)<br>";
+}
+
+$seeded = seedDemoLibraries($db);
+if ($seeded > 0) {
+    echo "🎬 Demo kütüphaneleri eklendi ($seeded kayıt): zevk eşleşmesi ve rozetler demo hesaplarda görünür<br>";
 }
 
 echo "<hr><h3>📊 Özet: $successCount koleksiyon indekslendi, $errorCount hata</h3>";

@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/lib/audit.php';
 requireLogin();
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -97,17 +98,22 @@ if ($method === 'POST') {
         jsonResponse(['success' => false, 'message' => 'Şikayet bulunamadı'], 404);
     }
 
+    $adminId = (int) getCurrentUserId();
+    $resolved = ['$set' => [
+        'status' => 'resolved',
+        'resolved_by' => $adminId,
+        'resolved_at' => new MongoDB\BSON\UTCDateTime(),
+        'resolution' => $action,
+    ]];
+
     if ($action === 'delete_comment') {
-        $commentId = $report->comment_id;
-        $deletedIds = [$commentId];
-        foreach ($db->comments->find(['parent_comment_id' => $commentId], ['projection' => ['_id' => 1]]) as $reply) {
-            $deletedIds[] = $reply->_id;
-        }
-        $db->comments->deleteMany(['$or' => [['_id' => $commentId], ['parent_comment_id' => $commentId]]]);
-        $db->comment_likes->deleteMany(['comment_id' => ['$in' => $deletedIds]]);
-        $db->comment_reports->updateMany(['comment_id' => $commentId], ['$set' => ['status' => 'resolved']]);
+        // Yorum ve yanıtları arşive taşınır (yönetici geri yükleyebilir); aynı yoruma gelen tüm şikâyetler çözülür.
+        archiveAndDeleteComment($db, (int) $report->comment_id, $adminId, 'admin', 'Şikâyet üzerine: ' . $report->reason);
+        $db->comment_reports->updateMany(['comment_id' => $report->comment_id], $resolved);
+        auditLog($db, $adminId, 'report.delete_comment', 'comment', $report->comment_id, ['report_id' => $reportId]);
     } else {
-        $db->comment_reports->updateOne(['_id' => $reportId], ['$set' => ['status' => 'resolved']]);
+        $db->comment_reports->updateOne(['_id' => $reportId], $resolved);
+        auditLog($db, $adminId, 'report.dismiss', 'report', $reportId);
     }
 
     jsonResponse(['success' => true]);

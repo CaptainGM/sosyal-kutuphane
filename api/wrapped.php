@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/lib/taste.php';
 requireLogin();
 
 // Yıllık özet — ayrı bir "watched_at" alanı yok, updated_at vekil olarak kullanılır.
@@ -14,7 +15,8 @@ $start = new MongoDB\BSON\UTCDateTime(strtotime("$year-01-01 00:00:00") * 1000);
 $end = new MongoDB\BSON\UTCDateTime(strtotime(($year + 1) . "-01-01 00:00:00") * 1000);
 $dateMatch = ['updated_at' => ['$gte' => $start, '$lt' => $end]];
 
-function typeSummary($db, string $statusCollectionName, string $contentCollectionName, string $idField, int $userId, array $dateMatch, string $statusValue): array {
+// Bir türün özeti. $type: movie|series|book; $publicField ve $posterField içerik belgesindeki alan adlarıdır.
+function typeSummary($db, string $statusCollectionName, string $contentCollectionName, string $idField, int $userId, array $dateMatch, string $statusValue, string $type, string $publicField, string $posterField): array {
     $baseMatch = array_merge(['user_id' => $userId, 'status' => $statusValue], $dateMatch);
     $count = $db->$statusCollectionName->countDocuments($baseMatch);
 
@@ -34,15 +36,20 @@ function typeSummary($db, string $statusCollectionName, string $contentCollectio
     ]), false);
     $top = null;
     if ($topAgg) {
+        $content = $topAgg[0]->content;
         $top = [
-            'title' => $topAgg[0]->content->title ?? 'Bilinmiyor',
+            'type' => $type,
+            'title' => $content->title ?? 'Bilinmiyor',
             'rating' => $topAgg[0]->rating,
+            'content_id' => $content->$publicField ?? null,
+            'poster' => tasteImageUrl($type, $content->$posterField ?? null),
         ];
     }
 
     return ['count' => $count, 'ratings_given' => $ratingsGiven, 'avg_rating' => $avgRating, 'top' => $top];
 }
 
+// Tür adı sayıları. Detay sayfası türleri TMDB kimliği (sayı) olarak da kaydeder; Türkçe adlara çevrilir.
 function genreCounts($db, string $statusCollectionName, string $contentCollectionName, string $idField, int $userId, array $dateMatch, string $statusValue): array {
     $pipeline = [
         ['$match' => array_merge(['user_id' => $userId, 'status' => $statusValue], $dateMatch)],
@@ -55,19 +62,29 @@ function genreCounts($db, string $statusCollectionName, string $contentCollectio
     $rows = iterator_to_array($db->$statusCollectionName->aggregate($pipeline), false);
     $counts = [];
     foreach ($rows as $r) {
-        $g = $r->_id;
-        $name = is_object($g) ? ($g->name ?? null) : (is_string($g) ? $g : null);
-        if ($name === null) {
-            continue;
+        foreach (tasteGenreNames([$r->_id]) as $name) {
+            $counts[$name] = ($counts[$name] ?? 0) + $r->count;
         }
-        $counts[$name] = ($counts[$name] ?? 0) + $r->count;
     }
     return $counts;
 }
 
-$movies = typeSummary($db, 'user_movie_status', 'movies', 'movie_id', $userId, $dateMatch, 'watched');
-$series = typeSummary($db, 'user_series_status', 'series', 'series_id', $userId, $dateMatch, 'watched');
-$books = typeSummary($db, 'user_book_status', 'books', 'book_id', $userId, $dateMatch, 'read');
+// Ay ay (1-12) bitirilen içerik sayısı.
+function monthlyCounts($db, string $statusCollectionName, int $userId, array $dateMatch, string $statusValue): array {
+    $rows = $db->$statusCollectionName->aggregate([
+        ['$match' => array_merge(['user_id' => $userId, 'status' => $statusValue], $dateMatch)],
+        ['$group' => ['_id' => ['$month' => '$updated_at'], 'count' => ['$sum' => 1]]],
+    ]);
+    $months = array_fill(1, 12, 0);
+    foreach ($rows as $r) {
+        $months[(int) $r->_id] = (int) $r->count;
+    }
+    return $months;
+}
+
+$movies = typeSummary($db, 'user_movie_status', 'movies', 'movie_id', $userId, $dateMatch, 'watched', 'movie', 'tmdb_id', 'poster_path');
+$series = typeSummary($db, 'user_series_status', 'series', 'series_id', $userId, $dateMatch, 'watched', 'series', 'tmdb_id', 'poster_path');
+$books = typeSummary($db, 'user_book_status', 'books', 'book_id', $userId, $dateMatch, 'read', 'book', 'google_books_id', 'cover_url');
 
 $genreTotals = [];
 foreach ([
@@ -80,12 +97,27 @@ foreach ([
 }
 arsort($genreTotals);
 $favoriteGenre = array_key_first($genreTotals);
+$topGenres = [];
+foreach (array_slice($genreTotals, 0, 5, true) as $name => $c) {
+    $topGenres[] = ['name' => (string) $name, 'count' => (int) $c];
+}
+
+$monthly = array_fill(1, 12, 0);
+foreach ([
+    monthlyCounts($db, 'user_movie_status', $userId, $dateMatch, 'watched'),
+    monthlyCounts($db, 'user_series_status', $userId, $dateMatch, 'watched'),
+    monthlyCounts($db, 'user_book_status', $userId, $dateMatch, 'read'),
+] as $months) {
+    foreach ($months as $month => $c) {
+        $monthly[$month] += $c;
+    }
+}
 
 // Yılın en yüksek puanlısı: üç türden en yüksek puanlanan tek içerik.
 $bestOfYear = null;
-foreach ([['type' => 'movie', 'label' => '🎬', 'data' => $movies['top']], ['type' => 'series', 'label' => '📺', 'data' => $series['top']], ['type' => 'book', 'label' => '📚', 'data' => $books['top']]] as $candidate) {
-    if ($candidate['data'] && ($bestOfYear === null || $candidate['data']['rating'] > $bestOfYear['rating'])) {
-        $bestOfYear = ['type' => $candidate['type'], 'label' => $candidate['label'], 'title' => $candidate['data']['title'], 'rating' => $candidate['data']['rating']];
+foreach ([$movies['top'], $series['top'], $books['top']] as $candidate) {
+    if ($candidate && ($bestOfYear === null || $candidate['rating'] > $bestOfYear['rating'])) {
+        $bestOfYear = $candidate;
     }
 }
 
@@ -107,6 +139,8 @@ jsonResponse([
     'total_comments' => $totalComments,
     'new_followers' => $newFollowers,
     'favorite_genre' => $favoriteGenre,
+    'top_genres' => $topGenres,
+    'monthly' => array_values($monthly),
     'best_of_year' => $bestOfYear,
 ]);
 ?>
