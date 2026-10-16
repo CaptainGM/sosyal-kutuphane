@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#05060b">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <title>Ne İzlesem? - Sosyal Kütüphane</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/ui.css">
+    <script src="js/motion.js"></script>
+    <style>
+        /* Akşam seçici: süre ve ruh haline göre tek öneri, çark animasyonuyla. */
+
+        .picker-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 390px) minmax(0, 1fr);
+            gap: 28px;
+            align-items: start;
+        }
+
+        .picker-controls {
+            display: grid;
+            gap: 22px;
+        }
+
+        .control-group {
+            display: grid;
+            gap: 10px;
+        }
+
+        .control-label {
+            color: var(--color-text-muted);
+            font-size: 12.5px;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .chip-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .chip-group button.chip small {
+            opacity: 0.75;
+            font-weight: 700;
+        }
+
+        .roll-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 16px 24px;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: var(--radius-pill);
+            background: var(--color-accent-gradient);
+            color: #ffffff;
+            font: inherit;
+            font-size: 17px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 20px 44px -18px rgba(var(--color-accent-rgb), 0.95);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+        }
+
+        .roll-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+        }
+
+        .roll-btn:focus-visible {
+            outline: none;
+            box-shadow: var(--focus-ring);
+        }
+
+        .roll-btn:disabled {
+            cursor: progress;
+            opacity: 0.75;
+        }
+
+        .roll-btn svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .controls-note {
+            color: var(--color-text-faint);
+            font-size: 13px;
+            text-align: center;
+        }
+
+        /* --- Sahne: çark + sonuç --- */
+        .picker-stage {
+            display: grid;
+            gap: 22px;
+            min-width: 0;
+        }
+
+        .reel {
+            position: relative;
+            height: 214px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+            -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+            mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+        }
+
+        .reel::after {
+            content: '';
+            position: absolute;
+            top: 9px;
+            bottom: 9px;
+            left: 50%;
+            width: 132px;
+            margin-left: -66px;
+            border: 2px solid var(--color-accent);
+            border-radius: 16px;
+            box-shadow: 0 0 32px rgba(var(--color-accent-rgb), 0.65);
+            pointer-events: none;
+        }
+
+        .reel-track {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            height: 100%;
+            padding-left: calc(50% - 60px);
+            will-change: transform;
+        }
+
+        .reel-track img {
+            flex: none;
+            width: 120px;
+            height: 180px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: var(--color-surface-2);
+        }
+
+        .pick-result {
+            position: relative;
+            isolation: isolate;
+            display: grid;
+            grid-template-columns: 230px minmax(0, 1fr);
+            gap: 28px;
+            align-items: center;
+            padding: 26px;
+            overflow: hidden;
+            border: 1px solid rgba(var(--color-accent-rgb), 0.45);
+            border-radius: var(--radius-lg);
+            color: #ffffff;
+            box-shadow: 0 30px 70px -34px rgba(var(--color-accent-rgb), 0.7);
+            animation: pick-reveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        .pick-result::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: -2;
+            background: var(--pick-bg, var(--color-accent-gradient)) center / cover no-repeat;
+            filter: brightness(0.5) saturate(1.2);
+        }
+
+        .pick-result::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            background: linear-gradient(100deg, rgba(5, 6, 11, 0.82) 0%, rgba(5, 6, 11, 0.5) 100%);
+        }
+
+        @keyframes pick-reveal {
+            from {
+                opacity: 0;
+                transform: translateY(22px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        .pick-poster {
+            width: 100%;
+            aspect-ratio: 2 / 3;
+            border-radius: 18px;
+            object-fit: cover;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 30px 60px -26px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.18);
+        }
+
+        .pick-body {
+            display: grid;
+            justify-items: start;
+            gap: 14px;
+            min-width: 0;
+            text-align: left;
+        }
+
+        .pick-title {
+            font-size: clamp(28px, 4vw, 46px);
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -0.035em;
+            text-wrap: balance;
+        }
+
+        .pick-title small {
+            font-size: 0.45em;
+            font-weight: 700;
+            opacity: 0.8;
+        }
+
+        .pick-reason {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            width: fit-content;
+            max-width: 100%;
+            padding: 8px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.24);
+            border-radius: var(--radius-pill);
+            background: rgba(255, 255, 255, 0.12);
+            font-size: 13.5px;
+            font-weight: 700;
+        }
+
+        .pick-result .eyebrow {
+            border-color: rgba(255, 255, 255, 0.28);
+            background: rgba(255, 255, 255, 0.14);
+            color: #ffffff;
+        }
+
+        .pick-result .chip {
+            border-color: rgba(255, 255, 255, 0.24);
+            background: rgba(255, 255, 255, 0.14);
+            color: #ffffff;
+        }
+
+        .pick-overview {
+            max-width: 62ch;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.7;
+        }
+
+        .pick-result .btn-glass {
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+        }
+
+        .alt-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 14px;
+        }
+
+        .alt-card {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            background: var(--glass-bg);
+            color: var(--color-text);
+            text-decoration: none;
+            transition: border-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .alt-card:hover,
+        .alt-card:focus-visible {
+            border-color: rgba(var(--color-accent-rgb), 0.55);
+            transform: translateY(-3px);
+            outline: none;
+        }
+
+        .alt-card img {
+            flex: none;
+            width: 54px;
+            height: 81px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: var(--color-surface-2);
+        }
+
+        .alt-card strong {
+            display: block;
+            font-size: 14.5px;
+            line-height: 1.3;
+        }
+
+        .alt-card span {
+            color: var(--color-text-faint);
+            font-size: 12.5px;
+        }
+
+        .history-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stage-empty {
+            min-height: 320px;
+            align-content: center;
+        }
+
+        @media (max-width: 900px) {
+            .picker-grid {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .pick-result {
+                grid-template-columns: 1fr;
+            }
+
+            .pick-poster {
+                max-width: 220px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<a class="skip-link" href="#main">İçeriğe geç</a>
+<nav class="navbar" aria-label="Ana gezinme">
+    <div class="navbar-inner">
+        <a href="search.html" class="logo">
+            <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="m10 14 5 3-5 3v-6Z"/></svg></span>
+            <span>Sosyal Kütüphane</span>
+        </a>
+        <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button>
+        <div class="nav-links">
+            <a href="search.html" class="nav-link" data-nav="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>Keşfet</a>
+            <a href="tonight.html" class="nav-link active" data-nav="tonight" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg>Ne izlesem?</a>
+            <a href="feed.html" class="nav-link" data-nav="feed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h6"/></svg>Akış</a>
+            <a href="social.html" class="nav-link" data-nav="social"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Sosyal</a>
+            <a href="profile.html" class="nav-link" data-nav="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profilim</a>
+            <a href="messages.html" class="nav-link" data-nav="messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Mesajlar</a>
+            <a href="admin.html" class="nav-link" data-nav="admin" id="navAdminLink" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>Yönetim</a>
+            <div class="nav-icon-wrap">
+                <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="nav-badge" id="notifBadge"></span></button>
+                <div class="nav-panel" id="notifPanel">
+                    <div class="nav-panel-header">Bildirimler</div>
+                    <div class="nav-panel-empty">Yükleniyor...</div>
+                </div>
+            </div>
+            <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir"><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
+            <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
+        </div>
+    </div>
+    <span id="userWelcome" style="display:none;"></span>
+</nav>
+    <main id="main" class="page">
+        <header class="page-head">
+            <div>
+                <span class="eyebrow"><span class="dot"></span>Akşam seçici</span>
+                <h1 class="page-title">Bu akşam <span class="gradient-text">ne izlesek?</span></h1>
+                <p class="page-sub">Süreni ve ruh halini seç, gerisini bize bırak. Kütüphanende olanları önermeyiz; beğenmezsen tek tıkla başka bir öneri iste.</p>
+            </div>
+        </header>
+
+        <div class="picker-grid">
+            <section class="panel picker-controls" aria-label="Seçim ayarları">
+                <div class="control-group">
+                    <span class="control-label" id="kindLabel">Ne arıyorsun?</span>
+                    <div class="seg" role="group" aria-labelledby="kindLabel">
+                        <button type="button" class="seg-btn active" data-kind="movie" aria-pressed="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="20" x="2" y="2" rx="2.18" ry="2.18"/><line x1="7" x2="7" y1="2" y2="22"/><line x1="17" x2="17" y1="2" y2="22"/><line x1="2" x2="22" y1="12" y2="12"/></svg>
+                            Film
+                        </button>
+                        <button type="button" class="seg-btn" data-kind="series" aria-pressed="false">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
+                            Dizi
+                        </button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <span class="control-label" id="durationLabel">Ne kadar vaktin var?</span>
+                    <div class="chip-group" id="durationGroup" role="group" aria-labelledby="durationLabel"></div>
+                </div>
+
+                <div class="control-group">
+                    <span class="control-label" id="moodLabel">Ruh halin? <small class="faint">(en fazla 3)</small></span>
+                    <div class="chip-group" id="moodGroup" role="group" aria-labelledby="moodLabel"></div>
+                </div>
+
+                <button type="button" class="roll-btn" id="rollBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg>
+                    <span id="rollLabel">Çevir</span>
+                </button>
+                <p class="controls-note" id="controlsNote">Seçim yapmak zorunda değilsin: boş bırakırsan popüler ve beğenilen yapımlardan seçeriz.</p>
+            </section>
+
+            <section class="picker-stage" id="pickerStage" aria-live="polite" aria-label="Öneri">
+                <div class="empty stage-empty">
+                    <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg></div>
+                    <div class="empty-title">Hazır olduğunda çevir</div>
+                    <div>Öneri burada beliriyor: afişler çark gibi dönüp birinde duruyor.</div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="js/escape-html.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        const DURATIONS = {
+            movie: [['short', 'Kısa', '100 dk\'ya kadar'], ['medium', 'Orta', '100–140 dk'], ['long', 'Uzun', '140 dk üstü'], ['any', 'Fark etmez', '']],
+            series: [['short', 'Kısa bölüm', '30 dk\'ya kadar'], ['medium', 'Orta', '30–50 dk'], ['long', 'Uzun', '50 dk üstü'], ['any', 'Fark etmez', '']],
+        };
+        const MOODS = [
+            ['heyecan', 'Heyecanlı'], ['gerilim', 'Gerilim'], ['komedi', 'Eğlenceli'], ['duygusal', 'Duygusal'],
+            ['bilimkurgu', 'Bilim kurgu'], ['korku', 'Korku'], ['aile', 'Aile'], ['gercek', 'Gerçek hikâye'],
+        ];
+        const MAX_MOODS = 3;
+        const REEL_ITEM_STEP = 134; // 120px afiş + 14px boşluk
+        const state = { kind: 'movie', duration: 'any', moods: new Set(), busy: false, history: [] };
+
+        function syncUrl() {
+            const params = new URLSearchParams();
+            if (state.kind !== 'movie') params.set('kind', state.kind);
+            if (state.duration !== 'any') params.set('duration', state.duration);
+            if (state.moods.size) params.set('moods', [...state.moods].join(','));
+            const query = params.toString();
+            history.replaceState(null, '', query ? `?${query}` : window.location.pathname);
+        }
+
+        function renderDurations() {
+            document.getElementById('durationGroup').innerHTML = DURATIONS[state.kind].map(([key, label, hint]) =>
+                `<button type="button" class="chip" data-duration="${key}" aria-pressed="${state.duration === key}">${label}${hint ? ` <small>${hint}</small>` : ''}</button>`
+            ).join('');
+        }
+
+        function renderMoods() {
+            document.getElementById('moodGroup').innerHTML = MOODS.map(([key, label]) =>
+                `<button type="button" class="chip" data-mood="${key}" aria-pressed="${state.moods.has(key)}">${label}</button>`
+            ).join('');
+        }
+
+        function setKind(kind) {
+            state.kind = kind;
+            document.querySelectorAll('[data-kind]').forEach((button) => {
+                const active = button.dataset.kind === kind;
+                button.classList.toggle('active', active);
+                button.setAttribute('aria-pressed', String(active));
+            });
+            renderDurations();
+            syncUrl();
+        }
+
+        document.addEventListener('click', (event) => {
+            const kindBtn = event.target.closest('[data-kind]');
+            const durationBtn = event.target.closest('[data-duration]');
+            const moodBtn = event.target.closest('[data-mood]');
+            if (kindBtn) {
+                setKind(kindBtn.dataset.kind);
+            } else if (durationBtn) {
+                state.duration = durationBtn.dataset.duration;
+                renderDurations();
+                syncUrl();
+            } else if (moodBtn) {
+                const mood = moodBtn.dataset.mood;
+                if (state.moods.has(mood)) {
+                    state.moods.delete(mood);
+                } else if (state.moods.size >= MAX_MOODS) {
+                    app.toast(`En fazla ${MAX_MOODS} ruh hali seçebilirsin`, 'error');
+                } else {
+                    state.moods.add(mood);
+                }
+                renderMoods();
+                syncUrl();
+            }
+        });
+
+        function setRolling(rolling) {
+            const button = document.getElementById('rollBtn');
+            button.disabled = rolling;
+            document.getElementById('rollLabel').textContent = rolling ? 'Çevriliyor...' : (state.history.length ? 'Yeniden çevir' : 'Çevir');
+        }
+
+        function stageNotice(message, tone = 'warn') {
+            document.getElementById('pickerStage').innerHTML = `<div class="notice notice--${tone}">${escapeHtml(message)}</div>`;
+        }
+
+        // Çark: afişler hızla akar ve yavaşlayarak önerinin afişinde durur. Azaltılmış harekette atlanır.
+        function playReel(data) {
+            if (motionReduced()) return Promise.resolve();
+            const stage = document.getElementById('pickerStage');
+            stage.innerHTML = '<div class="reel" id="reel" aria-hidden="true"><div class="reel-track" id="reelTrack"></div></div>';
+
+            const fillers = data.reel.length ? data.reel : [data.pick.poster];
+            const items = Array.from({ length: 26 }, (_, i) => fillers[(i * 5 + 3) % fillers.length]);
+            // Önerinin afişi iniş noktasıdır; sağında da afiş devam eder (boş kalmasın).
+            const landingIndex = items.length;
+            items.push(data.pick.poster);
+            for (let i = 0; i < 5; i++) items.push(fillers[(i * 3 + 1) % fillers.length]);
+            const track = document.getElementById('reelTrack');
+            track.innerHTML = items.map(src => `<img src="${escapeHtml(src)}" alt="">`).join('');
+
+            return new Promise((resolve) => {
+                const done = () => resolve();
+                track.style.transition = 'none';
+                track.style.transform = 'translateX(0)';
+                void track.offsetWidth;
+                track.style.transition = 'transform 3.3s cubic-bezier(0.12, 0.7, 0.18, 1)';
+                track.style.transform = `translateX(-${landingIndex * REEL_ITEM_STEP}px)`;
+                track.addEventListener('transitionend', done, { once: true });
+                setTimeout(done, 4200);
+            });
+        }
+
+        function pickChips(pick) {
+            return [
+                pick.rating ? `<span class="chip">★ ${pick.rating}</span>` : '',
+                pick.runtime ? `<span class="chip">${pick.runtime} dk${pick.type === 'series' ? ' / bölüm' : ''}</span>` : '',
+                ...(pick.genres || []).map(genre => `<span class="chip">${escapeHtml(genre)}</span>`),
+            ].join('');
+        }
+
+        function showResult(data) {
+            const pick = data.pick;
+            state.history.push(pick);
+            const backdrop = pick.backdrop || pick.poster;
+            const alternatives = data.alternatives.map(alt => `
+                <a class="alt-card" href="${escapeHtml(alt.url)}">
+                    <img src="${escapeHtml(alt.poster || 'img/no-poster.svg')}" alt="" loading="lazy">
+                    <div><strong>${escapeHtml(alt.title)}</strong><span>${escapeHtml(alt.year || '')}${alt.rating ? ` · ★ ${alt.rating}` : ''}</span></div>
+                </a>`).join('');
+            const previous = state.history.slice(0, -1).slice(-6).reverse().map(item =>
+                `<a class="chip" href="${escapeHtml(item.url)}">${escapeHtml(item.title)}</a>`).join('');
+
+            const reel = document.getElementById('reel');
+            const reelHtml = reel ? reel.outerHTML : '';
+            document.getElementById('pickerStage').innerHTML = `
+                ${reelHtml}
+                <article class="pick-result" style="--pick-bg: url('${escapeHtml(backdrop)}');">
+                    <img class="pick-poster" src="${escapeHtml(pick.poster || 'img/no-poster.svg')}" alt="">
+                    <div class="pick-body">
+                        <span class="eyebrow"><span class="dot"></span>Bu akşamın önerisi</span>
+                        <h2 class="pick-title" id="pickTitle" tabindex="-1">${escapeHtml(pick.title)}${pick.year ? ` <small>(${escapeHtml(pick.year)})</small>` : ''}</h2>
+                        <p class="pick-reason"><strong>Neden bu?</strong> ${escapeHtml(data.reason)}</p>
+                        <div class="cluster cluster--tight">${pickChips(pick)}</div>
+                        ${pick.overview ? `<p class="pick-overview">${escapeHtml(pick.overview)}${pick.overview.length >= 420 ? '…' : ''}</p>` : ''}
+                        <div class="cluster">
+                            <a class="btn btn-primary" href="${escapeHtml(pick.url)}">Detaya git</a>
+                            <button type="button" class="btn-glass" id="addWatchlistBtn">Listeme ekle</button>
+                            <button type="button" class="btn-glass" id="againBtn">Başka öner</button>
+                        </div>
+                    </div>
+                </article>
+                ${alternatives ? `<div><div class="control-label" style="margin-bottom: 10px;">Alternatifler</div><div class="alt-row">${alternatives}</div></div>` : ''}
+                ${previous ? `<div class="history-row"><span class="control-label">Önceki öneriler</span>${previous}</div>` : ''}`;
+
+            document.getElementById('addWatchlistBtn').addEventListener('click', () => addToWatchlist(pick));
+            document.getElementById('againBtn').addEventListener('click', roll);
+            document.getElementById('pickTitle').focus({ preventScroll: true });
+        }
+
+        async function addToWatchlist(pick) {
+            if (!app.currentUser) {
+                app.toast('Listene eklemek için giriş yapmalısın.', 'error');
+                return;
+            }
+            try {
+                const response = await fetch('/api/user-status.php', {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        content_type: pick.type,
+                        content_id: String(pick.id),
+                        status: 'watchlist',
+                        rating: 0,
+                        content_data: {
+                            title: pick.title,
+                            poster_path: pick.poster_path,
+                            overview: pick.overview,
+                            first_air_date: pick.type === 'series' && pick.year ? `${pick.year}-01-01` : undefined,
+                            genres: pick.genre_ids,
+                        },
+                    }),
+                });
+                const data = await response.json();
+                if (data.success) {
+                    app.toast('İzlenecekler listene eklendi!', 'success');
+                    const button = document.getElementById('addWatchlistBtn');
+                    if (button) { button.textContent = '✓ Listende'; button.disabled = true; }
+                } else {
+                    app.toast(data.message || 'Eklenemedi', 'error');
+                }
+            } catch (error) {
+                app.toast('Bağlantı hatası', 'error');
+            }
+        }
+
+        async function roll() {
+            if (state.busy) return;
+            state.busy = true;
+            setRolling(true);
+
+            const params = new URLSearchParams({
+                kind: state.kind,
+                duration: state.duration,
+                moods: [...state.moods].join(','),
+                seed: String(1 + Math.floor(Math.random() * 2147483000)),
+                exclude: state.history.map(item => item.id).slice(-40).join(','),
+            });
+
+            try {
+                const response = await fetch(`/api/evening-picker.php?${params}`, { credentials: 'include' });
+                const data = await response.json();
+                if (!data.success) {
+                    stageNotice(data.message || 'Öneri alınamadı. Birazdan tekrar dene.', 'warn');
+                } else if (!data.pick) {
+                    stageNotice(data.message || 'Bu ölçülere uygun yeni bir öneri bulunamadı.', 'warn');
+                } else {
+                    await playReel(data);
+                    showResult(data);
+                }
+            } catch (error) {
+                console.error('Akşam seçici hatası:', error);
+                stageNotice('Bağlantı hatası. Tekrar dene.', 'danger');
+            } finally {
+                state.busy = false;
+                setRolling(false);
+            }
+        }
+
+        document.getElementById('rollBtn').addEventListener('click', roll);
+
+        // Paylaşılan bağlantı: ?kind=series&duration=short&moods=gerilim,komedi seçimi geri yükler.
+        (function restoreFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('kind') === 'series') state.kind = 'series';
+            if (DURATIONS[state.kind].some(([key]) => key === params.get('duration'))) state.duration = params.get('duration');
+            (params.get('moods') || '').split(',').forEach((mood) => {
+                if (MOODS.some(([key]) => key === mood) && state.moods.size < MAX_MOODS) state.moods.add(mood);
+            });
+            setKind(state.kind);
+            renderMoods();
+        })();
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await app.initPromise;
+            if (app.currentUser) {
+                document.getElementById('controlsNote').textContent = 'Kütüphanendeki filmler ve diziler otomatik olarak elenir.';
+            }
+        });
+
+    </script>
+</body>
+
+</html>

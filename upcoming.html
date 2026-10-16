@@ -9,10 +9,168 @@
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <title>Yeni Çıkanlar - Sosyal Kütüphane</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/ui.css">
+    <script src="js/motion.js"></script>
+    <style>
+        /* Yeni çıkanlar sayfasına özel stiller: ay ay gruplanmış vizyon kartları. Ortak parçalar css/ui.css'te. */
+
+        .month-block + .month-block {
+            margin-top: 40px;
+        }
+
+        .month-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+            font-size: clamp(20px, 2.4vw, 26px);
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            text-transform: capitalize;
+        }
+
+        .release-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 22px;
+        }
+
+        .release-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            background: var(--glass-bg);
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .release-card:hover,
+        .release-card:focus-within {
+            transform: translateY(-6px);
+            border-color: rgba(var(--color-accent-rgb), 0.5);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .release-poster {
+            position: relative;
+            display: block;
+            aspect-ratio: 2 / 3;
+            overflow: hidden;
+            background: var(--color-surface-2);
+        }
+
+        .release-poster img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .release-card:hover .release-poster img {
+            transform: scale(1.04);
+        }
+
+        .release-noposter {
+            display: grid;
+            width: 100%;
+            height: 100%;
+            place-items: center;
+            color: var(--color-text-faint);
+        }
+
+        .release-noposter svg {
+            width: 44px;
+            height: 44px;
+        }
+
+        .release-date {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            display: grid;
+            justify-items: center;
+            min-width: 52px;
+            padding: 7px 10px 6px;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 14px;
+            background: rgba(5, 6, 11, 0.62);
+            color: #ffffff;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            line-height: 1.05;
+            text-align: center;
+        }
+
+        .release-date b {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+
+        .release-date span {
+            font-size: 10.5px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .release-body {
+            display: grid;
+            flex: 1;
+            align-content: start;
+            gap: 10px;
+            padding: 16px;
+        }
+
+        .release-title {
+            font-size: 16px;
+            font-weight: 800;
+            line-height: 1.3;
+        }
+
+        .release-title a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .release-title a:hover {
+            color: var(--color-accent);
+        }
+
+        .release-title a:focus-visible {
+            outline: none;
+            text-decoration: underline;
+        }
+
+        .release-overview {
+            display: -webkit-box;
+            overflow: hidden;
+            color: var(--color-text-muted);
+            font-size: 13.5px;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+
+        .release-actions {
+            margin-top: auto;
+            padding-top: 4px;
+        }
+
+        .release-actions .btn,
+        .release-actions .btn-glass {
+            width: 100%;
+            justify-content: center;
+        }
+    </style>
 </head>
 
 <body>
-    <nav class="navbar">
+<a class="skip-link" href="#main">İçeriğe geç</a>
+<nav class="navbar" aria-label="Ana gezinme">
     <div class="navbar-inner">
         <a href="search.html" class="logo">
             <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="m10 14 5 3-5 3v-6Z"/></svg></span>
@@ -20,11 +178,13 @@
         </a>
         <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button>
         <div class="nav-links">
-            <a href="search.html" class="nav-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>Keşfet</a>
-            <a href="feed.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h6"/></svg>Akış</a>
-            <a href="social.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Sosyal</a>
-            <a href="profile.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profilim</a>
-            <a href="messages.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Mesajlar</a>
+            <a href="search.html" class="nav-link active" data-nav="search" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>Keşfet</a>
+            <a href="tonight.html" class="nav-link" data-nav="tonight"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg>Ne izlesem?</a>
+            <a href="feed.html" class="nav-link" data-nav="feed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h6"/></svg>Akış</a>
+            <a href="social.html" class="nav-link" data-nav="social"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Sosyal</a>
+            <a href="profile.html" class="nav-link" data-nav="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profilim</a>
+            <a href="messages.html" class="nav-link" data-nav="messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Mesajlar</a>
+            <a href="admin.html" class="nav-link" data-nav="admin" id="navAdminLink" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>Yönetim</a>
             <div class="nav-icon-wrap">
                 <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="nav-badge" id="notifBadge"></span></button>
                 <div class="nav-panel" id="notifPanel">
@@ -38,21 +198,22 @@
     </div>
     <span id="userWelcome" style="display:none;"></span>
 </nav>
-
-    <main class="container page-main">
-        <header class="page-head reveal">
-            <p class="page-kicker">Vizyon takvimi · Türkiye</p>
-            <h1>Yeni <span class="gradient-text">çıkanlar</span></h1>
-            <p class="page-lead">Yakında vizyona girecek filmler. Hatırlatıcı kurarsan vizyon tarihi geldiğinde bildirim alırsın.</p>
+    <main id="main" class="page">
+        <header class="page-head">
+            <div>
+                <span class="eyebrow"><span class="dot"></span>Vizyon takvimi · Türkiye</span>
+                <h1 class="page-title">Yeni <span class="gradient-text">çıkanlar</span></h1>
+                <p class="page-sub">Yakında vizyona girecek filmler. Hatırlatıcı kurarsan vizyon tarihi geldiğinde bildirim alırsın.</p>
+            </div>
         </header>
 
-        <p id="upcomingStatus" class="page-status" role="status">Yükleniyor...</p>
-        <div id="upcomingGrid" class="upcoming-grid"></div>
+        <p id="upcomingStatus" class="loading" role="status">Yükleniyor...</p>
+        <div id="upcomingGrid"></div>
 
-        <nav class="pager" aria-label="Sayfalar">
-            <button type="button" class="btn btn-glass" id="prevPage" disabled>Önceki</button>
-            <span id="pageInfo" class="pager-info"></span>
-            <button type="button" class="btn btn-glass" id="nextPage" disabled>Sonraki</button>
+        <nav class="pagination" aria-label="Sayfalar">
+            <button type="button" id="prevPage" disabled>Önceki</button>
+            <span id="pageInfo" class="active" aria-live="polite"></span>
+            <button type="button" id="nextPage" disabled>Sonraki</button>
         </nav>
     </main>
 
@@ -90,12 +251,14 @@
         async function loadPage(target) {
             const status = document.getElementById('upcomingStatus');
             const grid = document.getElementById('upcomingGrid');
+            status.className = 'loading';
             status.textContent = 'Yükleniyor...';
 
             try {
                 const res = await fetch(`/api/upcoming.php?page=${target}`, { credentials: 'include' });
                 const data = await res.json();
                 if (!data.success) {
+                    status.className = 'error-message';
                     status.textContent = data.message || 'Liste alınamadı.';
                     grid.innerHTML = '';
                     updatePager(1, 1);
@@ -104,11 +267,18 @@
 
                 currentPage = data.page;
                 totalPages = data.total_pages || 1;
-                status.textContent = data.items.length ? '' : 'Şu an listelenecek yapım yok.';
-                grid.innerHTML = data.items.map(renderCard).join('');
+                if (data.items.length) {
+                    status.className = 'visually-hidden';
+                    status.textContent = `${data.items.length} yapım listelendi.`;
+                } else {
+                    status.className = 'empty';
+                    status.textContent = 'Şu an listelenecek yapım yok.';
+                }
+                grid.innerHTML = renderMonths(data.items);
                 updatePager(currentPage, totalPages);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                window.scrollTo({ top: 0, behavior: motionReduced() ? 'auto' : 'smooth' });
             } catch (error) {
+                status.className = 'error-message';
                 status.textContent = 'Bağlantı hatası: ' + error.message;
             }
         }
@@ -119,31 +289,67 @@
             document.getElementById('pageInfo').textContent = `${page} / ${pages}`;
         }
 
+        function parseDay(value) {
+            return value ? new Date(`${value}T00:00:00`) : null;
+        }
+
+        // Yapımlar vizyon ayına göre gruplanır; tarihi belirsizler en sona gider.
+        function renderMonths(items) {
+            const groups = new Map();
+            items.forEach(item => {
+                const date = parseDay(item.release_date);
+                const key = date ? date.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }) : 'Tarihi belirsiz';
+                if (!groups.has(key)) groups.set(key, []);
+                groups.get(key).push(item);
+            });
+            return [...groups].map(([month, rows]) => `
+                <section class="month-block" aria-label="${app.escapeHtml(month)}">
+                    <h2 class="month-title">${app.escapeHtml(month)} <span class="chip">${rows.length}</span></h2>
+                    <div class="release-grid">${rows.map(renderCard).join('')}</div>
+                </section>
+            `).join('');
+        }
+
+        function countdown(date) {
+            if (!date) return '';
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const days = Math.round((date - today) / 86400000);
+            if (days < 0) return '<span class="chip chip--success">Vizyonda</span>';
+            if (days === 0) return '<span class="chip chip--success">Bugün vizyonda</span>';
+            if (days === 1) return '<span class="chip chip--accent">Yarın</span>';
+            return `<span class="chip chip--accent">${days} gün sonra</span>`;
+        }
+
         function renderCard(item) {
             const title = app.escapeHtml(item.title);
-            const detailUrl = `detail.php?type=movie&id=${item.tmdb_id}`;
+            const detailUrl = `detail.php?type=movie&id=${Number(item.tmdb_id)}`;
+            const date = parseDay(item.release_date);
             const poster = item.poster_path
-                ? `<img src="${POSTER_BASE}${item.poster_path}" alt="${title} afişi" loading="lazy">`
-                : '<div class="upcoming-noposter" aria-hidden="true"></div>';
+                ? `<img src="${POSTER_BASE}${app.escapeHtml(item.poster_path)}" alt="${title} afişi" loading="lazy">`
+                : '<div class="release-noposter" aria-hidden="true"><svg class="ui-i" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18M17 3v18M3 8h4M3 12h18M3 16h4M17 8h4M17 16h4"/></svg></div>';
+            const badge = date
+                ? `<div class="release-date" aria-hidden="true"><b>${date.getDate()}</b><span>${date.toLocaleDateString('tr-TR', { month: 'short' }).replace('.', '')}</span></div>`
+                : '';
             const active = reminderIds.has(item.tmdb_id);
             const action = app.currentUser
-                ? `<button type="button" class="btn ${active ? 'btn-secondary' : 'btn-primary'} upcoming-remind" data-id="${item.tmdb_id}" data-date="${item.release_date || ''}" data-title="${title}" data-active="${active ? '1' : '0'}">${active ? 'Hatırlatıcı kuruldu' : 'Hatırlat'}</button>`
-                : '<a class="btn btn-glass" href="index.html">Hatırlatıcı için giriş yap</a>';
+                ? `<button type="button" class="btn ${active ? 'btn-secondary' : 'btn-primary'} upcoming-remind" data-id="${Number(item.tmdb_id)}" data-date="${app.escapeHtml(item.release_date || '')}" data-title="${title}" data-active="${active ? '1' : '0'}">${active ? 'Hatırlatıcı kuruldu' : 'Hatırlat'}</button>`
+                : '<a class="btn-glass" href="index.html">Hatırlatıcı için giriş yap</a>';
 
-            return `<article class="upcoming-card" data-tilt>
-                <a class="upcoming-poster" href="${detailUrl}" tabindex="-1" aria-hidden="true">${poster}</a>
-                <div class="upcoming-body">
-                    <h2 class="upcoming-title"><a href="${detailUrl}">${title}</a></h2>
-                    <p class="upcoming-date">${formatDate(item.release_date)}</p>
-                    <p class="upcoming-overview">${app.escapeHtml(item.overview || '')}</p>
-                    ${action}
+            return `<article class="release-card">
+                <a class="release-poster" href="${detailUrl}" tabindex="-1" aria-hidden="true">${poster}${badge}</a>
+                <div class="release-body">
+                    <div class="cluster cluster--tight">${countdown(date)}<span class="faint" style="font-size: 12.5px;">${app.escapeHtml(formatDate(item.release_date))}</span></div>
+                    <h3 class="release-title"><a href="${detailUrl}">${title}</a></h3>
+                    <p class="release-overview">${app.escapeHtml(item.overview || 'Özet henüz eklenmemiş.')}</p>
+                    <div class="release-actions">${action}</div>
                 </div>
             </article>`;
         }
 
         function formatDate(value) {
             if (!value) return 'Tarih belirsiz';
-            return new Date(`${value}T00:00:00`).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+            return parseDay(value).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
         }
 
         async function toggleReminder(button) {

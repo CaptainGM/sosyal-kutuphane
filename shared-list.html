@@ -5,180 +5,234 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#667eea">
+    <meta name="theme-color" content="#05060b">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <title>Paylaşılan Liste - Sosyal Kütüphane</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/ui.css">
+    <script src="js/motion.js"></script>
     <style>
-        .public-header {
-            background: var(--color-accent-gradient);
-            padding: 15px 0;
-        }
+        /* Paylaşılan liste herkese açıktır: giriş yapmamış ziyaretçi için sade bir üst çubuk ve blog tarzı liste başlığı. */
 
-        .public-header .container {
+        .public-actions {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 8px;
         }
 
-        .public-header .logo {
-            color: white;
-            font-size: 22px;
-            font-weight: bold;
+        .public-actions .nav-link {
+            display: inline-flex;
+        }
+
+        .list-hero {
+            display: grid;
+            gap: 14px;
+            margin-bottom: 34px;
+            padding: clamp(22px, 4vw, 40px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            background:
+                radial-gradient(640px 280px at 6% 0%, rgba(var(--color-accent-rgb), 0.3), transparent 70%),
+                radial-gradient(520px 260px at 100% 100%, rgba(219, 39, 119, 0.2), transparent 70%),
+                var(--glass-bg);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+        }
+
+        .list-title {
+            font-size: clamp(30px, 5vw, 56px);
+            font-weight: 800;
+            line-height: 1.04;
+            letter-spacing: -0.035em;
+            overflow-wrap: anywhere;
+        }
+
+        .list-desc {
+            max-width: 64ch;
+            color: var(--color-text-muted);
+            font-size: 17px;
+        }
+
+        .owner-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 14px 5px 6px;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-pill);
+            background: var(--glass-bg);
+            color: inherit;
+            font-size: 14px;
+            font-weight: 700;
             text-decoration: none;
         }
 
-        .list-header {
-            padding: 40px 0 20px;
-            text-align: center;
+        a.owner-chip:hover {
+            border-color: rgba(var(--color-accent-rgb), 0.5);
         }
 
-        .list-header h1 {
-            font-size: 28px;
-            margin-bottom: 8px;
-        }
-
-        .list-header p {
-            color: var(--color-text-muted);
-        }
-
-        .list-owner {
-            color: var(--color-text-faint);
-            font-size: 14px;
-            margin-top: 8px;
-        }
-
-        .public-list-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 18px;
-            padding: 20px 0 60px;
-        }
-
-        .public-item-card {
-            cursor: pointer;
-            text-align: center;
-        }
-
-        .public-item-card img {
-            width: 100%;
-            height: 210px;
-            object-fit: cover;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 8px;
-            background: var(--color-surface-2);
-        }
-
-        .public-item-card .item-title {
-            font-size: 13px;
-            font-weight: 600;
-            line-height: 1.3;
+        .public-state {
+            margin-top: 40px;
         }
     </style>
 </head>
 
 <body>
-    <div class="public-header">
-        <div class="container">
-            <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
-            <a href="index.html" class="btn" style="background:rgba(255,255,255,0.2);color:white;border:1px solid white;">Giriş Yap</a>
-        </div>
-    </div>
-
-    <div class="container">
-        <div id="loading" class="loading">⏳ Liste yükleniyor...</div>
-        <div id="listContent" style="display:none;">
-            <div class="list-header">
-                <h1 id="listName"></h1>
-                <p id="listDescription"></p>
-                <div class="list-owner" id="listOwner"></div>
+    <a class="skip-link" href="#main">İçeriğe geç</a>
+    <nav class="navbar" aria-label="Ana gezinme">
+        <div class="navbar-inner">
+            <a href="search.html" class="logo">
+                <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="m10 14 5 3-5 3v-6Z"/></svg></span>
+                <span>Sosyal Kütüphane</span>
+            </a>
+            <div class="public-actions">
+                <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir"><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
+                <a id="authCta" href="index.html" class="logout-btn" style="text-decoration: none;">Giriş yap</a>
             </div>
-            <div class="public-list-grid" id="itemsGrid"></div>
         </div>
-    </div>
+    </nav>
+
+    <main id="main" class="page">
+        <div id="loading" class="loading" role="status">Liste yükleniyor...</div>
+
+        <div id="listError" class="empty public-state" hidden>
+            <div class="empty-icon"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></div>
+            <div class="empty-title" id="listErrorTitle">Bu liste bulunamadı</div>
+            <p id="listErrorText">Bağlantı hatalı olabilir ya da liste artık herkese açık değil.</p>
+            <a class="btn btn-primary" href="search.html">Keşfet'e git</a>
+        </div>
+
+        <article id="listContent" hidden>
+            <header class="list-hero">
+                <div><span class="eyebrow"><span class="dot"></span>Paylaşılan liste</span></div>
+                <h1 class="list-title" id="listName"></h1>
+                <p class="list-desc" id="listDescription"></p>
+                <div class="cluster" id="listMeta"></div>
+            </header>
+            <div class="poster-grid" id="itemsGrid"></div>
+        </article>
+    </main>
 
     <script src="js/escape-html.js"></script>
     <script src="js/app.js"></script>
     <script>
+        const esc = (value) => app.escapeHtml(value);
+        const TYPE_LABEL = { movie: 'Film', series: 'Dizi', book: 'Kitap' };
+
         document.addEventListener('DOMContentLoaded', loadSharedList);
 
-        function goToDetail(type, id) {
-            window.location.href = `detail.php?type=${type}&id=${id}`;
+        function showError(title, text) {
+            document.getElementById('loading').hidden = true;
+            document.getElementById('listErrorTitle').textContent = title;
+            document.getElementById('listErrorText').textContent = text;
+            document.getElementById('listError').hidden = false;
+        }
+
+        function posterUrl(type, value) {
+            if (!value) return 'img/no-poster.svg';
+            return type === 'book' ? String(value).replace('http://', 'https://') : value;
         }
 
         async function loadSharedList() {
-            const params = new URLSearchParams(window.location.search);
-            const listId = params.get('id');
-            const loading = document.getElementById('loading');
+            try { await app.initPromise; } catch (e) { }
+            if (app.currentUser) {
+                const cta = document.getElementById('authCta');
+                cta.textContent = 'Kütüphanem';
+                cta.href = 'profile.html';
+            }
 
-            if (!listId) {
-                loading.textContent = '❌ Geçersiz liste';
+            const listId = Number.parseInt(new URLSearchParams(window.location.search).get('id'), 10);
+            if (!Number.isInteger(listId) || listId <= 0) {
+                showError('Geçersiz bağlantı', 'Bu adreste bir liste numarası yok.');
                 return;
             }
 
             try {
                 const response = await fetch(`/api/public-list.php?id=${listId}`);
                 const data = await response.json();
-
                 if (!data.success) {
-                    loading.textContent = '❌ Bu liste bulunamadı ya da artık herkese açık değil';
+                    showError('Bu liste bulunamadı', 'Bağlantı hatalı olabilir ya da liste artık herkese açık değil.');
                     return;
                 }
 
                 const list = data.list;
+                document.title = `${list.name} - Paylaşılan Liste - Sosyal Kütüphane`;
                 document.getElementById('listName').textContent = list.name;
-                document.getElementById('listDescription').textContent = list.description || '';
+                const description = document.getElementById('listDescription');
+                description.textContent = list.description || '';
+                description.hidden = !list.description;
+
+                const meta = [];
                 if (list.owner) {
-                    document.getElementById('listOwner').textContent = `👤 ${list.owner.username} tarafından paylaşıldı`;
+                    const avatar = app.avatarMarkup(list.owner.avatar_url, list.owner.username, 'sm');
+                    meta.push(app.currentUser && list.owner.id
+                        ? `<a class="owner-chip" href="user-profile.html?id=${Number(list.owner.id)}">${avatar}<span>${esc(list.owner.username)}</span></a>`
+                        : `<span class="owner-chip">${avatar}<span>${esc(list.owner.username)}</span></span>`);
                 }
+                meta.push(`<span class="chip chip--accent">${Number(list.item_count)} içerik</span>`);
+                if (list.updated_at) {
+                    meta.push(`<span class="chip">Güncellendi: ${esc(app.parseServerDate(list.updated_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }))}</span>`);
+                }
+                meta.push('<button type="button" class="btn-glass btn-sm" id="copyLinkBtn">Bağlantıyı kopyala</button>');
+                document.getElementById('listMeta').innerHTML = meta.join('');
+                document.getElementById('copyLinkBtn').addEventListener('click', copyLink);
 
                 const grid = document.getElementById('itemsGrid');
                 if (list.items.length === 0) {
-                    grid.innerHTML = '<div class="no-results">Bu listede henüz içerik yok</div>';
+                    grid.innerHTML = '<div class="empty"><div class="empty-title">Bu listede henüz içerik yok</div><p>Liste sahibi içerik ekledikçe burada görünür.</p></div>';
                 } else {
                     grid.innerHTML = list.items.map(item => `
-                        <div class="public-item-card" onclick="goToDetail('${item.content_type}', '${item.content_id}')">
-                            <img src="img/no-poster.svg" alt="${app.escapeHtml(item.content_title)}"
-                                 class="item-poster" data-item-id="${item.content_id}" data-item-type="${item.content_type}">
-                            <div class="item-title">${app.escapeHtml(item.content_title)}</div>
-                        </div>
+                        <a class="content-card" href="detail.php?type=${encodeURIComponent(item.content_type)}&id=${encodeURIComponent(item.content_id)}">
+                            <img src="${esc(posterUrl(item.content_type, item.poster))}" alt="" loading="lazy"
+                                 data-item-key="${esc(item.content_type + ':' + item.content_id)}"${item.poster ? '' : ' data-needs-poster="1"'}
+                                 onerror="this.onerror=null;this.src='img/no-poster.svg'">
+                            <div class="info"><h3>${esc(item.content_title)}</h3><div class="meta"><span class="chip">${esc(TYPE_LABEL[item.content_type] || 'İçerik')}</span></div></div>
+                        </a>
                     `).join('');
-                    loadPosters(list.items);
+                    loadMissingPosters(list.items.filter(item => !item.poster));
                 }
 
-                loading.style.display = 'none';
-                document.getElementById('listContent').style.display = 'block';
+                document.getElementById('loading').hidden = true;
+                document.getElementById('listContent').hidden = false;
             } catch (error) {
                 console.error('Liste yükleme hatası:', error);
-                loading.textContent = '❌ Bağlantı hatası';
+                showError('Liste yüklenemedi', 'Bir bağlantı sorunu oldu. Sayfayı yenilemeyi dene.');
             }
         }
 
-        async function loadPosters(items) {
-            for (const item of items) {
-                try {
-                    let posterUrl = 'img/no-poster.svg';
+        function copyLink() {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                app.toast('Bağlantı kopyalandı', 'success');
+            }).catch(() => {
+                app.toast(window.location.href, 'info', 6000);
+            });
+        }
 
+        // Kütüphanede afişi bilinmeyen içerikler için yedek: TMDB / Google Books'tan paralel çekilir.
+        async function loadMissingPosters(items) {
+            await Promise.all(items.map(async (item) => {
+                try {
+                    let url = null;
                     if (item.content_type === 'movie') {
                         const movie = await app.getMovieDetail(item.content_id);
-                        if (movie?.poster_path) posterUrl = `https://image.tmdb.org/t/p/w300${movie.poster_path}`;
+                        if (movie && movie.poster_path) url = `https://image.tmdb.org/t/p/w342${movie.poster_path}`;
                     } else if (item.content_type === 'series') {
                         const series = await app.getSeriesDetail(item.content_id);
-                        if (series?.poster_path) posterUrl = `https://image.tmdb.org/t/p/w300${series.poster_path}`;
+                        if (series && series.poster_path) url = `https://image.tmdb.org/t/p/w342${series.poster_path}`;
                     } else {
                         const book = await app.getBookDetail(item.content_id);
-                        if (book?.volumeInfo?.imageLinks?.thumbnail) {
-                            posterUrl = book.volumeInfo.imageLinks.thumbnail.replace('http://', 'https://');
-                        }
+                        const thumb = book && book.volumeInfo && book.volumeInfo.imageLinks && book.volumeInfo.imageLinks.thumbnail;
+                        if (thumb) url = String(thumb).replace('http://', 'https://');
                     }
-
-                    const img = document.querySelector(`img[data-item-id="${item.content_id}"][data-item-type="${item.content_type}"]`);
-                    if (img) img.src = posterUrl;
+                    if (!url) return;
+                    const key = item.content_type + ':' + item.content_id;
+                    document.querySelectorAll('img[data-item-key]').forEach(img => {
+                        if (img.dataset.itemKey === key) img.src = url;
+                    });
                 } catch (error) {
                     console.error('Poster yükleme hatası:', error);
                 }
-            }
+            }));
         }
     </script>
 </body>
