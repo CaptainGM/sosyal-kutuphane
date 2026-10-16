@@ -387,6 +387,13 @@
     </div>
 
     <div class="container">
+        <section class="badges-section" aria-labelledby="badgesHeading">
+            <div class="section-head">
+                <h2 id="badgesHeading">Rozetler</h2>
+                <p>Kütüphanen büyüdükçe yeni rozetler açılır.</p>
+            </div>
+            <div id="badgesGrid" class="badges-grid"></div>
+        </section>
         <div class="tab-navigation">
             <button class="tab-btn active" onclick="switchTab('library')">📚 Kütüphanem</button>
             <button class="tab-btn" onclick="switchTab('diary')">📔 Günlük</button>
@@ -556,6 +563,30 @@
                 </div>
             </div>
 
+            <div class="card csv-import-card" style="padding:25px;">
+                <h3 style="margin-bottom:10px;">🎞️ Letterboxd ve Goodreads'ten Aktar</h3>
+                <p style="color:var(--color-text-muted);font-size:14px;margin-bottom:16px;">Letterboxd'ın <strong>watched.csv</strong>, <strong>ratings.csv</strong> veya <strong>watchlist.csv</strong> dosyasını ya da Goodreads'in CSV dışa aktarımını yükle. Filmler TMDB'de, kitaplar Google Books'ta aranır; eşleşmeyen yapımlar bildirilir.</p>
+                <div class="csv-controls">
+                    <div>
+                        <label class="form-label" for="csvSource">Kaynak</label>
+                        <select id="csvSource" class="form-control">
+                            <option value="letterboxd">Letterboxd</option>
+                            <option value="goodreads">Goodreads</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label" for="csvList">Letterboxd listesi</label>
+                        <select id="csvList" class="form-control">
+                            <option value="watched">İzlediklerim (watched / ratings)</option>
+                            <option value="watchlist">İzleyeceklerim (watchlist)</option>
+                        </select>
+                    </div>
+                </div>
+                <input type="file" id="csvFileInput" accept=".csv,text/csv" class="csv-file-input">
+                <button type="button" class="btn btn-outline" id="csvImportBtn">İçe Aktar</button>
+                <div id="csvImportStatus" class="csv-status" role="status"></div>
+            </div>
+
             <div class="card" style="padding:25px;">
                 <h3 style="margin-bottom:10px;">📤 Kütüphaneni Dışa Aktar</h3>
                 <p style="color:var(--color-text-muted);font-size:14px;margin-bottom:20px;">İzlediklerin, okuduklarım, listelerin ve yorumların tek bir JSON dosyası olarak indirilir.</p>
@@ -595,6 +626,9 @@
                     return;
                 }
                 loadProfile();
+                if (app.currentUser && typeof app.renderBadges === 'function') {
+                    app.renderBadges(document.getElementById('badgesGrid'), app.currentUser.id);
+                }
             }
         }
         if (document.readyState === 'loading') {

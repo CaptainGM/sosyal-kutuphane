@@ -85,6 +85,9 @@ $indexPlans = [
     'api_cache' => [
         ['key' => ['cached_at' => 1], 'expireAfterSeconds' => 259200], // 3 gün — yedek temizlik, asıl TTL cacheGet()'te
     ],
+    'release_reminders' => [
+        ['key' => ['user_id' => 1, 'tmdb_id' => 1], 'unique' => true],
+    ],
 ];
 
 $successCount = 0;
