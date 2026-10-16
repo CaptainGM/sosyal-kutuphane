@@ -4,7 +4,7 @@ Film, dizi ve kitaplar için yapılmış bir sosyal kütüphane ve paylaşım pl
 
 ![CI](https://github.com/CaptainGM/sosyal-kutuphane/actions/workflows/ci.yml/badge.svg)
 
-![Giriş ekranı](screenshot.webp)
+![Giriş ekranı](screenshot.png)
 
 Karanlık mod ve arama:
 ![Karanlık mod](screenshot-dark.png)
@@ -25,7 +25,7 @@ Mesajlaşma:
 - 📸 **Instagram Hikaye Kartı (Story Generator)**: HTML5 Canvas ile film/kitap afişi, puanı ve kullanıcı adıyla otomatik dikey (9:16) hikaye kartı üretip tek tıkla indirme veya paylaşma
 - ⚡ **Tek Tıkla Demo Girişi**: Giriş sayfasında şifre yazmadan tek tıkla admin veya demo hesapla giriş yapabilme
 - 👁️ **Sıfır Kaymalı Parola Göster/Gizle**: Modern SVG ikonlarla formu kaydırmayan akıcı şifre toggle kontrolü
-- 🎨 **Modern Cam Tasarımı (Glassmorphism)**: `motionsites.ai` ve `opensourceui` esintili derin dark tema, ortam ışığı (ambient mesh), şık butonlar ve tam açık tema uyumu
+- 🎨 **Sinematik Tasarım ve 3D Giriş**: Three.js ile parçacık alanı ve dönen tel kafes, CSS 3D poster halkası, fare ile eğilen cam kartlar, yüzen cam menü ve koyu/açık tema uyumu
 - ⭐ **Kütüphane Yönetimi**: İzlediklerim, İzleyeceklerim, Okuduklarım, Okuyacaklarım ve 1-10 arası puanlama
 - 💬 **Yorum ve Sosyal Etkileşim**: İçeriklere yorum yapma, yorum beğenme, yanıtlama
 - 👥 **Takip ve Sosyal Akış**: Kullanıcıları takip etme, kişisel feed akışı
@@ -94,13 +94,13 @@ PowerShell'de `MONGO_DB` ve `TEST_BASE_URL` değişkenleri `$env:MONGO_DB='socia
 ## Klasör Yapısı
 
 ```
-index.html     Giriş ve kayıt sayfası (motionsites stili)
+index.html     Giriş ve kayıt sayfası (3D sahne, poster halkası)
 search.html    Arama ve keşfet sayfası
 profile.html   Profil ve hesap ayarları
 messages.html  Doğrudan mesajlaşma
 detail.php     İçerik detayı, fragman oynatıcı ve hikaye kartı
 api/           PHP backend API uçları
-js/            JavaScript yardımcıları ve istemci mantığı
+js/            JavaScript yardımcıları, istemci mantığı ve 3D giriş sahnesi (scene.js)
 css/           Stil dosyaları (tasarım token'ları, cam efektleri, karanlık mod)
 tests/         PHPUnit ve Node testleri
 START.bat      Geliştirme sunucusu başlatıcı (Windows)

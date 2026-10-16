@@ -60,7 +60,7 @@ class SocialLibraryApp {
         document.documentElement.setAttribute('data-theme', next);
         localStorage.setItem('theme', next);
         document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
-            btn.textContent = next === 'dark' ? '☀️' : '🌙';
+            btn.classList.toggle('is-dark', next === 'dark');
         });
     }
 
@@ -734,14 +734,62 @@ function wireNavToggle() {
     });
 }
 
+// --- Kart ve buton hareketleri: fare konumunu CSS değişkenlerine yazar, [data-tilt] öğeleri eğer ---
+function wirePointerEffects() {
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    document.addEventListener('pointermove', (e) => {
+        const surface = e.target.closest?.('.card, [data-tilt]');
+        if (!surface) return;
+        const rect = surface.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        surface.style.setProperty('--mx', x + 'px');
+        surface.style.setProperty('--my', y + 'px');
+
+        if (!reduceMotion && surface.hasAttribute('data-tilt')) {
+            const rx = (y / rect.height - 0.5) * -8;
+            const ry = (x / rect.width - 0.5) * 8;
+            surface.style.transform = 'perspective(900px) rotateX(' + rx.toFixed(2) + 'deg) rotateY(' + ry.toFixed(2) + 'deg)';
+        }
+    });
+
+    document.addEventListener('pointerout', (e) => {
+        const surface = e.target.closest?.('[data-tilt]');
+        if (surface && !surface.contains(e.relatedTarget)) surface.style.transform = '';
+    });
+}
+
+// --- Kaydırma ile belirme: .reveal öğeleri görünür olunca yumuşakça açılır ---
+function wireReveal() {
+    const items = document.querySelectorAll('.reveal');
+    if (!items.length) return;
+    if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        items.forEach(el => el.classList.add('is-visible'));
+        return;
+    }
+    document.documentElement.classList.add('js-motion');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+        });
+    }, { threshold: 0.12 });
+    items.forEach(el => observer.observe(el));
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     app.wireAllPasswordToggles();
     document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
-        btn.textContent = app.isDarkMode() ? '☀️' : '🌙';
+        btn.classList.toggle('is-dark', app.isDarkMode());
         btn.addEventListener('click', () => app.toggleTheme());
     });
     app.initNotifications();
     wireNavToggle();
+    wirePointerEffects();
+    wireReveal();
 
     // Bazı sayfalar giriş yapmadan da gezilebiliyor — çıkış yapmamış birine
     // hesap gerektiren nav ögelerini (Akış/Sosyal/Profilim/Mesajlar/bildirim)
