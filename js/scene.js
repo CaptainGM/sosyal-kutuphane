@@ -1,10 +1,10 @@
 // Giriş ekranının 3D arka planı: parçacık alanı ve dönen tel kafes (Three.js).
 // Tema değişince (themechange olayı) renkler ve karışım modu yeniden uygulanır:
 // koyu temada parlayan (toplamalı) noktalar, açık temada koyu ve doygun noktalar.
-// WebGL yoksa, CDN erişilemezse ya da hareket azaltma açıksa sessizce atlanır.
+// WebGL yoksa, CDN erişilemezse ya da hareket azaltılmışsa (data-motion="reduced") sessizce atlanır.
 (function () {
     const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduceMotion = document.documentElement.getAttribute('data-motion') === 'reduced';
     const isSmallScreen = window.matchMedia('(max-width: 768px)').matches;
 
     const PALETTES = {

@@ -1,0 +1,221 @@
+/* ==========================================================================
+   PROFİL SAYFALARI (profile.html ve user-profile.html ortak stilleri)
+   css/style.css ve css/ui.css'ten sonra yüklenir. Kahraman alan, sayaçlar, sekmeler, kütüphane ızgarası, günlük.
+   ========================================================================== */
+
+.profile-hero {
+    position: relative;
+    isolation: isolate;
+    margin-top: -78px;
+    padding: 132px 0 26px;
+}
+
+.profile-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+        radial-gradient(900px 420px at 12% 0%, rgba(var(--color-accent-rgb), 0.34), transparent 70%),
+        radial-gradient(700px 360px at 92% 8%, rgba(219, 39, 119, 0.22), transparent 70%);
+    -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
+    mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
+}
+
+.profile-hero-inner {
+    padding: 0;
+}
+
+.profile-id {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 28px;
+}
+
+/* Avatar: kendi profilinde değiştirilebilen düğme, başkasının profilinde düz görsel */
+.profile-avatar-btn,
+.profile-avatar {
+    position: relative;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    box-shadow: 0 0 0 4px rgba(var(--color-accent-rgb), 0.4), 0 30px 54px -26px rgba(0, 0, 0, 0.6);
+}
+
+.profile-avatar-btn {
+    cursor: pointer;
+}
+
+.profile-avatar-btn::after {
+    content: 'Değiştir';
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(5, 6, 11, 0.55);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 800;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.profile-avatar-btn:hover::after,
+.profile-avatar-btn:focus-visible::after {
+    opacity: 1;
+}
+
+.profile-avatar-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(var(--color-accent-rgb), 0.9);
+}
+
+.profile-name {
+    font-size: clamp(34px, 5vw, 56px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    overflow-wrap: anywhere;
+}
+
+.profile-bio {
+    max-width: 60ch;
+    margin: 10px 0 16px;
+    color: var(--color-text-muted);
+    font-size: 16px;
+}
+
+.profile-bio.is-placeholder {
+    color: var(--color-text-faint);
+    font-style: italic;
+}
+
+.profile-metrics {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    margin-top: 28px;
+    align-items: stretch;
+}
+
+.profile-metrics.has-histogram {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+}
+
+.profile-metrics .stat-grid {
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    align-content: start;
+}
+
+.rating-histogram {
+    margin: 0;
+    padding: 18px 20px;
+}
+
+.rating-histogram-bars {
+    height: 84px;
+}
+
+.badges-section {
+    margin-top: 6px;
+}
+
+.badges-section .section-head {
+    margin-top: 8px;
+}
+
+.page-tabs {
+    margin: 34px 0 22px;
+}
+
+.library-section {
+    display: grid;
+    gap: 16px;
+}
+
+.library-section + .library-section {
+    margin-top: 34px;
+}
+
+.library-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.library-head h3 {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+/* --- Günlük: ay ay gruplanmış satırlar --- */
+.diary-month-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-transform: capitalize;
+}
+
+.diary-rows {
+    display: grid;
+    gap: 10px;
+}
+
+.diary-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px 10px 10px;
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    background: var(--glass-bg);
+    color: var(--color-text);
+    text-decoration: none;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.diary-row:hover,
+.diary-row:focus-visible {
+    border-color: rgba(var(--color-accent-rgb), 0.5);
+    outline: none;
+    transform: translateX(4px);
+}
+
+.diary-row img {
+    flex: none;
+    width: 44px;
+    aspect-ratio: 2 / 3;
+    border-radius: 6px;
+    background: var(--color-surface-2);
+    object-fit: cover;
+}
+
+.diary-row-text {
+    display: grid;
+    flex: 1;
+    min-width: 0;
+}
+
+.diary-row-text strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 860px) {
+    .profile-metrics.has-histogram {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .profile-hero {
+        padding-top: 120px;
+    }
+}
