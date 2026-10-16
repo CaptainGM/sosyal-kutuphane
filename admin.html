@@ -7,55 +7,437 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#05060b">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-    <title>Moderasyon - Sosyal Kütüphane</title>
+    <title>Yönetim Konsolu - Sosyal Kütüphane</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/ui.css">
+    <script src="js/motion.js"></script>
     <style>
-        .admin-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 30px 20px 60px;
+        /* Yönetim konsolu: sol menü + içerik. Ortak parçalar (panel, tablo, çip, sayfalama) css/ui.css'te. */
+
+        .admin-layout {
+            display: grid;
+            grid-template-columns: 250px minmax(0, 1fr);
+            gap: 26px;
+            align-items: start;
         }
 
-        .admin-container h1 {
-            margin-bottom: 20px;
-        }
-
-        .report-card {
-            background: var(--color-surface);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow);
-            padding: 20px;
-            margin-bottom: 16px;
-        }
-
-        .report-meta {
-            font-size: 12px;
-            color: var(--color-text-faint);
-            margin-bottom: 10px;
-        }
-
-        .report-comment-text {
-            background: var(--color-surface-2);
-            border-radius: 8px;
+        .admin-nav {
+            position: sticky;
+            top: 96px;
+            display: grid;
+            gap: 6px;
             padding: 12px;
-            margin-bottom: 10px;
+        }
+
+        .admin-nav-title {
+            padding: 6px 12px 10px;
+            color: var(--color-text-faint);
+            font-size: 11.5px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .admin-nav button {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 11px 14px;
+            border: 0;
+            border-radius: 12px;
+            background: transparent;
+            color: var(--color-text-muted);
+            font: inherit;
+            font-weight: 700;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .admin-nav button:hover {
+            background: rgba(var(--color-accent-rgb), 0.1);
+            color: var(--color-text);
+        }
+
+        .admin-nav button:focus-visible {
+            outline: none;
+            box-shadow: var(--focus-ring);
+        }
+
+        .admin-nav button.active {
+            background: var(--color-accent-gradient);
+            color: #ffffff;
+            box-shadow: 0 12px 26px -12px rgba(var(--color-accent-rgb), 0.95);
+        }
+
+        .admin-nav .ui-i {
+            width: 18px;
+            height: 18px;
+        }
+
+        .admin-nav .nav-count {
+            min-width: 22px;
+            margin-left: auto;
+            padding: 1px 8px;
+            border-radius: var(--radius-pill);
+            background: rgba(var(--color-danger-rgb), 0.9);
+            color: #ffffff;
+            font-size: 11.5px;
+            font-weight: 800;
+            text-align: center;
+        }
+
+        .admin-nav .nav-count:empty {
+            display: none;
+        }
+
+        .admin-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 14px 24px;
+            margin-bottom: 22px;
+        }
+
+        .admin-head h2 {
+            font-size: clamp(24px, 3vw, 34px);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+
+        .admin-head p {
+            max-width: 62ch;
+            margin-top: 6px;
             color: var(--color-text-muted);
         }
 
-        .report-reason {
-            font-size: 14px;
-            margin-bottom: 15px;
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
         }
 
-        .report-actions {
+        .toolbar .input {
+            flex: 1 1 240px;
+            max-width: 360px;
+        }
+
+        .toolbar .select {
+            width: auto;
+        }
+
+        .chip-row {
             display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .stat-grid--admin {
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            margin-bottom: 24px;
+        }
+
+        .stat-grid--admin .stat-value {
+            font-size: 30px;
+        }
+
+        .stat.is-alert {
+            border-color: rgba(var(--color-danger-rgb), 0.5);
+            background: rgba(var(--color-danger-rgb), 0.08);
+        }
+
+        .overview-split {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .mini-bars {
+            display: grid;
+            grid-template-columns: repeat(14, minmax(0, 1fr));
+            align-items: end;
+            gap: 4px;
+            height: 110px;
+            margin-top: 12px;
+        }
+
+        .mini-bar {
+            min-height: 3px;
+            border-radius: 5px 5px 2px 2px;
+            background: rgba(var(--color-accent-rgb), 0.45);
+        }
+
+        .mini-bar.is-today {
+            background: var(--color-accent-gradient);
+        }
+
+        .mini-axis {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 6px;
+            color: var(--color-text-faint);
+            font-size: 11px;
+        }
+
+        .mini-total {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .mini-total b {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+
+        .row-list {
+            display: grid;
             gap: 10px;
+            margin-top: 12px;
+        }
+
+        .row-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px;
+            border-radius: 12px;
+            color: inherit;
+            text-decoration: none;
+            transition: background-color 0.2s ease;
+        }
+
+        .row-link:hover,
+        .row-link:focus-visible {
+            background: rgba(var(--color-accent-rgb), 0.1);
+            outline: none;
+        }
+
+        .row-link img {
+            flex: none;
+            width: 38px;
+            aspect-ratio: 2 / 3;
+            border-radius: 6px;
+            background: var(--color-surface-2);
+            object-fit: cover;
+        }
+
+        .row-link .grow {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .content-ref {
+            display: inline-flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px 8px;
+        }
+
+        .clip {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .cell-text {
+            display: -webkit-box;
+            max-width: 460px;
+            min-width: 220px;
+            overflow: hidden;
+            line-height: 1.45;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow-wrap: anywhere;
+        }
+
+        .cell-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 6px;
+        }
+
+        .table td.num {
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        .table td.nowrap {
+            white-space: nowrap;
+        }
+
+        tr.is-clickable {
+            cursor: pointer;
+        }
+
+        .pager-note {
+            margin-top: 10px;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .btn-sm.btn-danger-soft {
+            border: 1px solid rgba(var(--color-danger-rgb), 0.45);
+            background: rgba(var(--color-danger-rgb), 0.1);
+            color: var(--color-danger);
+        }
+
+        .btn-sm.btn-danger-soft:hover {
+            background: rgba(var(--color-danger-rgb), 0.18);
+        }
+
+        .quote {
+            padding: 14px 16px;
+            border-left: 3px solid var(--color-accent);
+            border-radius: 0 var(--radius) var(--radius) 0;
+            background: rgba(var(--color-accent-rgb), 0.08);
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+            white-space: pre-wrap;
+        }
+
+        .quote + .quote {
+            margin-top: 10px;
+        }
+
+        .versions {
+            display: grid;
+            gap: 14px;
+        }
+
+        .version {
+            display: grid;
+            gap: 6px;
+        }
+
+        .version-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            color: var(--color-text-faint);
+            font-size: 12.5px;
+            font-weight: 700;
+        }
+
+        .detail-grid {
+            display: grid;
+            gap: 22px;
+        }
+
+        .detail-block h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        .detail-block h3 svg {
+            width: 17px;
+            height: 17px;
+            color: var(--color-accent);
+        }
+
+        .kv {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 10px 20px;
+        }
+
+        .kv div {
+            display: grid;
+            gap: 2px;
+        }
+
+        .kv dt {
+            color: var(--color-text-faint);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .kv dd {
+            overflow-wrap: anywhere;
+        }
+
+        .report-card {
+            display: grid;
+            gap: 12px;
+            padding: 18px 20px;
+        }
+
+        .report-card + .report-card {
+            margin-top: 14px;
+        }
+
+        .report-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px 16px;
+        }
+
+        .mini-list {
+            display: grid;
+            gap: 8px;
+        }
+
+        .mini-item {
+            padding: 10px 14px;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            background: color-mix(in srgb, var(--color-surface-2) 55%, transparent);
+            font-size: 14px;
+        }
+
+        .mini-item .meta-line {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 12px;
+            margin-bottom: 4px;
+            color: var(--color-text-faint);
+            font-size: 12.5px;
+        }
+
+        .denied {
+            max-width: 560px;
+            margin: 70px auto;
+        }
+
+        @media (max-width: 960px) {
+            .admin-layout {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .admin-nav {
+                position: relative;
+                top: auto;
+                grid-auto-flow: column;
+                grid-auto-columns: max-content;
+                overflow-x: auto;
+            }
+
+            .admin-nav-title {
+                display: none;
+            }
         }
     </style>
 </head>
 
 <body>
-    <nav class="navbar">
+<a class="skip-link" href="#main">İçeriğe geç</a>
+<nav class="navbar" aria-label="Ana gezinme">
     <div class="navbar-inner">
         <a href="search.html" class="logo">
             <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="m10 14 5 3-5 3v-6Z"/></svg></span>
@@ -63,11 +445,13 @@
         </a>
         <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button>
         <div class="nav-links">
-            <a href="search.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>Keşfet</a>
-            <a href="feed.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h6"/></svg>Akış</a>
-            <a href="social.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Sosyal</a>
-            <a href="profile.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profilim</a>
-            <a href="messages.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Mesajlar</a>
+            <a href="search.html" class="nav-link" data-nav="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>Keşfet</a>
+            <a href="tonight.html" class="nav-link" data-nav="tonight"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg>Ne izlesem?</a>
+            <a href="feed.html" class="nav-link" data-nav="feed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h6"/></svg>Akış</a>
+            <a href="social.html" class="nav-link" data-nav="social"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Sosyal</a>
+            <a href="profile.html" class="nav-link" data-nav="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profilim</a>
+            <a href="messages.html" class="nav-link" data-nav="messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Mesajlar</a>
+            <a href="admin.html" class="nav-link active" data-nav="admin" aria-current="page" id="navAdminLink" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>Yönetim</a>
             <div class="nav-icon-wrap">
                 <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="nav-badge" id="notifBadge"></span></button>
                 <div class="nav-panel" id="notifPanel">
@@ -81,89 +465,789 @@
     </div>
     <span id="userWelcome" style="display:none;"></span>
 </nav>
+    <main id="main" class="page page--wide">
+        <div id="adminGate" class="loading" role="status">Yönetim konsolu hazırlanıyor...</div>
 
-    <div class="admin-container">
-        <h1>🛡️ Moderasyon Kuyruğu</h1>
-        <div id="adminContent">
-            <div class="loading">⏳ Yükleniyor...</div>
+        <div id="adminApp" class="admin-layout" hidden>
+            <nav class="panel admin-nav" aria-label="Yönetim bölümleri" id="adminNav"></nav>
+            <section id="adminMain" aria-live="polite" tabindex="-1"></section>
         </div>
-    </div>
+    </main>
 
     <script src="js/escape-html.js"></script>
     <script src="js/app.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                await app.initPromise;
-            } catch (e) { }
+        const esc = (value) => app.escapeHtml(value);
 
-            if (!app.currentUser || !app.currentUser.is_admin) {
-                document.getElementById('adminContent').innerHTML =
-                    '<div class="no-results">🚫 Bu sayfayı görüntüleme yetkiniz yok</div>';
+        const TABS = [
+            { id: 'overview', label: 'Genel bakış', icon: 'eye' },
+            { id: 'users', label: 'Kullanıcılar', icon: 'users' },
+            { id: 'comments', label: 'Yorumlar', icon: 'message' },
+            { id: 'deleted', label: 'Silinenler', icon: 'trash' },
+            { id: 'reports', label: 'Şikâyetler', icon: 'flag' },
+            { id: 'audit', label: 'İşlem günlüğü', icon: 'history' }
+        ];
+
+        const AUDIT_LABELS = {
+            'comment.delete': 'Yorumu sildi',
+            'comment.restore': 'Yorumu geri yükledi',
+            'report.delete_comment': 'Şikâyet üzerine yorumu sildi',
+            'report.dismiss': 'Şikâyeti reddetti',
+            'user.suspend': 'Hesabı askıya aldı',
+            'user.unsuspend': 'Askıyı kaldırdı',
+            'user.mute': 'Kullanıcıyı susturdu',
+            'user.unmute': 'Susturmayı kaldırdı'
+        };
+
+        const TYPE_LABEL = { movie: 'Film', series: 'Dizi', book: 'Kitap' };
+        const STATUS_LABEL = { watched: 'İzlendi', watching: 'İzleniyor', watchlist: 'İzlenecek', read: 'Okundu', to_read: 'Okunacak', readinglist: 'Okunacak' };
+
+        const state = {
+            tab: 'overview',
+            users: { page: 1, q: '', status: '', sort: 'new' },
+            comments: { page: 1, q: '', filter: 'all', userId: null, userName: '' },
+            deleted: { page: 1 },
+            reports: { status: 'pending', page: 1 },
+            audit: { page: 1, target: '' }
+        };
+        let searchTimer = null;
+        let activeModal = null;
+        let listToken = 0;
+
+        // --- Ağ ---
+        async function adminGet(params) {
+            const response = await fetch('/api/admin.php?' + new URLSearchParams(params), { credentials: 'include' });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || !data.success) throw new Error(data.message || 'İstek başarısız oldu');
+            return data;
+        }
+
+        async function adminPost(body) {
+            const response = await fetch('/api/admin.php', {
+                method: 'POST',
+                headers: app.authHeaders(),
+                credentials: 'include',
+                body: JSON.stringify(body)
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || !data.success) throw new Error(data.message || 'İşlem başarısız oldu');
+            return data;
+        }
+
+        // --- Biçim yardımcıları ---
+        function fmtDate(iso) {
+            if (!iso) return '—';
+            return app.parseServerDate(iso).toLocaleString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
+        function ago(iso) {
+            return iso ? app.getTimeAgo(iso) : '—';
+        }
+
+        function isFuture(iso) {
+            return Boolean(iso) && app.parseServerDate(iso).getTime() > Date.now();
+        }
+
+        function loadingBlock() {
+            return '<div class="loading">Yükleniyor...</div>';
+        }
+
+        function errorBlock(message) {
+            return `<div class="error-message">${esc(message)}</div>`;
+        }
+
+        function emptyBlock(icon, title, hint) {
+            return `<div class="empty"><div class="empty-icon">${app.icon(icon)}</div><div class="empty-title">${esc(title)}</div>${hint ? `<p>${esc(hint)}</p>` : ''}</div>`;
+        }
+
+        function pagerHtml(key, page, perPage, total) {
+            const pages = Math.max(1, Math.ceil(total / perPage));
+            if (pages <= 1) return `<p class="faint pager-note">Toplam ${Number(total)} kayıt</p>`;
+            return `<nav class="pagination" aria-label="Sayfalar">
+                <button type="button" data-act="page" data-key="${key}" data-page="${page - 1}" ${page <= 1 ? 'disabled' : ''}>Önceki</button>
+                <span class="active">${page} / ${pages}</span>
+                <button type="button" data-act="page" data-key="${key}" data-page="${page + 1}" ${page >= pages ? 'disabled' : ''}>Sonraki</button>
+            </nav><p class="faint pager-note">Toplam ${Number(total)} kayıt</p>`;
+        }
+
+        function userChips(user, mutedUntil) {
+            const chips = [];
+            if (user && user.is_admin) chips.push('<span class="chip chip--accent">Yönetici</span>');
+            if (user && user.status === 'suspended') chips.push('<span class="chip chip--danger">Askıda</span>');
+            if (isFuture(mutedUntil)) chips.push('<span class="chip chip--warm">Susturulmuş</span>');
+            return chips.join('');
+        }
+
+        function userCell(user, sub) {
+            if (!user) return '<span class="faint">Silinmiş kullanıcı</span>';
+            return `<div class="person">
+                ${app.avatarMarkup(user.avatar_url, user.username, 'sm')}
+                <span class="person-text"><span class="person-name">${esc(user.username)}</span>${sub ? `<span class="person-sub">${esc(sub)}</span>` : ''}</span>
+            </div>`;
+        }
+
+        function contentLink(content) {
+            if (!content || !content.type) return '<span class="faint">—</span>';
+            const label = content.title || `${TYPE_LABEL[content.type] || 'İçerik'} #${content.id}`;
+            return `<span class="content-ref"><a href="${esc(content.url)}" target="_blank" rel="noopener">${esc(label)}</a><span class="chip">${esc(TYPE_LABEL[content.type] || content.type)}</span></span>`;
+        }
+
+        // --- Gezinti ---
+        function buildNav() {
+            document.getElementById('adminNav').innerHTML = '<div class="admin-nav-title">Yönetim</div>' + TABS.map(tab => `
+                <button type="button" data-act="tab" data-tab="${tab.id}" aria-current="${tab.id === state.tab ? 'page' : 'false'}" class="${tab.id === state.tab ? 'active' : ''}">
+                    ${app.icon(tab.icon)} <span>${esc(tab.label)}</span>
+                    <span class="nav-count" id="count-${tab.id}"></span>
+                </button>`).join('');
+        }
+
+        function showTab(name, options = {}) {
+            if (!TABS.some(tab => tab.id === name)) name = 'overview';
+            state.tab = name;
+            if (location.hash !== '#' + name) history.replaceState(null, '', '#' + name);
+            document.querySelectorAll('#adminNav button').forEach(button => {
+                const active = button.dataset.tab === name;
+                button.classList.toggle('active', active);
+                button.setAttribute('aria-current', active ? 'page' : 'false');
+            });
+            const renderers = { overview: renderOverview, users: renderUsers, comments: renderComments, deleted: renderDeleted, reports: renderReports, audit: renderAudit };
+            renderers[name](options);
+            refreshCounts();
+        }
+
+        async function refreshCounts() {
+            try {
+                const data = await adminGet({ action: 'overview' });
+                const pending = document.getElementById('count-reports');
+                if (pending) pending.textContent = data.totals.reports_pending || '';
+            } catch (error) { }
+        }
+
+        function reloadCurrent() {
+            showTab(state.tab);
+        }
+
+        function head(title, description, extra) {
+            return `<div class="admin-head"><div><h2>${esc(title)}</h2><p>${esc(description)}</p></div>${extra || ''}</div>`;
+        }
+
+        // =========================================================
+        // Genel bakış
+        // =========================================================
+        function miniChart(title, rows, key) {
+            const values = rows.map(row => Number(row[key]) || 0);
+            const max = Math.max(1, ...values);
+            const total = values.reduce((a, b) => a + b, 0);
+            const bars = rows.map((row, index) => `<div class="mini-bar${index === rows.length - 1 ? ' is-today' : ''}" style="height: ${Math.max(3, Math.round((values[index] / max) * 100))}%;" title="${esc(row.date)}: ${values[index]}"></div>`).join('');
+            return `<section class="panel">
+                <h3 class="panel-title">${esc(title)}</h3>
+                <div class="mini-total"><b>${total}</b><span class="muted">son 14 gün</span></div>
+                <div class="mini-bars" role="img" aria-label="${esc(title)}, son 14 gün: ${values.join(', ')}">${bars}</div>
+                <div class="mini-axis"><span>${esc(rows[0].date.slice(5))}</span><span>bugün</span></div>
+            </section>`;
+        }
+
+        async function renderOverview() {
+            const main = document.getElementById('adminMain');
+            main.innerHTML = head('Genel bakış', 'Topluluğun anlık durumu: kullanıcılar, yorumlar, bekleyen şikâyetler ve son yönetici işlemleri.',
+                '<button type="button" class="btn-glass" data-act="refresh">Yenile</button>') + loadingBlock();
+            try {
+                const data = await adminGet({ action: 'overview' });
+                const t = data.totals;
+                const tile = (value, label, note, alert) => `<div class="stat${alert ? ' is-alert' : ''}"><div class="stat-value">${Number(value)}</div><div class="stat-label">${esc(label)}</div>${note ? `<div class="stat-note">${esc(note)}</div>` : ''}</div>`;
+                main.innerHTML = head('Genel bakış', 'Topluluğun anlık durumu: kullanıcılar, yorumlar, bekleyen şikâyetler ve son yönetici işlemleri.',
+                    '<button type="button" class="btn-glass" data-act="refresh">Yenile</button>') + `
+                    <div class="stat-grid stat-grid--admin">
+                        ${tile(t.users, 'Kullanıcı', `son 7 günde +${t.users_7d}`)}
+                        ${tile(t.comments, 'Yorum', `${t.replies} yanıt`)}
+                        ${tile(t.comments_24h, 'Son 24 saatte yorum')}
+                        ${tile(t.reports_pending, 'Bekleyen şikâyet', '', t.reports_pending > 0)}
+                        ${tile(t.deleted, 'Silinmiş yorum', 'arşivde, geri yüklenebilir')}
+                        ${tile(t.edited, 'Düzenlenen yorum', 'geçmişi saklanıyor')}
+                        ${tile(t.spoilers, 'Spoiler işaretli')}
+                        ${tile(t.episode_comments, 'Bölüm sohbeti')}
+                        ${tile(t.suspended, 'Askıdaki hesap', '', t.suspended > 0)}
+                        ${tile(t.logins_24h, 'Son 24 saatte giriş')}
+                        ${tile(t.library_items, 'Kütüphane kaydı', 'film + dizi + kitap')}
+                    </div>
+                    <div class="overview-split">
+                        ${miniChart('Günlük yorum', data.daily, 'comments')}
+                        ${miniChart('Yeni kullanıcı', data.daily, 'users')}
+                        ${miniChart('Giriş', data.daily, 'logins')}
+                    </div>
+                    <div class="overview-split">
+                        <section class="panel">
+                            <h3 class="panel-title">${app.icon('message')} En çok konuşulan içerikler</h3>
+                            <div class="row-list">${data.top_content.length ? data.top_content.map(item => `
+                                <a class="row-link" href="${esc(item.url)}" target="_blank" rel="noopener">
+                                    <img src="${esc(item.poster || 'img/no-poster.svg')}" alt="" loading="lazy" onerror="this.onerror=null;this.src='img/no-poster.svg'">
+                                    <span class="grow"><span class="person-name clip" style="display: block;">${esc(item.title || `${TYPE_LABEL[item.type] || 'İçerik'} #${item.id}`)}</span><span class="person-sub">${esc(TYPE_LABEL[item.type] || '')}</span></span>
+                                    <span class="chip chip--accent">${Number(item.comments)} yorum</span>
+                                </a>`).join('') : '<p class="muted">Henüz yorum yok.</p>'}</div>
+                        </section>
+                        <section class="panel">
+                            <h3 class="panel-title">${app.icon('history')} Son yönetici işlemleri</h3>
+                            <div class="mini-list" style="margin-top: 12px;">${data.audit.length ? data.audit.map(entry => `
+                                <div class="mini-item">
+                                    <div class="meta-line"><span>${esc(ago(entry.created_at))}</span><span>${esc(entry.actor ? entry.actor.username : '—')}</span></div>
+                                    <strong>${esc(AUDIT_LABELS[entry.action] || entry.action)}</strong> <span class="muted">${esc(auditTargetText(entry))}</span>
+                                </div>`).join('') : '<p class="muted">Henüz bir işlem yapılmadı.</p>'}</div>
+                            <p style="margin-top: 14px;"><button type="button" class="btn-glass btn-sm" data-act="tab" data-tab="audit">Tüm günlüğü aç</button></p>
+                        </section>
+                    </div>`;
+            } catch (error) {
+                main.innerHTML = head('Genel bakış', '') + errorBlock(error.message);
+            }
+        }
+
+        // =========================================================
+        // Kullanıcılar
+        // =========================================================
+        function renderUsers() {
+            const s = state.users;
+            const main = document.getElementById('adminMain');
+            main.innerHTML = head('Kullanıcılar', 'Tüm hesaplar: kayıt ve giriş bilgileri, yorum ve kütüphane sayıları. Ayrıntıdan geçmişi görebilir, hesabı askıya alabilir ya da susturabilirsin.') + `
+                <div class="toolbar">
+                    <input type="search" class="input" id="userQuery" placeholder="Kullanıcı adı ya da e-posta ara" aria-label="Kullanıcı ara" value="${esc(s.q)}" autocomplete="off">
+                    <div class="chip-row" role="group" aria-label="Durum süzgeci">
+                        ${[['', 'Hepsi'], ['suspended', 'Askıdakiler'], ['admin', 'Yöneticiler']].map(([value, label]) => `<button type="button" class="chip" data-act="user-filter" data-value="${value}" aria-pressed="${s.status === value}">${label}</button>`).join('')}
+                    </div>
+                    <select class="select" id="userSort" aria-label="Sıralama">
+                        ${[['new', 'En yeni'], ['active', 'Son giriş'], ['name', 'Ada göre']].map(([value, label]) => `<option value="${value}" ${s.sort === value ? 'selected' : ''}>${label}</option>`).join('')}
+                    </select>
+                </div>
+                <div id="listArea">${loadingBlock()}</div>`;
+            document.getElementById('userQuery').addEventListener('input', (event) => {
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(() => { s.q = event.target.value.trim(); s.page = 1; loadUsers(); }, 350);
+            });
+            document.getElementById('userSort').addEventListener('change', (event) => { s.sort = event.target.value; s.page = 1; loadUsers(); });
+            loadUsers();
+        }
+
+        async function loadUsers() {
+            const s = state.users;
+            const area = document.getElementById('listArea');
+            if (!area) return;
+            const token = ++listToken;
+            area.innerHTML = loadingBlock();
+            document.querySelectorAll('[data-act="user-filter"]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.value === s.status)));
+            try {
+                const data = await adminGet({ action: 'users', page: s.page, q: s.q, status: s.status, sort: s.sort });
+                if (token !== listToken) return;
+                if (!data.users.length) {
+                    area.innerHTML = emptyBlock('users', 'Eşleşen kullanıcı yok', 'Arama ya da süzgeci değiştir.');
+                    return;
+                }
+                area.innerHTML = `<div class="table-wrap"><table class="table">
+                    <thead><tr><th>Kullanıcı</th><th>Durum</th><th>Yorum</th><th>Kütüphane</th><th>Takipçi</th><th>Son giriş</th><th>Kayıt</th><th><span class="visually-hidden">İşlem</span></th></tr></thead>
+                    <tbody>${data.users.map(user => `
+                        <tr class="is-clickable" data-act="open-user" data-id="${Number(user.id)}">
+                            <td>${userCell(user, user.email)}</td>
+                            <td><div class="chip-row">${userChips(user, user.muted_until) || '<span class="faint">Etkin</span>'}</div></td>
+                            <td class="num">${Number(user.comments)}</td>
+                            <td class="num">${Number(user.library)}</td>
+                            <td class="num">${Number(user.followers)}</td>
+                            <td class="nowrap">${esc(user.last_login_at ? ago(user.last_login_at) : 'Hiç girmedi')}</td>
+                            <td class="nowrap">${esc(fmtDate(user.created_at))}</td>
+                            <td><div class="cell-actions"><button type="button" class="btn-glass btn-sm" data-act="open-user" data-id="${Number(user.id)}">Ayrıntı</button></div></td>
+                        </tr>`).join('')}</tbody></table></div>` + pagerHtml('users', data.page, data.per_page, data.total);
+            } catch (error) {
+                area.innerHTML = errorBlock(error.message);
+            }
+        }
+
+        // Kullanıcı ayrıntı penceresi: bilgi, işlemler, kütüphane, geçmiş, yorumlar, girişler, işlem günlüğü.
+        async function openUser(userId) {
+            if (activeModal) activeModal.close();
+            activeModal = app.openModal({ title: 'Kullanıcı ayrıntısı', width: 940, html: loadingBlock() });
+            const modal = activeModal;
+            try {
+                const data = await adminGet({ action: 'user', user_id: userId });
+                if (modal !== activeModal) return;
+                const u = data.user;
+                const s = data.stats;
+                const muted = isFuture(u.muted_until);
+                const canAct = !u.is_admin && u.id !== app.currentUser.id;
+                const libraryRows = ['movie', 'series', 'book'].map(type => {
+                    const entries = Object.entries(data.library[type] || {});
+                    return `<div class="type-row" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 0;"><strong style="min-width: 54px;">${TYPE_LABEL[type]}</strong>${entries.length ? entries.map(([status, count]) => `<span class="chip">${esc(STATUS_LABEL[status] || status)} <b>${Number(count)}</b></span>`).join('') : '<span class="faint">Kayıt yok</span>'}</div>`;
+                }).join('');
+
+                modal.body.innerHTML = `<div class="detail-grid">
+                    <div class="cluster" style="align-items: flex-start; gap: 18px;">
+                        ${app.avatarMarkup(u.avatar_url, u.username, 'xl')}
+                        <div style="display: grid; gap: 8px; min-width: 0;">
+                            <div class="cluster cluster--tight"><h3 style="font-size: 24px; font-weight: 800;">${esc(u.username)}</h3>${userChips(u, u.muted_until)}</div>
+                            <div class="muted">${esc(u.email || '—')}</div>
+                            <div class="muted">${esc(u.bio || 'Biyografi eklenmemiş.')}</div>
+                            <div class="cluster cluster--tight">
+                                <a class="btn-glass btn-sm" href="user-profile.html?id=${Number(u.id)}" target="_blank" rel="noopener">Profili aç</a>
+                                <button type="button" class="btn-glass btn-sm" data-act="user-comments" data-id="${Number(u.id)}" data-name="${esc(u.username)}">Tüm yorumları</button>
+                                ${canAct ? (u.status === 'suspended'
+                                    ? `<button type="button" class="btn btn-primary btn-sm" data-act="unsuspend" data-id="${Number(u.id)}">Askıyı kaldır</button>`
+                                    : `<button type="button" class="btn-sm btn-danger-soft btn" data-act="suspend" data-id="${Number(u.id)}" data-name="${esc(u.username)}">Askıya al</button>`) : ''}
+                                ${canAct ? (muted
+                                    ? `<button type="button" class="btn btn-secondary btn-sm" data-act="unmute" data-id="${Number(u.id)}">Susturmayı kaldır</button>`
+                                    : `<button type="button" class="btn btn-outline btn-sm" data-act="mute" data-id="${Number(u.id)}" data-name="${esc(u.username)}">Sustur</button>`) : ''}
+                            </div>
+                            ${u.status === 'suspended' ? `<div class="notice notice--danger"><span><b>Askıda.</b> ${esc(u.suspended_reason || 'Gerekçe yazılmamış.')} <span class="faint">(${esc(fmtDate(u.suspended_at))})</span></span></div>` : ''}
+                            ${muted ? `<div class="notice notice--warn"><span><b>Susturulmuş.</b> ${esc(fmtDate(u.muted_until))} tarihine kadar yorum yazamaz.</span></div>` : ''}
+                        </div>
+                    </div>
+
+                    <div class="detail-block"><h3>${app.icon('user')} Hesap</h3>
+                        <dl class="kv">
+                            <div><dt>Kayıt</dt><dd>${esc(fmtDate(u.created_at))}</dd></div>
+                            <div><dt>Son giriş</dt><dd>${esc(fmtDate(u.last_login_at))}</dd></div>
+                            <div><dt>Giriş sayısı</dt><dd>${Number(u.login_count)}</dd></div>
+                            <div><dt>İki adımlı doğrulama</dt><dd>${u.totp_enabled ? 'Açık' : 'Kapalı'}</dd></div>
+                            <div><dt>Takipçi / takip edilen</dt><dd>${Number(s.followers)} / ${Number(s.following)}</dd></div>
+                            <div><dt>Yorum</dt><dd>${Number(s.comments)} (silinen: ${Number(s.deleted)})</dd></div>
+                            <div><dt>Yaptığı şikâyet</dt><dd>${Number(s.reports_filed)}</dd></div>
+                            <div><dt>Hakkındaki şikâyet</dt><dd>${Number(s.reports_against)}</dd></div>
+                        </dl>
+                    </div>
+
+                    <div class="detail-block"><h3>${app.icon('film')} Kütüphane</h3>${libraryRows}</div>
+
+                    <div class="detail-block"><h3>${app.icon('history')} Kütüphane geçmişi</h3>
+                        ${data.activity.length ? `<div class="mini-list">${data.activity.map(entry => `
+                            <div class="mini-item"><div class="meta-line"><span>${esc(fmtDate(entry.at))}</span><span>${esc(TYPE_LABEL[entry.type] || '')}</span><span>${esc(STATUS_LABEL[entry.status] || entry.status)}</span>${entry.rating ? `<span>★ ${Number(entry.rating)}/10</span>` : ''}</div>
+                            <a href="detail.php?type=${encodeURIComponent(entry.type)}&id=${encodeURIComponent(entry.content_id)}" target="_blank" rel="noopener"><strong>${esc(entry.title)}</strong></a></div>`).join('')}</div>` : '<p class="muted">Kütüphane hareketi yok.</p>'}
+                    </div>
+
+                    <div class="detail-block"><h3>${app.icon('message')} Son yorumları</h3>
+                        ${data.recent_comments.length ? `<div class="mini-list">${data.recent_comments.map(commentMini).join('')}</div>` : '<p class="muted">Yorum yazmamış.</p>'}
+                    </div>
+
+                    <div class="detail-block"><h3>${app.icon('lock')} Son girişler</h3>
+                        ${data.logins.length ? `<div class="mini-list">${data.logins.map(login => `<div class="mini-item"><div class="meta-line"><span>${esc(fmtDate(login.at))}</span></div><span class="muted clip" style="display: block; font-size: 12.5px;">${esc(login.ua || 'Tarayıcı bilgisi yok')}</span></div>`).join('')}</div>` : '<p class="muted">Giriş kaydı yok.</p>'}
+                    </div>
+
+                    <div class="detail-block"><h3>${app.icon('shield')} Bu hesaba yapılan işlemler</h3>
+                        ${data.audit.length ? `<div class="mini-list">${data.audit.map(entry => `<div class="mini-item"><div class="meta-line"><span>${esc(fmtDate(entry.created_at))}</span><span>${esc(entry.actor ? entry.actor.username : '—')}</span></div><strong>${esc(AUDIT_LABELS[entry.action] || entry.action)}</strong> <span class="muted">${esc(auditMetaText(entry))}</span></div>`).join('')}</div>` : '<p class="muted">Bu hesaba bir işlem yapılmamış.</p>'}
+                    </div>
+                </div>`;
+            } catch (error) {
+                modal.body.innerHTML = errorBlock(error.message);
+            }
+        }
+
+        function commentMini(comment) {
+            const chips = [];
+            if (comment.has_spoiler) chips.push('<span class="chip chip--warm">Spoiler</span>');
+            if (comment.parent_comment_id) chips.push('<span class="chip">Yanıt</span>');
+            if (comment.episode_number) chips.push(`<span class="chip">S${Number(comment.season_number)} B${Number(comment.episode_number)}</span>`);
+            if (comment.revisions) chips.push(`<span class="chip chip--accent">${Number(comment.revisions)} düzenleme</span>`);
+            if (comment.reports) chips.push(`<span class="chip chip--danger">${Number(comment.reports)} şikâyet</span>`);
+            return `<div class="mini-item">
+                <div class="meta-line"><span>${esc(fmtDate(comment.created_at))}</span><span>${contentLink(comment.content)}</span></div>
+                <div style="overflow-wrap: anywhere;">${esc(comment.text)}</div>
+                <div class="cluster cluster--tight" style="margin-top: 8px;">${chips.join('')}<button type="button" class="btn-glass btn-sm" data-act="open-comment" data-id="${Number(comment.id)}">Ayrıntı</button></div>
+            </div>`;
+        }
+
+        // =========================================================
+        // Yorumlar
+        // =========================================================
+        function renderComments(options = {}) {
+            const s = state.comments;
+            if (options.userId !== undefined) {
+                s.userId = options.userId;
+                s.userName = options.userName || '';
+                s.page = 1;
+            }
+            const main = document.getElementById('adminMain');
+            const filters = [['all', 'Tümü'], ['spoiler', 'Spoiler'], ['replies', 'Yanıtlar'], ['episode', 'Bölüm sohbeti'], ['edited', 'Düzenlenenler'], ['reported', 'Şikâyetli']];
+            main.innerHTML = head('Yorumlar', 'Sitedeki tüm yorumlar, spoiler işaretliler ve bölüm sohbetleri dahil. Düzenleme geçmişini ve şikâyetleri ayrıntıdan görebilirsin.') + `
+                <div class="toolbar">
+                    <input type="search" class="input" id="commentQuery" placeholder="Yorum metni ya da yazar adı ara" aria-label="Yorum ara" value="${esc(s.q)}" autocomplete="off">
+                    <div class="chip-row" role="group" aria-label="Yorum süzgeci">
+                        ${filters.map(([value, label]) => `<button type="button" class="chip" data-act="comment-filter" data-value="${value}" aria-pressed="${s.filter === value}">${label}</button>`).join('')}
+                    </div>
+                    ${s.userId ? `<button type="button" class="chip chip--accent" data-act="clear-user-filter" title="Kullanıcı süzgecini kaldır">${esc(s.userName || 'Kullanıcı')} ✕</button>` : ''}
+                </div>
+                <div id="listArea">${loadingBlock()}</div>`;
+            document.getElementById('commentQuery').addEventListener('input', (event) => {
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(() => { s.q = event.target.value.trim(); s.page = 1; loadComments(); }, 350);
+            });
+            loadComments();
+        }
+
+        async function loadComments() {
+            const s = state.comments;
+            const area = document.getElementById('listArea');
+            if (!area) return;
+            const token = ++listToken;
+            area.innerHTML = loadingBlock();
+            document.querySelectorAll('[data-act="comment-filter"]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.value === s.filter)));
+            try {
+                const params = { action: 'comments', page: s.page, q: s.q, filter: s.filter };
+                if (s.userId) params.user_id = s.userId;
+                const data = await adminGet(params);
+                if (token !== listToken) return;
+                if (!data.comments.length) {
+                    area.innerHTML = emptyBlock('message', 'Eşleşen yorum yok', 'Arama ya da süzgeci değiştir.');
+                    return;
+                }
+                area.innerHTML = `<div class="table-wrap"><table class="table">
+                    <thead><tr><th>Yazar</th><th>Yorum</th><th>İçerik</th><th>Zaman</th><th>Sayaçlar</th><th><span class="visually-hidden">İşlem</span></th></tr></thead>
+                    <tbody>${data.comments.map(comment => {
+                        const chips = [];
+                        if (comment.has_spoiler) chips.push('<span class="chip chip--warm">Spoiler</span>');
+                        if (comment.parent_comment_id) chips.push('<span class="chip">Yanıt</span>');
+                        if (comment.episode_number) chips.push(`<span class="chip">S${Number(comment.season_number)} B${Number(comment.episode_number)}</span>`);
+                        return `<tr class="is-clickable" data-act="open-comment" data-id="${Number(comment.id)}">
+                            <td>${userCell(comment.author)}</td>
+                            <td><div class="cell-text">${esc(comment.text)}</div>${chips.length ? `<div class="chip-row" style="margin-top: 6px;">${chips.join('')}</div>` : ''}</td>
+                            <td>${contentLink(comment.content)}</td>
+                            <td class="nowrap">${esc(fmtDate(comment.created_at))}</td>
+                            <td class="nowrap"><span title="Beğeni">♥ ${Number(comment.likes)}</span> · <span title="Şikâyet" ${comment.reports ? 'style="color: var(--color-danger); font-weight: 800;"' : ''}>⚑ ${Number(comment.reports)}</span> · <span title="Düzenleme">✎ ${Number(comment.revisions)}</span></td>
+                            <td><div class="cell-actions"><button type="button" class="btn-glass btn-sm" data-act="open-comment" data-id="${Number(comment.id)}">Ayrıntı</button><button type="button" class="btn btn-sm btn-danger-soft" data-act="delete-comment" data-id="${Number(comment.id)}">Sil</button></div></td>
+                        </tr>`;
+                    }).join('')}</tbody></table></div>` + pagerHtml('comments', data.page, data.per_page, data.total);
+            } catch (error) {
+                area.innerHTML = errorBlock(error.message);
+            }
+        }
+
+        // Yorum ayrıntı penceresi: tam metin, tüm sürümler (düzenleme geçmişi), yanıtlar ve şikâyetler.
+        async function openComment(commentId) {
+            if (activeModal) activeModal.close();
+            activeModal = app.openModal({ title: 'Yorum ayrıntısı', width: 900, html: loadingBlock() });
+            const modal = activeModal;
+            try {
+                const data = await adminGet({ action: 'comment', comment_id: commentId });
+                if (modal !== activeModal) return;
+                const c = data.comment;
+                modal.body.innerHTML = `<div class="detail-grid">
+                    <div class="cluster" style="justify-content: space-between; align-items: flex-start; gap: 14px;">
+                        <div style="display: grid; gap: 8px;">
+                            ${userCell(c.author, fmtDate(c.created_at))}
+                            <div>${contentLink(c.content)}</div>
+                            <div class="chip-row">
+                                ${c.has_spoiler ? '<span class="chip chip--warm">Spoiler işaretli</span>' : ''}
+                                ${c.parent_comment_id ? '<span class="chip">Yanıt</span>' : ''}
+                                ${c.episode_number ? `<span class="chip">S${Number(c.season_number)} B${Number(c.episode_number)} bölüm sohbeti</span>` : ''}
+                                <span class="chip">♥ ${Number(c.likes)}</span>
+                                <span class="chip ${c.reports ? 'chip--danger' : ''}">⚑ ${Number(c.reports)} şikâyet</span>
+                                <span class="chip">✎ ${Number(c.revisions)} düzenleme</span>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-danger btn-sm" data-act="delete-comment" data-id="${Number(c.id)}" data-close="1">Yorumu sil</button>
+                    </div>
+
+                    <div class="detail-block"><h3>${app.icon('pencil')} Sürüm geçmişi (${data.versions.length})</h3>
+                        <div class="versions">${data.versions.slice().reverse().map((version, index, all) => `
+                            <div class="version">
+                                <div class="version-head"><span>${esc(fmtDate(version.at))}</span>${version.current ? '<span class="chip chip--success">Güncel sürüm</span>' : `<span class="chip">Sürüm ${all.length - index}</span>`}</div>
+                                <div class="quote">${esc(version.text)}</div>
+                            </div>`).join('')}</div>
+                    </div>
+
+                    <div class="detail-block"><h3>${app.icon('message')} Yanıtlar (${data.replies.length})</h3>
+                        ${data.replies.length ? `<div class="mini-list">${data.replies.map(reply => `<div class="mini-item"><div class="meta-line"><span>${esc(reply.author ? reply.author.username : 'Silinmiş kullanıcı')}</span><span>${esc(fmtDate(reply.created_at))}</span><span>♥ ${Number(reply.likes)}</span></div><div style="overflow-wrap: anywhere;">${esc(reply.text)}</div></div>`).join('')}</div>` : '<p class="muted">Yanıt yok.</p>'}
+                    </div>
+
+                    <div class="detail-block"><h3>${app.icon('flag')} Şikâyetler (${data.reports.length})</h3>
+                        ${data.reports.length ? `<div class="mini-list">${data.reports.map(report => `<div class="mini-item"><div class="meta-line"><span>${esc(report.reporter ? report.reporter.username : 'Silinmiş kullanıcı')}</span><span>${esc(fmtDate(report.created_at))}</span><span class="chip ${report.status === 'pending' ? 'chip--warm' : 'chip--success'}">${report.status === 'pending' ? 'Bekliyor' : 'Çözüldü'}</span></div>${esc(report.reason)}</div>`).join('')}</div>` : '<p class="muted">Şikâyet yok.</p>'}
+                    </div>
+                </div>`;
+            } catch (error) {
+                modal.body.innerHTML = errorBlock(error.message);
+            }
+        }
+
+        // =========================================================
+        // Silinenler
+        // =========================================================
+        function renderDeleted() {
+            const main = document.getElementById('adminMain');
+            main.innerHTML = head('Silinenler', 'Silinen hiçbir yorum kaybolmaz: yanıtlarıyla birlikte arşive taşınır. Buradan geri yükleyebilirsin (beğeniler geri gelmez).') + '<div id="listArea">' + loadingBlock() + '</div>';
+            loadDeleted();
+        }
+
+        async function loadDeleted() {
+            const area = document.getElementById('listArea');
+            if (!area) return;
+            const token = ++listToken;
+            try {
+                const data = await adminGet({ action: 'deleted', page: state.deleted.page });
+                if (token !== listToken) return;
+                if (!data.deleted.length) {
+                    area.innerHTML = emptyBlock('trash', 'Arşiv boş', 'Henüz silinmiş bir yorum yok.');
+                    return;
+                }
+                area.innerHTML = `<div class="table-wrap"><table class="table">
+                    <thead><tr><th>Yazar</th><th>Yorum</th><th>İçerik</th><th>Silen</th><th>Gerekçe</th><th>Silinme</th><th><span class="visually-hidden">İşlem</span></th></tr></thead>
+                    <tbody>${data.deleted.map(item => `<tr>
+                        <td>${userCell(item.author)}</td>
+                        <td><div class="cell-text">${esc(item.text)}</div><div class="chip-row" style="margin-top: 6px;">${item.has_spoiler ? '<span class="chip chip--warm">Spoiler</span>' : ''}${item.replies ? `<span class="chip">${Number(item.replies)} yanıt</span>` : ''}${item.likes ? `<span class="chip">♥ ${Number(item.likes)}</span>` : ''}</div></td>
+                        <td>${contentLink(item.content)}</td>
+                        <td>${item.deleted_by ? esc(item.deleted_by.username) : '—'} <span class="chip ${item.via === 'admin' ? 'chip--danger' : ''}">${item.via === 'admin' ? 'Yönetici' : 'Yazarı'}</span></td>
+                        <td><span class="muted">${esc(item.reason || '—')}</span></td>
+                        <td class="nowrap">${esc(fmtDate(item.deleted_at))}</td>
+                        <td><div class="cell-actions">${item.restored_at ? `<span class="chip chip--success">Geri yüklendi</span>` : `<button type="button" class="btn btn-primary btn-sm" data-act="restore" data-id="${Number(item.archive_id)}">Geri yükle</button>`}</div></td>
+                    </tr>`).join('')}</tbody></table></div>` + pagerHtml('deleted', data.page, data.per_page, data.total);
+            } catch (error) {
+                area.innerHTML = errorBlock(error.message);
+            }
+        }
+
+        // =========================================================
+        // Şikâyetler
+        // =========================================================
+        function renderReports() {
+            const s = state.reports;
+            const main = document.getElementById('adminMain');
+            main.innerHTML = head('Şikâyetler', 'Kullanıcıların bildirdiği yorumlar. Yorumu silebilir ya da şikâyeti haksız bulup reddedebilirsin.') + `
+                <div class="toolbar"><div class="chip-row" role="group" aria-label="Şikâyet durumu">
+                    ${[['pending', 'Bekleyenler'], ['resolved', 'Çözülenler'], ['all', 'Hepsi']].map(([value, label]) => `<button type="button" class="chip" data-act="report-filter" data-value="${value}" aria-pressed="${s.status === value}">${label}</button>`).join('')}
+                </div></div>
+                <div id="listArea">${loadingBlock()}</div>`;
+            loadReports();
+        }
+
+        async function loadReports() {
+            const s = state.reports;
+            const area = document.getElementById('listArea');
+            if (!area) return;
+            const token = ++listToken;
+            document.querySelectorAll('[data-act="report-filter"]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.value === s.status)));
+            try {
+                const data = await adminGet({ action: 'reports', status: s.status, page: s.page });
+                if (token !== listToken) return;
+                if (!data.reports.length) {
+                    area.innerHTML = emptyBlock('check', s.status === 'pending' ? 'Bekleyen şikâyet yok' : 'Şikâyet bulunamadı', s.status === 'pending' ? 'Her şey yolunda görünüyor.' : '');
+                    return;
+                }
+                area.innerHTML = data.reports.map(report => `
+                    <article class="panel report-card">
+                        <div class="report-head">
+                            <div class="cluster cluster--tight"><span class="chip ${report.status === 'pending' ? 'chip--warm' : 'chip--success'}">${report.status === 'pending' ? 'Bekliyor' : 'Çözüldü'}</span><span class="muted">${esc(report.reporter ? report.reporter.username : 'Silinmiş kullanıcı')} şikâyet etti · ${esc(fmtDate(report.created_at))}</span></div>
+                            ${report.comment ? contentLink(report.comment.content) : ''}
+                        </div>
+                        ${report.comment ? `<div class="quote"><strong>${esc(report.comment.author ? report.comment.author.username : 'Silinmiş kullanıcı')}</strong>${report.comment.has_spoiler ? ' <span class="chip chip--warm">Spoiler</span>' : ''}<br>${esc(report.comment.text)}</div>` : '<div class="quote muted">Yorum artık yok (silinmiş olabilir). Silinenler sekmesinden bakabilirsin.</div>'}
+                        <div><strong>Neden:</strong> ${esc(report.reason)}</div>
+                        ${report.status === 'pending' ? `<div class="cluster cluster--tight">
+                            ${report.comment ? `<button type="button" class="btn-glass btn-sm" data-act="open-comment" data-id="${Number(report.comment_id)}">Yorumun ayrıntısı</button>` : ''}
+                            <button type="button" class="btn btn-danger btn-sm" data-act="resolve-delete" data-id="${Number(report.id)}">Yorumu sil</button>
+                            <button type="button" class="btn btn-secondary btn-sm" data-act="resolve-dismiss" data-id="${Number(report.id)}">Şikâyeti reddet</button>
+                        </div>` : `<div class="muted">${report.resolution === 'delete_comment' ? 'Yorum silindi' : 'Şikâyet reddedildi'}${report.resolved_by ? ` · ${esc(report.resolved_by.username)}` : ''} · ${esc(fmtDate(report.resolved_at))}</div>`}
+                    </article>`).join('') + pagerHtml('reports', data.page, data.per_page, data.total);
+            } catch (error) {
+                area.innerHTML = errorBlock(error.message);
+            }
+        }
+
+        // =========================================================
+        // İşlem günlüğü
+        // =========================================================
+        function auditMetaText(entry) {
+            const meta = entry.meta || {};
+            const parts = [];
+            if (meta.reason) parts.push(`Gerekçe: ${meta.reason}`);
+            if (meta.hours) parts.push(`${meta.hours} saat`);
+            return parts.join(' · ');
+        }
+
+        function auditTargetText(entry) {
+            const names = { user: 'kullanıcı', comment: 'yorum', report: 'şikâyet' };
+            return `${names[entry.target_type] || entry.target_type} #${entry.target_id}`;
+        }
+
+        function renderAudit() {
+            const s = state.audit;
+            const main = document.getElementById('adminMain');
+            main.innerHTML = head('İşlem günlüğü', 'Yöneticilerin yaptığı her işlem kayda geçer: kim, ne zaman, kime ne yaptı. Kayıtlar silinemez.') + `
+                <div class="toolbar"><div class="chip-row" role="group" aria-label="Hedef süzgeci">
+                    ${[['', 'Hepsi'], ['user', 'Kullanıcı'], ['comment', 'Yorum'], ['report', 'Şikâyet']].map(([value, label]) => `<button type="button" class="chip" data-act="audit-filter" data-value="${value}" aria-pressed="${s.target === value}">${label}</button>`).join('')}
+                </div></div>
+                <div id="listArea">${loadingBlock()}</div>`;
+            loadAudit();
+        }
+
+        async function loadAudit() {
+            const s = state.audit;
+            const area = document.getElementById('listArea');
+            if (!area) return;
+            const token = ++listToken;
+            document.querySelectorAll('[data-act="audit-filter"]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.value === s.target)));
+            try {
+                const data = await adminGet({ action: 'audit', page: s.page, target_type: s.target });
+                if (token !== listToken) return;
+                if (!data.entries.length) {
+                    area.innerHTML = emptyBlock('history', 'Kayıt yok', 'Henüz yönetici işlemi yapılmamış.');
+                    return;
+                }
+                area.innerHTML = `<div class="table-wrap"><table class="table">
+                    <thead><tr><th>Zaman</th><th>Yönetici</th><th>İşlem</th><th>Hedef</th><th>Ayrıntı</th></tr></thead>
+                    <tbody>${data.entries.map(entry => {
+                        const target = entry.target_type === 'user'
+                            ? `<button type="button" class="btn-glass btn-sm" data-act="open-user" data-id="${Number(entry.target_id)}">Kullanıcı #${Number(entry.target_id)}</button>`
+                            : entry.target_type === 'comment'
+                                ? `<button type="button" class="btn-glass btn-sm" data-act="open-comment" data-id="${Number(entry.target_id)}">Yorum #${Number(entry.target_id)}</button>`
+                                : `<span class="chip">${esc(auditTargetText(entry))}</span>`;
+                        return `<tr>
+                            <td class="nowrap">${esc(fmtDate(entry.created_at))}</td>
+                            <td>${userCell(entry.actor)}</td>
+                            <td><strong>${esc(AUDIT_LABELS[entry.action] || entry.action)}</strong></td>
+                            <td>${target}</td>
+                            <td><span class="muted">${esc(auditMetaText(entry)) || '—'}</span></td>
+                        </tr>`;
+                    }).join('')}</tbody></table></div>` + pagerHtml('audit', data.page, data.per_page, data.total);
+            } catch (error) {
+                area.innerHTML = errorBlock(error.message);
+            }
+        }
+
+        // =========================================================
+        // İşlemler
+        // =========================================================
+        async function run(label, action) {
+            try {
+                await action();
+                app.toast(label, 'success');
+                return true;
+            } catch (error) {
+                app.toast(error.message, 'error');
+                return false;
+            }
+        }
+
+        async function afterChange(closeModal) {
+            if (closeModal && activeModal) activeModal.close();
+            reloadCurrent();
+        }
+
+        async function deleteComment(commentId, closeModal) {
+            const values = await app.formDialog({
+                title: 'Yorumu sil',
+                description: 'Yorum (varsa yanıtlarıyla) arşive taşınır. Silinenler sekmesinden geri yükleyebilirsin.',
+                fields: [{ name: 'reason', label: 'Gerekçe (isteğe bağlı)', type: 'textarea', maxlength: 300, hint: 'Yazar görmez; işlem günlüğünde tutulur.' }],
+                submitText: 'Sil', danger: true
+            });
+            if (!values) return;
+            if (await run('Yorum silindi', () => adminPost({ action: 'delete_comment', comment_id: commentId, reason: values.reason }))) afterChange(closeModal);
+        }
+
+        async function restoreComment(archiveId) {
+            if (!(await app.confirmDialog('Bu yorum (ve yanıtları) yeniden yayımlanacak. Beğeniler geri gelmez. Devam edilsin mi?', { confirmText: 'Geri yükle' }))) return;
+            if (await run('Yorum geri yüklendi', () => adminPost({ action: 'restore_comment', archive_id: archiveId }))) afterChange(false);
+        }
+
+        async function resolveReport(reportId, resolution) {
+            if (resolution === 'delete_comment' && !(await app.confirmDialog('Yorum silinecek (arşive taşınır) ve bu yoruma gelen tüm şikâyetler çözülecek.', { confirmText: 'Yorumu sil' }))) return;
+            const label = resolution === 'delete_comment' ? 'Yorum silindi' : 'Şikâyet reddedildi';
+            if (await run(label, () => adminPost({ action: 'resolve_report', report_id: reportId, resolution }))) afterChange(false);
+        }
+
+        async function suspendUser(userId, name) {
+            const values = await app.formDialog({
+                title: `${name} hesabını askıya al`,
+                description: 'Askıdaki kullanıcı giriş yapamaz ve hiçbir işlem yapamaz. İstediğin zaman geri açabilirsin.',
+                fields: [{ name: 'reason', label: 'Gerekçe', type: 'textarea', maxlength: 300, required: true }],
+                submitText: 'Askıya al', danger: true
+            });
+            if (!values) return;
+            if (await run('Hesap askıya alındı', () => adminPost({ action: 'suspend_user', user_id: userId, reason: values.reason }))) { openUser(userId); reloadCurrentQuiet(); }
+        }
+
+        async function muteUser(userId, name) {
+            const values = await app.formDialog({
+                title: `${name} kullanıcısını sustur`,
+                description: 'Susturulan kullanıcı yorum yazamaz; okuyabilir ve beğenebilir.',
+                fields: [
+                    { name: 'hours', label: 'Süre', type: 'select', value: '24', options: [['1', '1 saat'], ['6', '6 saat'], ['24', '1 gün'], ['72', '3 gün'], ['168', '1 hafta'], ['720', '30 gün']].map(([value, label]) => ({ value, label })) },
+                    { name: 'reason', label: 'Gerekçe (isteğe bağlı)', type: 'textarea', maxlength: 300 }
+                ],
+                submitText: 'Sustur'
+            });
+            if (!values) return;
+            if (await run('Kullanıcı susturuldu', () => adminPost({ action: 'mute_user', user_id: userId, hours: Number(values.hours), reason: values.reason }))) { openUser(userId); reloadCurrentQuiet(); }
+        }
+
+        async function simpleUserAction(action, userId, label) {
+            if (await run(label, () => adminPost({ action, user_id: userId }))) { openUser(userId); reloadCurrentQuiet(); }
+        }
+
+        function reloadCurrentQuiet() {
+            if (state.tab === 'users') loadUsers();
+            else if (state.tab === 'overview') renderOverview();
+            refreshCounts();
+        }
+
+        // --- Tek tıklama dağıtıcısı ---
+        document.addEventListener('click', (event) => {
+            const el = event.target.closest('[data-act]');
+            if (!el) return;
+            const act = el.dataset.act;
+            const id = Number(el.dataset.id);
+
+            // Tablo satırı tıklaması içindeki düğmelerle çift tetiklenmesin
+            if (el.tagName === 'TR' && event.target.closest('button, a')) return;
+            if (el.tagName !== 'TR') event.stopPropagation();
+
+            switch (act) {
+                case 'tab': showTab(el.dataset.tab); break;
+                case 'refresh': reloadCurrent(); break;
+                case 'page': {
+                    const key = el.dataset.key;
+                    state[key].page = Math.max(1, Number(el.dataset.page));
+                    ({ users: loadUsers, comments: loadComments, deleted: loadDeleted, reports: loadReports, audit: loadAudit })[key]();
+                    window.scrollTo({ top: 0, behavior: motionReduced() ? 'auto' : 'smooth' });
+                    break;
+                }
+                case 'user-filter': state.users.status = el.dataset.value; state.users.page = 1; loadUsers(); break;
+                case 'comment-filter': state.comments.filter = el.dataset.value; state.comments.page = 1; loadComments(); break;
+                case 'report-filter': state.reports.status = el.dataset.value; state.reports.page = 1; loadReports(); break;
+                case 'audit-filter': state.audit.target = el.dataset.value; state.audit.page = 1; loadAudit(); break;
+                case 'clear-user-filter': state.comments.userId = null; state.comments.userName = ''; state.comments.page = 1; renderComments(); break;
+                case 'open-user': openUser(id); break;
+                case 'open-comment': openComment(id); break;
+                case 'user-comments':
+                    if (activeModal) activeModal.close();
+                    showTab('comments', { userId: id, userName: el.dataset.name });
+                    break;
+                case 'delete-comment': deleteComment(id, el.dataset.close === '1'); break;
+                case 'restore': restoreComment(id); break;
+                case 'resolve-delete': resolveReport(id, 'delete_comment'); break;
+                case 'resolve-dismiss': resolveReport(id, 'dismiss'); break;
+                case 'suspend': suspendUser(id, el.dataset.name); break;
+                case 'unsuspend': simpleUserAction('unsuspend_user', id, 'Askı kaldırıldı'); break;
+                case 'mute': muteUser(id, el.dataset.name); break;
+                case 'unmute': simpleUserAction('unmute_user', id, 'Susturma kaldırıldı'); break;
+            }
+        });
+
+        // --- Açılış ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            try { await app.initPromise; } catch (e) { }
+            const gate = document.getElementById('adminGate');
+
+            if (!app.currentUser) {
+                window.location.href = 'index.html';
+                return;
+            }
+            if (!app.currentUser.is_admin) {
+                gate.className = 'empty denied';
+                gate.innerHTML = `<div class="empty-icon">${app.icon('lock')}</div><div class="empty-title">Bu sayfaya erişimin yok</div><p>Yönetim konsolu yalnızca yöneticilere açıktır.</p><a class="btn btn-primary" href="search.html">Keşfet'e dön</a>`;
                 return;
             }
 
-            loadReports();
+            gate.hidden = true;
+            document.getElementById('adminApp').hidden = false;
+            const initial = (location.hash || '').replace('#', '');
+            state.tab = TABS.some(tab => tab.id === initial) ? initial : 'overview';
+            buildNav();
+            showTab(state.tab);
+            window.addEventListener('hashchange', () => {
+                const name = (location.hash || '').replace('#', '');
+                if (name !== state.tab) showTab(name);
+            });
         });
-
-        async function loadReports() {
-            const container = document.getElementById('adminContent');
-            try {
-                const response = await fetch('/api/report-comment.php', { credentials: 'include' });
-                const data = await response.json();
-
-                if (!data.success) {
-                    container.innerHTML = `<div class="no-results">${app.escapeHtml(data.message || 'Yüklenemedi')}</div>`;
-                    return;
-                }
-
-                const reports = data.reports || [];
-                if (reports.length === 0) {
-                    container.innerHTML = '<div class="no-results">✅ Bekleyen şikayet yok</div>';
-                    return;
-                }
-
-                container.innerHTML = reports.map(r => `
-                    <div class="report-card" id="report-${r.id}">
-                        <div class="report-meta">
-                            🚩 <strong>${app.escapeHtml(r.reporter_username)}</strong> şikayet etti · ${app.formatDate(r.created_at)}
-                        </div>
-                        <div class="report-comment-text">
-                            <strong>${app.escapeHtml(r.comment_author)}</strong>: ${app.escapeHtml(r.comment_text)}
-                        </div>
-                        <div class="report-reason"><strong>Neden:</strong> ${app.escapeHtml(r.reason)}</div>
-                        <div class="report-actions">
-                            <button class="btn btn-danger" onclick="resolveReport(${r.id}, 'delete_comment')">🗑️ Yorumu Sil</button>
-                            <button class="btn btn-secondary" onclick="resolveReport(${r.id}, 'dismiss')">✅ Şikayeti Reddet</button>
-                        </div>
-                    </div>
-                `).join('');
-            } catch (error) {
-                console.error('Şikayetler yüklenemedi:', error);
-                container.innerHTML = '<div class="no-results">❌ Bağlantı hatası</div>';
-            }
-        }
-
-        async function resolveReport(reportId, action) {
-            try {
-                const response = await fetch('/api/report-comment.php', {
-                    method: 'PUT',
-                    headers: app.authHeaders(),
-                    credentials: 'include',
-                    body: JSON.stringify({ id: reportId, action })
-                });
-                const data = await response.json();
-                if (data.success) {
-                    app.toast(action === 'delete_comment' ? 'Yorum silindi' : 'Şikayet reddedildi', 'success');
-                    document.getElementById(`report-${reportId}`)?.remove();
-                } else {
-                    app.toast(data.message || 'İşlem başarısız oldu', 'error');
-                }
-            } catch (error) {
-                console.error('Şikayet çözme hatası:', error);
-                app.toast('Bağlantı hatası', 'error');
-            }
-        }
     </script>
 </body>
 

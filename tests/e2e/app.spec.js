@@ -17,6 +17,20 @@ test.describe('oturum açmış kullanıcı', () => {
         await expect(page.locator('.logout-btn')).toHaveText('Çıkış Yap');
     });
 
+    test('her sayfadaki "Çıkış Yap" oturumu sunucuda da kapatır', async ({ page }) => {
+        // Bazı sayfalar ortak logout() işlevini kendi sürümleriyle eziyordu: yalnızca tarayıcı belleği
+        // temizleniyor, sunucu oturumu açık kalıyordu.
+        for (const path of ['/search.html', '/tonight.html', '/profile.html', '/feed.html', '/messages.html', '/social.html']) {
+            await loginAs(page, 'ahmet@test.com');
+            await page.goto(path);
+            await page.locator('.logout-btn').click();
+            await page.waitForURL('**/index.html');
+
+            const status = await page.evaluate(async () => (await fetch('/api/auth-status.php', { credentials: 'include' })).json());
+            expect(status.user, `${path} sonrası oturum kapanmalı`).toBeNull();
+        }
+    });
+
     test('rozet API\'si oturum açmış kullanıcı için JSON döner', async ({ page }) => {
         await loginAs(page, 'ahmet@test.com');
 
