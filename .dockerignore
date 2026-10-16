@@ -2,3 +2,6 @@
 .gitignore
 README.md
 vendor/
+node_modules
+test-results
+playwright-report

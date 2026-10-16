@@ -969,21 +969,21 @@
                 filterGrid.innerHTML = `
                     <div class="filter-group">
                         <label>Tür</label>
-                        <select id="genreFilter" onchange="updateFilters()">
+                        <select id="genreFilter" aria-label="Tür" onchange="updateFilters()">
                             <option value="">Tümü</option>
                             ${MOVIE_GENRES.map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
                         </select>
                     </div>
                     <div class="filter-group">
                         <label>Yıl</label>
-                        <select id="yearFilter" onchange="updateFilters()">
+                        <select id="yearFilter" aria-label="Yıl" onchange="updateFilters()">
                             <option value="">Tümü</option>
                             ${getYearOptionsHtml()}
                         </select>
                     </div>
                     <div class="filter-group">
                         <label>Minimum Puan</label>
-                        <select id="ratingFilter" onchange="updateFilters()">
+                        <select id="ratingFilter" aria-label="Minimum puan" onchange="updateFilters()">
                             <option value="">Tümü</option>
                             <option value="9">9+ ve üzeri</option>
                             <option value="8">8+ ve üzeri</option>
@@ -1007,21 +1007,21 @@
                 filterGrid.innerHTML = `
                     <div class="filter-group">
                         <label>Tür</label>
-                        <select id="genreFilter" onchange="updateFilters()">
+                        <select id="genreFilter" aria-label="Tür" onchange="updateFilters()">
                             <option value="">Tümü</option>
                             ${SERIES_GENRES.map(g => `<option value="${g.id}">${g.name}</option>`).join('')}
                         </select>
                     </div>
                     <div class="filter-group">
                         <label>Yıl</label>
-                        <select id="yearFilter" onchange="updateFilters()">
+                        <select id="yearFilter" aria-label="Yıl" onchange="updateFilters()">
                             <option value="">Tümü</option>
                             ${getYearOptionsHtml()}
                         </select>
                     </div>
                     <div class="filter-group">
                         <label>Minimum Puan</label>
-                        <select id="ratingFilter" onchange="updateFilters()">
+                        <select id="ratingFilter" aria-label="Minimum puan" onchange="updateFilters()">
                             <option value="">Tümü</option>
                             <option value="9">9+ ve üzeri</option>
                             <option value="8">8+ ve üzeri</option>

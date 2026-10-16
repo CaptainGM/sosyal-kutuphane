@@ -106,23 +106,26 @@ foreach ($indexPlans as $collectionName => $indexes) {
 
 echo "<hr><h3>👥 Demo Kullanıcıları Ekleniyor...</h3>";
 
+// Eski demo yönetici hesabı (admin@test.com / 123456) kaldırıldı. Kurulumda hâlâ bu varsayılan
+// şifreyle duruyorsa şifresi rastgeleye çevrilir ve yetkisi alınır. Şifreyi değiştirmişse dokunulmaz.
+$legacyAdmin = $db->users->findOne(['email' => 'admin@test.com']);
+if ($legacyAdmin && password_verify('123456', $legacyAdmin->password ?? '')) {
+    $db->users->updateOne(['_id' => $legacyAdmin->_id], ['$set' => [
+        'password' => password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT),
+        'is_admin' => false,
+    ]]);
+    echo "🔒 Eski demo yönetici hesabı devre dışı bırakıldı<br>";
+}
+
 $demoUsers = [
-    ['admin', 'admin@test.com', 'Admin kullanıcısı'],
     ['test', 'test@test.com', 'Test kullanıcısı'],
     ['ahmet', 'ahmet@test.com', 'Film severim'],
     ['ayse', 'ayse@test.com', 'Kitap kurdu'],
 ];
 
 foreach ($demoUsers as [$username, $email, $bio]) {
-    $isAdmin = $username === 'admin';
-    $existing = $db->users->findOne(['email' => $email]);
-    if ($existing) {
-        if ($isAdmin && empty($existing->is_admin)) {
-            $db->users->updateOne(['_id' => $existing->_id], ['$set' => ['is_admin' => true]]);
-            echo "🛡️ Admin yetkisi verildi: $username<br>";
-        } else {
-            echo "⏭️ Zaten var: $username<br>";
-        }
+    if ($db->users->findOne(['email' => $email])) {
+        echo "⏭️ Zaten var: $username<br>";
         continue;
     }
     $id = nextSequence($db, 'users');
@@ -133,7 +136,7 @@ foreach ($demoUsers as [$username, $email, $bio]) {
         'password' => password_hash('123456', PASSWORD_DEFAULT),
         'bio' => $bio,
         'avatar_url' => null,
-        'is_admin' => $isAdmin,
+        'is_admin' => false,
         'created_at' => new MongoDB\BSON\UTCDateTime(),
         'updated_at' => new MongoDB\BSON\UTCDateTime(),
     ]);

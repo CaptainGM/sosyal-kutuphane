@@ -66,12 +66,20 @@ docker compose up
 
 ### Demo Hesaplar:
 Giriş sayfasındaki hazır demo butonlarına tıklayabilir veya manuel girebilirsiniz:
-- **admin@test.com** (Yönetici)
 - **ahmet@test.com** (Kullanıcı)
 - **ayse@test.com** (Kullanıcı)
 - **test@test.com** (Kullanıcı)
 
 *(Tüm demo hesapların şifresi: `123456`)*
+
+### Yönetici Yetkisi:
+Demo yönetici hesabı kaldırıldı; kurulum artık admin@test.com için varsayılan şifreyi devre dışı bırakır. Yönetici yetkisi yalnızca komut satırından verilir (yorum şikayetlerini inceleyen `admin.html` sayfası için):
+
+```bash
+php scripts/make-admin.php kullanici@ornek.com
+```
+
+Betik web üzerinden erişilemez; `MONGO_URI` ve `MONGO_DB` ayarlarıyla aynı veritabanına yazar.
 
 ## Render'da Yayınlama
 
@@ -81,6 +89,10 @@ Repodaki `Dockerfile` Render'da doğrudan çalışmaktadır:
 2. Environment sekmesine `.env` içindeki değerleri ekleyin: `MONGO_URI`, `MONGO_DB`, `TMDB_API_KEY`, `GOOGLE_BOOKS_API_KEY` (isteğe bağlı).
 3. `SITE_URL` olarak Render'ın verdiği `https://<servis-adi>.onrender.com` adresini girin ve yeniden deploy edin (CORS bu değere bakar).
 4. İlk açılışta `api/setup-db.php` indeksleri ve demo hesapları kendiliğinden oluşturur.
+
+### Canlı bildirimler (SSE)
+
+Bildirimler ve "yazıyor" göstergesi varsayılan olarak 20 saniyede bir yoklama ile çalışır. Canlı akış için iki ayar gerekir: `ENABLE_SSE=1` ve `PHP_CLI_SERVER_WORKERS` (Docker imajında 4). Her açık akış bir PHP sürecini tuttuğu için, süreç sayısından fazla kişi aynı anda bağlanırsa site yavaşlar. Bu yüzden canlı akış varsayılan olarak kapalıdır; yoğun kullanımda gerçek bir async sunucuya (ör. Node veya Go) geçilmesi önerilir. Windows'ta `START.bat` tek süreçli çalıştığı için akış orada kapalı kalır.
 
 ## Testler
 
@@ -95,6 +107,18 @@ node --test tests/escape-html.test.mjs
 
 PowerShell'de `MONGO_DB` ve `TEST_BASE_URL` değişkenleri `$env:MONGO_DB='social_library_test'` biçiminde ayrı satırlarda verilir. Her push'ta GitHub Actions aynı testleri kendi MongoDB konteynerine karşı çalıştırır (`.github/workflows/ci.yml`).
 
+### Tarayıcı ve Erişilebilirlik Testleri (Playwright + axe)
+
+Testler `tests/e2e/` altındadır. Veritabanı gerektiren akışlar için önce PHP sunucusunun ve MongoDB'nin çalışıyor olması gerekir.
+
+```bash
+npm ci
+npx playwright install chromium
+npx playwright test
+```
+
+Yerelde kurulu Microsoft Edge ile çalıştırmak için `PW_CHANNEL=msedge npx playwright test` kullanabilirsin. Sunucu zaten ayaktaysa `E2E_BASE_URL=http://localhost:8000` ile yeniden kullanılır.
+
 ## Klasör Yapısı
 
 ```
@@ -106,7 +130,8 @@ detail.php     İçerik detayı, fragman oynatıcı ve hikaye kartı
 api/           PHP backend API uçları
 js/            JavaScript yardımcıları, istemci mantığı ve 3D giriş sahnesi (scene.js)
 css/           Stil dosyaları (tasarım token'ları, cam efektleri, karanlık mod)
-tests/         PHPUnit ve Node testleri
+tests/         PHPUnit, Node ve Playwright (tests/e2e) testleri
+scripts/       Yardımcı komutlar (make-admin.php: yönetici yetkisi verme)
 START.bat      Geliştirme sunucusu başlatıcı (Windows)
 START.sh       Geliştirme sunucusu başlatıcı (Mac/Linux)
 ```

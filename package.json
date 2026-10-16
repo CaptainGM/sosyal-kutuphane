@@ -1,0 +1,13 @@
+{
+  "name": "sosyal-kutuphane-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tarayıcı testleri (Playwright) ve erişilebilirlik kontrolleri (axe)",
+  "scripts": {
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.64.1"
+  }
+}
