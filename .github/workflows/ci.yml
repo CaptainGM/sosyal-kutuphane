@@ -53,6 +53,8 @@ jobs:
         env:
           MONGO_URI: mongodb://localhost:27017
           MONGO_DB: social_library
+          # Sunucu social_library ile çalışıyor; test istemcisi aynı (tek kullanımlık) CI veritabanına bakar.
+          TEST_MONGO_DB: social_library
           TEST_BASE_URL: http://localhost:8000
         run: vendor/bin/phpunit --testdox
 

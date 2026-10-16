@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/lib/dm.php';
 requireLogin();
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -145,6 +146,16 @@ if ($method === 'GET') {
         jsonResponse(['success' => false, 'message' => 'Bu kullanıcıya mesaj gönderilemiyor'], 403);
     }
 
+    // Dolandırıcılık ve küfür taraması ile sel koruması (bkz. api/lib/dm.php). Bağlantılara izin verilir.
+    $moderationError = dmModerationError($text);
+    if ($moderationError !== null) {
+        jsonResponse(['success' => false, 'message' => $moderationError], 422);
+    }
+    $rateError = dmRateError(dmRecentActivity($db, $userId, time()), $text, time());
+    if ($rateError !== null) {
+        jsonResponse(['success' => false, 'message' => $rateError], 429);
+    }
+
     $now = new MongoDB\BSON\UTCDateTime();
     $messageId = nextSequence($db, 'messages');
     $db->messages->insertOne([
@@ -161,16 +172,21 @@ if ($method === 'GET') {
         ['$set' => ['last_message' => mb_substr($text, 0, 100), 'last_message_at' => $now]]
     );
 
-    $db->notifications->insertOne([
-        '_id' => nextSequence($db, 'notifications'),
-        'user_id' => $toUserId,
-        'actor_id' => $userId,
-        'type' => 'message',
-        'content_type' => 'conversation',
-        'content_id' => $conversationId,
-        'is_read' => false,
-        'created_at' => $now,
+    $pendingNotice = $db->notifications->findOne([
+        'user_id' => $toUserId, 'actor_id' => $userId, 'type' => 'message', 'content_id' => $conversationId, 'is_read' => false,
     ]);
+    if (!$pendingNotice) {
+        $db->notifications->insertOne([
+            '_id' => nextSequence($db, 'notifications'),
+            'user_id' => $toUserId,
+            'actor_id' => $userId,
+            'type' => 'message',
+            'content_type' => 'conversation',
+            'content_id' => $conversationId,
+            'is_read' => false,
+            'created_at' => $now,
+        ]);
+    }
 
     jsonResponse([
         'success' => true,

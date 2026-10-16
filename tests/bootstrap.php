@@ -20,7 +20,8 @@ if (file_exists($envPath)) {
 
 define('TEST_BASE_URL', getenv('TEST_BASE_URL') ?: 'http://localhost:8000');
 define('TEST_MONGO_URI', getenv('TEST_MONGO_URI') ?: (getenv('MONGO_URI') ?: 'mongodb://localhost:27017'));
-// Ã–NEMLÄ°: production MONGO_DB'ye asla dÃ¼ÅŸme â€” aksi halde testler canlÄ±/gerÃ§ek
-// veritabanÄ±nÄ± sahte kullanÄ±cÄ± ve iÃ§eriklerle kirletir (bir kez oldu, temizlendi).
-// AynÄ± cluster'da ayrÄ± bir veritabanÄ± kullanÄ±lÄ±r (Mongo bunu ilk yazÄ±mda otomatik oluÅŸturur).
-define('TEST_MONGO_DB', getenv('TEST_MONGO_DB') ?: (getenv('MONGO_DB') ?: 'social_library_test'));
+// ÖNEMLİ: testler uygulamanın MONGO_DB değerine (gerçek ya da yerel veri) kendiliğinden düşmez; aksi halde sahte
+// kullanıcı ve içerikle kirletirler (bir kez oldu, temizlendi). TEST_MONGO_DB verilmezse ayrı bir test veritabanı
+// kullanılır ve sunucu da onunla başlatılmalıdır: MONGO_DB=social_library_test php -S localhost:8001 (bkz. README).
+// CI veritabanı tek kullanımlıktır; iş akışı TEST_MONGO_DB değerini açıkça verir.
+define('TEST_MONGO_DB', getenv('TEST_MONGO_DB') ?: 'social_library_test');

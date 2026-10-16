@@ -111,6 +111,10 @@ if ($method === 'GET') {
         if (!$listId || !$contentType || !$contentId) {
             jsonResponse(['success' => false, 'message' => 'Gerekli alanlar eksik']);
         }
+        if (!in_array($contentType, ['movie', 'series', 'book'], true)) {
+            jsonResponse(['success' => false, 'message' => 'Geçersiz içerik türü'], 400);
+        }
+        $contentTitle = mb_substr(trim((string) $contentTitle), 0, 200);
         $listId = (int)$listId;
         $contentId = (string)$contentId; // content_id şemada VARCHAR(255)
 

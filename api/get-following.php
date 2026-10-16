@@ -17,7 +17,6 @@ if ($followingIds) {
         $following[] = [
             'id' => $user->_id,
             'username' => $user->username,
-            'email' => $user->email,
             'bio' => $user->bio ?? null,
             'avatar_url' => $user->avatar_url ?? null,
         ];
