@@ -85,385 +85,482 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
     <?php endif; ?>
 
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/ui.css">
+    <script src="js/motion.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* Detay sayfasına özel stiller. Ortak bileşenler css/style.css ve css/ui.css içinde. */
+
+        /* --- Sinematik hero: backdrop görseli, üstte koyu gradyan, altta sayfa rengine erir --- */
+        .detail-hero {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            margin-top: -78px;
+            padding: 150px 0 140px;
+            color: #ffffff;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
+        .detail-hero::before {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            z-index: -2;
+            background: var(--hero-bg, var(--color-accent-gradient)) center 22% / cover no-repeat;
+            filter: saturate(1.1) brightness(0.62);
+            transform: scale(1.04);
+            -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 120px), transparent 100%);
+            mask-image: linear-gradient(180deg, #000 calc(100% - 120px), transparent 100%);
         }
 
-        .detail-header {
-            background: var(--color-accent-gradient);
-            color: white;
-            padding: 60px 0 40px;
-            margin-bottom: 40px;
+        .detail-hero[data-backdrop="cover"]::before {
+            filter: blur(28px) saturate(1.3) brightness(0.55);
+            transform: scale(1.3);
         }
 
-        .detail-content {
+        .detail-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            background:
+                radial-gradient(900px 420px at 18% 0%, rgba(var(--color-accent-rgb), 0.38), transparent 70%),
+                linear-gradient(180deg, rgba(5, 6, 11, 0.4) 0%, rgba(5, 6, 11, 0.74) calc(100% - 120px), transparent 100%);
+        }
+
+        .detail-hero-inner {
+            padding-bottom: 0;
+        }
+
+        .detail-grid {
             display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 40px;
-            margin-bottom: 40px;
+            grid-template-columns: 290px minmax(0, 1fr);
+            gap: 44px;
+            align-items: end;
         }
 
         .poster-container {
-            text-align: center;
+            position: relative;
+            display: grid;
+            gap: 14px;
         }
 
         .poster {
+            display: block;
             width: 100%;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            aspect-ratio: 2 / 3;
+            border-radius: 22px;
+            object-fit: cover;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 44px 90px -34px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.16);
         }
 
-        .content-info {
-            padding: 20px 0;
-        }
-
-        .content-title {
-            font-size: 32px;
-            margin-bottom: 10px;
-            color: white;
-        }
-
-        .content-meta {
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 20px;
-            font-size: 16px;
-        }
-
-        .content-description {
-            line-height: 1.8;
-            margin-bottom: 30px;
-            font-size: 16px;
-            color: white;
+        .score-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
         }
 
         .platform-rating {
+            padding: 12px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.12);
             text-align: center;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-            border-radius: 10px;
-            margin-bottom: 20px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
         }
 
         .rating-score {
-            font-size: 48px;
-            font-weight: bold;
-            margin-bottom: 10px;
+            font-size: 26px;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -0.02em;
         }
 
         .rating-count {
-            font-size: 14px;
-            opacity: 0.8;
+            margin-top: 6px;
+            font-size: 11.5px;
+            font-weight: 700;
+            opacity: 0.85;
         }
 
-        .rating-section {
-            background: var(--color-surface);
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: var(--shadow);
-            margin-bottom: 30px;
+        .content-info {
+            display: grid;
+            gap: 18px;
+            align-content: end;
+            min-width: 0;
         }
 
-        .rating-section h3 {
-            margin-bottom: 20px;
-            color: var(--color-text);
+        .content-title {
+            font-size: clamp(32px, 5.2vw, 62px);
+            font-weight: 800;
+            line-height: 1.02;
+            letter-spacing: -0.04em;
+            color: #ffffff;
+            text-wrap: balance;
         }
 
-
-        .rating-input {
+        .content-meta {
             display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .content-meta .chip {
+            border-color: rgba(255, 255, 255, 0.24);
+            background: rgba(255, 255, 255, 0.14);
+            color: #ffffff;
+        }
+
+        .content-description {
+            max-width: 72ch;
+            font-size: 16.5px;
+            line-height: 1.75;
+            color: rgba(255, 255, 255, 0.92);
+        }
+
+        .detail-follow {
+            display: none;
+            justify-self: start;
             align-items: center;
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        .star-rating {
-            display: flex;
-            gap: 5px;
-        }
-
-        .star {
-            font-size: 24px;
+            gap: 8px;
+            padding: 9px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            border-radius: var(--radius-pill);
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            font: inherit;
+            font-size: 13.5px;
+            font-weight: 700;
             cursor: pointer;
-            color: var(--color-border);
-            transition: color 0.2s;
+            backdrop-filter: blur(10px);
         }
 
-        .star:hover,
-        .star.active {
-            color: #ffc107;
+        .detail-follow:hover {
+            background: rgba(255, 255, 255, 0.22);
         }
 
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.15s ease;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
+        .detail-follow:focus-visible {
+            outline: none;
+            box-shadow: var(--focus-ring);
         }
 
-        .btn:active {
-            transform: translateY(0) scale(0.98);
-            filter: brightness(0.94);
+        /* Aksiyon satırı hero içinde: cam düğmeler, gerekirse sarar. */
+        .detail-hero .user-actions {
+            grid-auto-flow: row;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            margin-bottom: 0;
+            padding: 0;
+            overflow: visible;
         }
 
-        .btn-primary {
+        .detail-hero .action-btn {
+            min-height: 48px;
+            border-color: rgba(255, 255, 255, 0.24);
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: none;
+        }
+
+        .detail-hero .action-btn:hover {
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        .detail-hero .action-btn.active,
+        .detail-hero .action-btn.active:hover,
+        .detail-hero .action-btn.btn-shimmer {
+            border-color: transparent;
             background: var(--color-accent-gradient);
-            color: white;
-            box-shadow: 0 3px 10px rgba(var(--color-accent-rgb), 0.35);
         }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(var(--color-accent-rgb), 0.45);
+        /* --- Ana alan --- */
+        .detail-main {
+            position: relative;
+            z-index: 1;
+            margin-top: -72px;
+            padding-top: 0;
         }
 
-        .comments-section {
-            background: var(--color-surface);
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: var(--shadow);
-            margin-bottom: 30px;
-            width: 100%;
-            overflow-x: hidden;
-        }
-
-        .comments-section h3 {
-            margin-bottom: 20px;
-            color: var(--color-text);
+        .discuss-panel {
+            padding: 24px;
         }
 
         .comment-form {
-            margin-bottom: 30px;
+            display: grid;
+            gap: 12px;
+            margin-bottom: 26px;
         }
 
         .comment-form textarea {
             width: 100%;
-            padding: 16px;
-            border: 1px solid var(--color-border);
-            border-radius: 12px;
-            resize: vertical;
-            min-height: 110px;
-            margin-bottom: 15px;
-            font-family: inherit;
-            background: var(--color-surface-2) !important;
-            color: var(--color-text) !important;
-            font-size: 14.5px;
+            min-height: 112px;
+            padding: 16px 18px;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            background: color-mix(in srgb, var(--color-surface-2) 80%, transparent);
+            color: var(--color-text);
+            font: inherit;
+            font-size: 15px;
             line-height: 1.6;
-            transition: all 0.2s ease;
+            resize: vertical;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
         .comment-form textarea:focus {
             outline: none;
-            border-color: var(--color-accent);
-            box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb), 0.25);
-            background: var(--color-surface) !important;
+            border-color: rgba(var(--color-accent-rgb), 0.7);
+            box-shadow: var(--focus-ring);
         }
 
-        .comment-form button {
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
+        .comment-form-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .comment-form button,
+        .sc-send-btn {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 11px 22px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-pill);
+            background: var(--color-accent-gradient);
+            color: #ffffff;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 14px 30px -14px rgba(var(--color-accent-rgb), 0.95);
+            transition: transform 0.2s ease;
         }
 
-        .comment-form button:hover {
+        .comment-form button:hover,
+        .sc-send-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.5);
-            filter: brightness(1.05);
         }
 
-        .comment-item {
-            padding: 20px;
-            border: 1px solid var(--color-border);
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border-left: 4px solid var(--color-accent);
-            word-break: break-word;
-            overflow-wrap: break-word;
+        .comment-form button:focus-visible,
+        .sc-send-btn:focus-visible {
+            outline: none;
+            box-shadow: var(--focus-ring);
         }
 
-        .comment-header {
+        /* --- Puan verme --- */
+        .rating-input {
             display: flex;
-            justify-content: space-between;
+            flex-wrap: wrap;
             align-items: center;
-            margin-bottom: 10px;
+            gap: 14px;
+            margin: 14px 0 18px;
         }
 
-        .comment-user {
-            font-weight: 600;
-            color: var(--color-accent);
-            cursor: pointer;
-        }
-
-        .comment-user:hover {
-            text-decoration: underline;
-        }
-
-        .comment-date {
-            color: var(--color-text-faint);
-            font-size: 14px;
-        }
-
-        .comment-text {
-            line-height: 1.6;
-            margin-bottom: 15px;
-            color: var(--color-text-muted);
-            word-break: break-word;
-            overflow-wrap: break-word;
-            word-wrap: break-word;
-        }
-
-        .comment-actions {
+        .star-rating {
             display: flex;
-            gap: 15px;
-            padding-top: 15px;
-            border-top: 1px solid var(--color-border);
+            flex-wrap: wrap;
+            gap: 4px;
         }
 
-        .action-btn-comment {
-            background: none;
-            border: none;
-            color: var(--color-text-muted);
+        .star {
+            font-size: 26px;
+            line-height: 1;
+            color: var(--color-border);
             cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: color 0.3s;
+            transition: color 0.2s ease, transform 0.15s ease;
         }
 
-        .action-btn-comment:hover {
+        .star:hover,
+        .star.active {
+            color: #fbbf24;
+        }
+
+        .star:hover {
+            transform: scale(1.15);
+        }
+
+        .side-title {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .side-title svg {
+            width: 17px;
+            height: 17px;
             color: var(--color-accent);
         }
 
-        .reply-form {
-            margin-top: 15px;
-            padding: 15px;
-            background: var(--color-surface-2);
-            border-radius: 8px;
+        /* Nerede izlenir paneli (rozet stilleri css/style.css'te) */
+        .providers-section {
+            margin: 0;
         }
 
-        .reply-form textarea {
-            width: 100%;
+        .providers-section h4 {
+            margin-bottom: 12px;
+        }
+
+        /* --- Sezon sohbeti --- */
+        .sc-intro {
+            align-items: flex-start;
+            margin-bottom: 18px;
+        }
+
+        .sc-intro svg {
+            flex: none;
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            color: var(--color-accent);
+        }
+
+        .sc-seasons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .sc-seasons button.chip small {
+            opacity: 0.8;
+            font-weight: 800;
+        }
+
+        .sc-summary {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px 20px;
+            margin-bottom: 14px;
+        }
+
+        .sc-summary .meter {
+            flex: 1;
+            min-width: 160px;
+        }
+
+        .sc-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .sc-episode {
+            display: grid;
+            grid-template-columns: 128px minmax(0, 1fr) auto;
+            gap: 14px;
+            align-items: center;
             padding: 10px;
-            border: 1px solid var(--color-border);
-            border-radius: 5px;
-            font-family: inherit;
-            min-height: 80px;
-            margin-bottom: 10px;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            background: color-mix(in srgb, var(--color-surface-2) 55%, transparent);
+            transition: border-color 0.2s ease;
         }
 
-        .reply-form button {
-            padding: 8px 15px;
-            background: var(--color-accent);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 13px;
-            margin-right: 5px;
+        .sc-episode.is-open {
+            border-color: rgba(var(--color-accent-rgb), 0.6);
+            background: rgba(var(--color-accent-rgb), 0.08);
         }
 
-        .reply-form button:hover {
-            background: var(--color-accent-2);
-        }
-
-        .reply-form button.cancel {
-            background: #ccc;
-        }
-
-        .reply-form button.cancel:hover {
-            background: #999;
-        }
-
-        .replies-container {
-            margin-top: 15px;
-            padding-left: 20px;
-            border-left: 2px solid var(--color-accent);
-        }
-
-        .reply-item {
+        .sc-still {
+            width: 128px;
+            aspect-ratio: 16 / 9;
+            border-radius: 10px;
+            object-fit: cover;
             background: var(--color-surface-2);
-            padding: 12px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            font-size: 14px;
         }
 
-        .reply-header {
-            font-weight: 600;
-            color: var(--color-text);
-            margin-bottom: 5px;
+        .sc-still--empty {
+            display: grid;
+            place-items: center;
+            color: var(--color-text-faint);
+            font-weight: 800;
         }
 
-        .reply-text {
-            color: var(--color-text-muted);
-            line-height: 1.5;
+        .sc-ep-main {
+            display: grid;
+            gap: 6px;
+            min-width: 0;
         }
 
-        .loading {
+        .sc-ep-title {
+            overflow: hidden;
+            font-weight: 800;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .sc-ep-meta {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            color: var(--color-text-faint);
+            font-size: 12.5px;
+        }
+
+        .sc-ep-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .sc-thread {
+            display: grid;
+            gap: 16px;
+            margin-top: 16px;
+            padding: 20px;
+            border: 1px solid rgba(var(--color-accent-rgb), 0.4);
+            border-radius: var(--radius-lg);
+            background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+        }
+
+        .sc-thread-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .sc-thread-title {
+            font-size: 17px;
+            font-weight: 800;
+        }
+
+        .sc-lock {
+            display: grid;
+            justify-items: center;
+            gap: 12px;
+            padding: 28px 16px;
             text-align: center;
-            padding: 40px;
-            font-size: 18px;
+        }
+
+        .sc-lock svg {
+            width: 34px;
+            height: 34px;
             color: var(--color-accent);
         }
 
-        .no-results {
-            text-align: center;
-            padding: 60px;
-            color: var(--color-text-faint);
-        }
-
-        @media (max-width: 768px) {
-            .detail-content {
-                grid-template-columns: 1fr;
-                text-align: center;
-            }
-
-            .poster-container {
-                max-width: 300px;
-                margin: 0 auto;
-            }
-
-
-            .content-title {
-                font-size: 24px;
-            }
-        }
-
-        /* Özel Liste Modal */
+        /* --- Modal (özel liste) --- */
         .modal-overlay {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--color-overlay);
+            inset: 0;
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            background: var(--color-overlay);
+            backdrop-filter: blur(6px);
         }
 
         .modal-overlay.active {
@@ -471,90 +568,88 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
         }
 
         .modal-content {
-            background: var(--color-surface);
-            border-radius: 15px;
-            padding: 30px;
-            max-width: 450px;
             width: 90%;
+            max-width: 460px;
             max-height: 80vh;
             overflow-y: auto;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            padding: 28px;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            background: var(--color-surface);
+            box-shadow: var(--shadow-hover);
         }
 
         .modal-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
             margin-bottom: 20px;
         }
 
         .modal-header h3 {
             font-size: 20px;
-            color: var(--color-text);
+            font-weight: 800;
         }
 
         .modal-close {
-            background: none;
             border: none;
-            font-size: 28px;
-            cursor: pointer;
+            background: none;
             color: var(--color-text-faint);
+            font-size: 28px;
+            line-height: 1;
+            cursor: pointer;
         }
 
         .modal-close:hover {
             color: var(--color-text);
         }
 
-        .custom-lists-container {
-            margin-bottom: 20px;
-        }
-
         .custom-list-item {
             display: flex;
             align-items: center;
             padding: 12px 15px;
-            border: 2px solid var(--color-border);
-            border-radius: 8px;
             margin-bottom: 10px;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
             cursor: pointer;
-            transition: all 0.3s;
+            transition: border-color 0.2s ease, background-color 0.2s ease;
         }
 
         .custom-list-item:hover {
-            border-color: var(--color-accent);
-            background: var(--color-border);
+            border-color: rgba(var(--color-accent-rgb), 0.6);
+            background: rgba(var(--color-accent-rgb), 0.08);
         }
 
         .custom-list-item.selected {
-            border-color: var(--color-accent);
-            background: var(--color-accent);
-            color: white;
+            border-color: transparent;
+            background: var(--color-accent-gradient);
+            color: #ffffff;
         }
 
         .custom-list-item input[type="checkbox"] {
-            margin-right: 12px;
             width: 18px;
             height: 18px;
+            margin-right: 12px;
         }
 
         .custom-list-name {
             flex: 1;
-            font-weight: 500;
+            font-weight: 700;
         }
 
         .custom-list-count {
-            font-size: 12px;
             color: var(--color-text-faint);
+            font-size: 12px;
         }
 
         .custom-list-item.selected .custom-list-count {
-            color: rgba(255, 255, 255, 0.8);
+            color: rgba(255, 255, 255, 0.85);
         }
 
         .no-lists-message {
-            text-align: center;
             padding: 30px;
             color: var(--color-text-faint);
+            text-align: center;
         }
 
         .create-list-link {
@@ -565,47 +660,68 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 
         .modal-footer {
             display: flex;
-            gap: 10px;
             justify-content: flex-end;
+            gap: 10px;
             margin-top: 20px;
             padding-top: 20px;
-            border-top: 1px solid var(--color-border);
+            border-top: 1px solid var(--glass-border);
         }
 
         .modal-btn {
-            padding: 10px 25px;
-            border-radius: 8px;
-            font-weight: 600;
+            padding: 10px 24px;
+            border-radius: var(--radius-pill);
+            font: inherit;
+            font-weight: 800;
             cursor: pointer;
-            transition: all 0.3s;
         }
 
         .modal-btn-cancel {
+            border: 1px solid var(--glass-border);
             background: var(--color-surface-2);
-            border: none;
             color: var(--color-text-muted);
         }
 
-        .modal-btn-cancel:hover {
-            background: var(--color-border);
-        }
-
         .modal-btn-save {
-            background: var(--color-accent-gradient);
             border: none;
-            color: white;
+            background: var(--color-accent-gradient);
+            color: #ffffff;
         }
 
-        .modal-btn-save:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(var(--color-accent-rgb), 0.4);
+        @media (max-width: 860px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+                gap: 26px;
+                align-items: start;
+            }
+
+            .poster-container {
+                max-width: 280px;
+            }
+
+            .detail-hero {
+                padding-top: 130px;
+            }
+
+            .sc-episode {
+                grid-template-columns: 96px minmax(0, 1fr);
+            }
+
+            .sc-still {
+                width: 96px;
+            }
+
+            .sc-ep-actions {
+                grid-column: 1 / -1;
+                justify-content: flex-start;
+            }
         }
     </style>
 </head>
 
 <body>
 
-    <nav class="navbar">
+    <a class="skip-link" href="#main">İçeriğe geç</a>
+<nav class="navbar" aria-label="Ana gezinme">
     <div class="navbar-inner">
         <a href="search.html" class="logo">
             <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="m10 14 5 3-5 3v-6Z"/></svg></span>
@@ -613,11 +729,13 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
         </a>
         <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button>
         <div class="nav-links">
-            <a href="search.html" class="nav-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>Keşfet</a>
-            <a href="feed.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h6"/></svg>Akış</a>
-            <a href="social.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Sosyal</a>
-            <a href="profile.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profilim</a>
-            <a href="messages.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Mesajlar</a>
+            <a href="search.html" class="nav-link active" data-nav="search" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>Keşfet</a>
+            <a href="tonight.html" class="nav-link" data-nav="tonight"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg>Ne izlesem?</a>
+            <a href="feed.html" class="nav-link" data-nav="feed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h6"/></svg>Akış</a>
+            <a href="social.html" class="nav-link" data-nav="social"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Sosyal</a>
+            <a href="profile.html" class="nav-link" data-nav="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profilim</a>
+            <a href="messages.html" class="nav-link" data-nav="messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Mesajlar</a>
+            <a href="admin.html" class="nav-link" data-nav="admin" id="navAdminLink" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>Yönetim</a>
             <div class="nav-icon-wrap">
                 <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="nav-badge" id="notifBadge"></span></button>
                 <div class="nav-panel" id="notifPanel">
@@ -633,23 +751,21 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 </nav>
 
 
-    <div class="detail-header">
-        <div class="container">
+    <header class="detail-hero" id="detailHero">
+        <div class="page detail-hero-inner">
             <div id="loadingDetail" class="loading">İçerik yükleniyor...</div>
             <div id="detailContent" style="display: none;">
-                <div class="detail-content">
-                    <div class="poster-container">
-                        <img id="contentPoster" class="poster" src="" alt="Poster">
-                        <div class="platform-rating" id="platformRating">
-                            <div class="rating-score" id="ratingScore">-/-</div>
-                            <div class="rating-count" id="ratingCount">API Puanı</div>
-                        </div>
-                        <div class="platform-rating" id="userPlatformRating"
-                            style="margin-top: 10px; background: rgba(var(--color-accent-rgb), 0.3);">
-                            <div class="rating-score" id="userRatingScore">-/-</div>
-                            <div class="rating-count" id="userRatingCount" style="display:inline-flex; align-items:center; justify-content:center; gap:4px;">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                                <span>Kullanıcı Puanı</span>
+                <div class="detail-grid">
+                    <div class="poster-container" data-tilt>
+                        <img id="contentPoster" class="poster" src="img/no-poster.svg" alt="">
+                        <div class="score-row">
+                            <div class="platform-rating" id="platformRating">
+                                <div class="rating-score" id="ratingScore">-/-</div>
+                                <div class="rating-count" id="ratingCount">API Puanı</div>
+                            </div>
+                            <div class="platform-rating" id="userPlatformRating">
+                                <div class="rating-score" id="userRatingScore">-/-</div>
+                                <div class="rating-count" id="userRatingCount">Kullanıcı Puanı</div>
                             </div>
                         </div>
                     </div>
@@ -657,137 +773,154 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                         <h1 id="contentTitle" class="content-title"></h1>
                         <div id="contentMeta" class="content-meta"></div>
                         <div id="contentDescription" class="content-description"></div>
+                        <button id="followCreatorBtn" type="button" class="detail-follow">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg>
+                            <span>Yazarı Takip Et</span>
+                        </button>
+
+                        <div class="user-actions">
+                            <button type="button" id="rateBtn" class="action-btn" onclick="showRatingSection()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                <span class="btn-label">Puan Ver</span>
+                            </button>
+                            <button type="button" id="watchBtn" class="action-btn" onclick="toggleList('watched')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                <span class="btn-label" id="watchBtnText">İzledim</span>
+                            </button>
+                            <button type="button" id="watchlistBtn" class="action-btn" onclick="toggleList('watchlist')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+                                <span class="btn-label" id="watchlistBtnText">İzlenecekler</span>
+                            </button>
+                            <button type="button" id="readBtn" class="action-btn" onclick="toggleList('read')" style="display: none;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                                <span class="btn-label" id="readBtnText">Okudum</span>
+                            </button>
+                            <button type="button" id="readinglistBtn" class="action-btn" onclick="toggleList('readinglist')" style="display: none;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
+                                <span class="btn-label" id="readinglistBtnText">Okunacaklar</span>
+                            </button>
+                            <button type="button" id="customListBtn" class="action-btn" onclick="showCustomListModal()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/><line x1="12" x2="12" y1="11" y2="17"/><line x1="9" x2="15" y1="14" y2="14"/></svg>
+                                <span class="btn-label">Özel Listeye Ekle</span>
+                            </button>
+                            <button type="button" id="watchTrailerBtn" class="action-btn btn-shimmer" onclick="handleWatchTrailerClick()" style="display: none;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+                                <span class="btn-label">Fragmanı İzle</span>
+                            </button>
+                            <button type="button" id="storyCardBtn" class="action-btn" onclick="openStoryModal()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="4" ry="4"/><circle cx="12" cy="12" r="3"/><line x1="16.5" x2="16.5" y1="7.5" y2="7.5"/></svg>
+                                <span class="btn-label">Hikaye Kartı</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </header>
 
-
-    <div class="container">
-        <div style="margin-bottom: 20px;">
-            <button id="followCreatorBtn" class="btn btn-primary" style="display: none; align-items:center; gap:6px;">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg>
-                <span>Yazarı Takip Et</span>
-            </button>
-        </div>
-
-        <div class="rating-section">
-            <h3 style="display: flex; align-items: center; gap: 8px;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/><circle cx="12" cy="12" r="4"/></svg>
-                İşlemleriniz
-            </h3>
-
-            <div class="user-actions">
-                <button id="rateBtn" class="action-btn" onclick="showRatingSection()">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                    <span class="btn-label">Puan Ver</span>
-                </button>
-                <button id="watchBtn" class="action-btn" onclick="toggleList('watched')">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                    <span class="btn-label" id="watchBtnText">İzledim</span>
-                </button>
-                <button id="watchlistBtn" class="action-btn" onclick="toggleList('watchlist')">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
-                    <span class="btn-label" id="watchlistBtnText">İzlenecekler</span>
-                </button>
-                <button id="readBtn" class="action-btn" onclick="toggleList('read')" style="display: none;">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-                    <span class="btn-label" id="readBtnText">Okudum</span>
-                </button>
-                <button id="readinglistBtn" class="action-btn" onclick="toggleList('readinglist')" style="display: none;">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
-                    <span class="btn-label" id="readinglistBtnText">Okunacaklar</span>
-                </button>
-                <button id="customListBtn" class="action-btn" onclick="showCustomListModal()">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/><line x1="12" x2="12" y1="11" y2="17"/><line x1="9" x2="15" y1="14" y2="14"/></svg>
-                    <span class="btn-label">Özel Listeye Ekle</span>
-                </button>
-                <button id="watchTrailerBtn" class="action-btn btn-shimmer" onclick="handleWatchTrailerClick()" style="display: none;">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
-                    <span class="btn-label">Fragmanı İzle</span>
-                </button>
-                <button id="storyCardBtn" class="action-btn" onclick="openStoryModal()">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="4" ry="4"/><circle cx="12" cy="12" r="3"/><line x1="16.5" x2="16.5" y1="7.5" y2="7.5"/></svg>
-                    <span class="btn-label">Hikaye Kartı</span>
-                </button>
-            </div>
-
-            <div id="providersSection" class="providers-section" style="display: none;">
-                <h4 style="display: flex; align-items: center; gap: 8px;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
-                    Nerede İzlenir? (Türkiye)
-                </h4>
-                <div id="providersList" class="providers-grid"></div>
-            </div>
-
-            <div id="ratingSection" style="display: none;">
-                <div class="rating-input">
-                    <span>Puanınız:</span>
-                    <div class="star-rating" id="starRating">
-                        <span class="star" data-rating="1">☆</span>
-                        <span class="star" data-rating="2">☆</span>
-                        <span class="star" data-rating="3">☆</span>
-                        <span class="star" data-rating="4">☆</span>
-                        <span class="star" data-rating="5">☆</span>
-                        <span class="star" data-rating="6">☆</span>
-                        <span class="star" data-rating="7">☆</span>
-                        <span class="star" data-rating="8">☆</span>
-                        <span class="star" data-rating="9">☆</span>
-                        <span class="star" data-rating="10">☆</span>
+    <main id="main" class="page detail-main">
+        <div class="split">
+            <div class="stack">
+                <section class="panel discuss-panel" id="discussPanel" aria-label="Tartışma">
+                    <div class="panel-head">
+                        <div class="seg" role="group" aria-label="Tartışma türü">
+                            <button type="button" class="seg-btn active" data-pane-btn="comments" aria-pressed="true" onclick="selectDiscussPane('comments')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                Yorumlar
+                            </button>
+                            <button type="button" class="seg-btn" id="seasonTabBtn" data-pane-btn="season" aria-pressed="false" onclick="selectDiscussPane('season')" hidden>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
+                                Sezon sohbeti
+                            </button>
+                        </div>
                     </div>
-                    <span id="currentRating">0/10</span>
-                </div>
-                <button class="btn btn-primary" onclick="submitRating()">Puanı Gönder</button>
+
+                    <div id="commentsPane">
+                        <div class="comment-form">
+                            <textarea id="commentText" aria-label="Yorumun" placeholder="Bu içerik hakkında düşüncelerinizi paylaşın..."></textarea>
+                            <div class="comment-form-row">
+                                <label class="spoiler-checkbox-label" style="margin: 0;">
+                                    <input type="checkbox" id="commentSpoiler">
+                                    <span>Bu yorum spoiler (sürprizbozan) içeriyor</span>
+                                </label>
+                                <button type="button" onclick="submitComment()">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                                    <span>Yorum Gönder</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="comments-section">
+                            <p class="cv-empty">Henüz yorum yapılmamış...</p>
+                        </div>
+                    </div>
+
+                    <div id="seasonPane" hidden>
+                        <div class="notice sc-intro">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+                            <div><strong>Spoiler yok, sohbet var.</strong> Bir bölümü izlediğini işaretle, o bölümün sohbeti açılır. İzlemediğin bölümlerin yorumları sana hiç gösterilmez; her hafta yayınlanan bölümün sohbeti en üstte.</div>
+                        </div>
+                        <div class="sc-seasons" id="seasonTabs" role="group" aria-label="Sezonlar"></div>
+                        <div id="seasonSummary"></div>
+                        <div class="sc-list" id="episodeList"></div>
+                        <div id="episodeThread" aria-live="polite"></div>
+                    </div>
+                </section>
             </div>
 
-            <div id="userRatingSection"
-                style="display: none; margin-top: 20px; padding: 15px; background: var(--color-surface-2); border-radius: 8px;">
-                <h4 style="display: flex; align-items: center; gap: 8px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                    Sizin Puanınız
-                </h4>
-                <div id="userRatingDisplay"></div>
-                <button class="btn btn-primary" onclick="showRatingSection()" style="margin-top: 10px;">Puanı Değiştir</button>
-            </div>
+            <aside class="stack sticky-side" aria-label="Yan paneller">
+                <section id="providersSection" class="panel providers-section" style="display: none;">
+                    <h4 class="side-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
+                        Nerede İzlenir? (Türkiye)
+                    </h4>
+                    <div id="providersList" class="providers-grid"></div>
+                </section>
+
+                <section id="ratingSection" class="panel" style="display: none;">
+                    <h4 class="side-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        Puanınız
+                    </h4>
+                    <div class="rating-input">
+                        <div class="star-rating" id="starRating">
+                            <span class="star" data-rating="1">☆</span>
+                            <span class="star" data-rating="2">☆</span>
+                            <span class="star" data-rating="3">☆</span>
+                            <span class="star" data-rating="4">☆</span>
+                            <span class="star" data-rating="5">☆</span>
+                            <span class="star" data-rating="6">☆</span>
+                            <span class="star" data-rating="7">☆</span>
+                            <span class="star" data-rating="8">☆</span>
+                            <span class="star" data-rating="9">☆</span>
+                            <span class="star" data-rating="10">☆</span>
+                        </div>
+                        <span id="currentRating" class="chip chip--accent">0/10</span>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="submitRating()">Puanı Gönder</button>
+                </section>
+
+                <section id="userRatingSection" class="panel" style="display: none;">
+                    <h4 class="side-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        Sizin Puanınız
+                    </h4>
+                    <div id="userRatingDisplay"></div>
+                    <button type="button" class="btn btn-primary" onclick="showRatingSection()" style="margin-top: 10px;">Puanı Değiştir</button>
+                </section>
+            </aside>
         </div>
 
-        <div class="comments-section">
-            <h3 style="display: flex; align-items: center; gap: 8px;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                Yorumlar
-            </h3>
-
-            <div class="comment-form">
-                <textarea id="commentText" placeholder="Bu içerik hakkında düşüncelerinizi paylaşın..."></textarea>
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 6px;">
-                    <label class="spoiler-checkbox-label" style="margin: 0;">
-                        <input type="checkbox" id="commentSpoiler">
-                        <span>Bu yorum spoiler (sürprizbozan) içeriyor</span>
-                    </label>
-                    <button onclick="submitComment()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                        <span>Yorum Gönder</span>
-                    </button>
-                </div>
+        <section class="reco-section" id="similarSection" style="display:none;">
+            <div class="section-head">
+                <h2 class="section-title">
+                    <span class="section-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="12 8 8 12 12 16 12 8"/></svg></span>
+                    Benzer İçerikler
+                </h2>
             </div>
-
-            <div id="comments-section">
-                <p style="text-align: center; color: var(--color-text-faint);">Henüz yorum yapılmamış...</p>
-            </div>
-        </div>
-
-        <div class="reco-section" id="similarSection" style="display:none;">
-            <h2 class="reco-title">
-                <span class="showcase-badge" style="background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="12 8 8 12 12 16 12 8"/></svg>
-                </span>
-                Benzer İçerikler
-            </h2>
             <div class="reco-scroll" id="similarScroll"></div>
-        </div>
-    </div>
-
+        </section>
+    </main>
 
     <div id="customListModal" class="modal-overlay" onclick="closeCustomListModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
@@ -853,6 +986,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 
     <script src="js/escape-html.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/comment-view.js"></script>
     <script>
         let currentContent = null;
         let currentRating = 0;
@@ -860,6 +994,22 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
         let currentContentId = '';
         let currentTrailerKey = null;
         const commentTextById = {};
+
+        function metaChips(items) {
+            return items.filter(Boolean).map(item => `<span class="chip">${escapeHtml(item)}</span>`).join('');
+        }
+
+        // Hero arka planı: TMDB backdrop'u; kitaplarda kapak bulanıklaştırılarak kullanılır.
+        function setHeroBackdrop(backdropPath, coverUrl) {
+            const hero = document.getElementById('detailHero');
+            if (!hero) return;
+            if (backdropPath) {
+                hero.style.setProperty('--hero-bg', `url("https://image.tmdb.org/t/p/w1280${backdropPath}")`);
+            } else if (coverUrl && coverUrl !== 'img/no-poster.svg') {
+                hero.style.setProperty('--hero-bg', `url("${coverUrl.replace(/"/g, '%22')}")`);
+                hero.dataset.backdrop = 'cover';
+            }
+        }
 
         /* --- Fragman Oynatıcı Yönetimi --- */
         function setupTrailerButton(content) {
@@ -1284,6 +1434,15 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             }
 
             setupActionButtons(type);
+
+            // Sezon sohbeti yalnızca dizilerde vardır; ?tab=season bağlantısı doğrudan o sekmeyi açar.
+            const seasonTab = document.getElementById('seasonTabBtn');
+            if (seasonTab && type === 'series') {
+                seasonTab.hidden = false;
+                if (new URLSearchParams(window.location.search).get('tab') === 'season') {
+                    selectDiscussPane('season');
+                }
+            }
         }
 
         function displayMovieDetail(movie) {
@@ -1309,14 +1468,13 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 : 'img/no-poster.svg';
             document.getElementById('contentPoster').src = posterUrl;
 
-            const year = movie.release_date ? movie.release_date.split('-')[0] : 'Bilinmiyor';
-            const runtime = movie.runtime ? `${movie.runtime} dakika` : 'Bilinmiyor';
-            const genres = movie.genres ? movie.genres.map(g => g.name).join(', ') : 'Bilinmiyor';
-
-            document.getElementById('contentMeta').innerHTML = `
-        <div>📅 ${year} | ⏱️ ${runtime}</div>
-        <div>🎭 ${genres}</div>
-    `;
+            const year = movie.release_date ? movie.release_date.split('-')[0] : null;
+            document.getElementById('contentMeta').innerHTML = metaChips([
+                year,
+                movie.runtime ? `${movie.runtime} dk` : null,
+                ...(movie.genres || []).slice(0, 4).map(genre => genre.name)
+            ]);
+            setHeroBackdrop(movie.backdrop_path);
 
             document.getElementById('contentDescription').textContent = movie.overview || 'Açıklama bulunamadı.';
 
@@ -1333,7 +1491,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 if (director) {
                     followBtn.textContent = `👥 ${director.name}'i Takip Et`;
                     followBtn.dataset.creatorId = director.id;
-                    followBtn.style.display = 'block';
+                    followBtn.style.display = 'inline-flex';
                 }
             }
 
@@ -1363,14 +1521,13 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 : 'img/no-poster.svg';
             document.getElementById('contentPoster').src = posterUrl;
 
-            const year = series.first_air_date ? series.first_air_date.split('-')[0] : 'Bilinmiyor';
-            const seasons = series.number_of_seasons ? `${series.number_of_seasons} sezon` : 'Bilinmiyor';
-            const genres = series.genres ? series.genres.map(g => g.name).join(', ') : 'Bilinmiyor';
-
-            document.getElementById('contentMeta').innerHTML = `
-        <div>📅 ${year} | 📺 ${seasons}</div>
-        <div>🎭 ${genres}</div>
-    `;
+            const year = series.first_air_date ? series.first_air_date.split('-')[0] : null;
+            document.getElementById('contentMeta').innerHTML = metaChips([
+                year,
+                series.number_of_seasons ? `${series.number_of_seasons} sezon` : null,
+                ...(series.genres || []).slice(0, 4).map(genre => genre.name)
+            ]);
+            setHeroBackdrop(series.backdrop_path);
 
             document.getElementById('contentDescription').textContent = series.overview || 'Açıklama bulunamadı.';
 
@@ -1386,7 +1543,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 const creator = series.created_by[0];
                 followBtn.textContent = `👥 ${creator.name}'i Takip Et`;
                 followBtn.dataset.creatorId = creator.id;
-                followBtn.style.display = 'block';
+                followBtn.style.display = 'inline-flex';
             }
 
             setupTrailerButton(series);
@@ -1438,16 +1595,13 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 : 'img/no-poster.svg';
             document.getElementById('contentPoster').src = coverUrl;
 
-            const authors = volumeInfo.authors ? volumeInfo.authors.join(', ') : 'Bilinmiyor';
-            const pageCount = volumeInfo.pageCount ? `${volumeInfo.pageCount} sayfa` : 'Bilinmiyor';
-            const publishedDate = volumeInfo.publishedDate ? volumeInfo.publishedDate.split('-')[0] : 'Bilinmiyor';
-            const categories = volumeInfo.categories ? volumeInfo.categories.join(', ') : 'Bilinmiyor';
-
-            document.getElementById('contentMeta').innerHTML = `
-        <div>✍️ ${authors}</div>
-        <div>📅 ${publishedDate} | 📖 ${pageCount}</div>
-        <div>📚 ${categories}</div>
-    `;
+            document.getElementById('contentMeta').innerHTML = metaChips([
+                ...(volumeInfo.authors || []).slice(0, 2),
+                volumeInfo.publishedDate ? volumeInfo.publishedDate.split('-')[0] : null,
+                volumeInfo.pageCount ? `${volumeInfo.pageCount} sayfa` : null,
+                ...(volumeInfo.categories || []).slice(0, 3)
+            ]);
+            setHeroBackdrop(null, coverUrl);
 
             document.getElementById('contentDescription').textContent =
                 volumeInfo.description || 'Açıklama bulunamadı.';
@@ -1494,21 +1648,17 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             const readBtn = document.getElementById('readBtn');
             const readinglistBtn = document.getElementById('readinglistBtn');
 
-            if (type === 'movie' || type === 'series') {
-                watchBtn.style.display = 'block';
-                watchlistBtn.style.display = 'block';
-                readBtn.style.display = 'none';
-                readinglistBtn.style.display = 'none';
+            const isScreenContent = type === 'movie' || type === 'series';
+            watchBtn.style.display = isScreenContent ? 'inline-flex' : 'none';
+            watchlistBtn.style.display = isScreenContent ? 'inline-flex' : 'none';
+            readBtn.style.display = isScreenContent ? 'none' : 'inline-flex';
+            readinglistBtn.style.display = isScreenContent ? 'none' : 'inline-flex';
+
+            if (isScreenContent) {
                 const watchBtnSpan = document.getElementById('watchBtnText');
-                if (watchBtnSpan) watchBtnSpan.textContent = type === 'series' ? '📺 İzliyorum' : '🎬 İzledim';
-            } else {
-                watchBtn.style.display = 'none';
-                watchlistBtn.style.display = 'none';
-                readBtn.style.display = 'block';
-                readinglistBtn.style.display = 'block';
+                if (watchBtnSpan) watchBtnSpan.textContent = type === 'series' ? 'İzliyorum' : 'İzledim';
             }
         }
-
         function setupStarRating() {
             const stars = document.querySelectorAll('.star');
             stars.forEach(star => {
@@ -1546,6 +1696,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 
             section.style.display = 'block';
             userRatingSection.style.display = 'none';
+            section.scrollIntoView({ behavior: motionReduced() ? 'auto' : 'smooth', block: 'center' });
 
             const userRating = app.getRating(currentContentType, currentContentId);
             if (userRating) {
@@ -1765,6 +1916,39 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             }
         }
 
+        const ICON_ATTRS = 'width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
+        const REPLY_ICON = `<svg ${ICON_ATTRS}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
+        const PENCIL_ICON = `<svg ${ICON_ATTRS}><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>`;
+        const TRASH_ICON = `<svg ${ICON_ATTRS}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
+        const FLAG_ICON = `<svg ${ICON_ATTRS}><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>`;
+
+        function heartIcon(liked) {
+            return CommentView.heartIcon(liked);
+        }
+
+        // Bir yorum listesinin HTML'i: genel yorumlar ve bölüm sohbeti aynı kartı kullanır.
+        function commentListHtml(comments) {
+            const viewerId = app?.currentUser?.id ?? null;
+            const items = comments.map((comment) => {
+                // Düzenleme penceresi ham metni buradan okur; metin HTML'e gömülmez.
+                commentTextById[comment.id] = comment.comment_text;
+                const isOwn = viewerId !== null && Number(comment.user_id) === Number(viewerId);
+                const ownActions = isOwn
+                    ? `<button type="button" class="cv-action" onclick="showEditModal(${comment.id})">${PENCIL_ICON}<span>Düzenle</span></button>
+                        <button type="button" class="cv-action cv-action--danger" onclick="deleteComment(${comment.id})">${TRASH_ICON}<span>Sil</span></button>`
+                    : `<button type="button" class="cv-action" onclick="showReportModal(${comment.id})">${FLAG_ICON}<span>Şikayet Et</span></button>`;
+                const actions = `
+                    <button type="button" id="like-btn-${comment.id}" class="cv-action${comment.liked_by_me ? ' is-liked' : ''}" onclick="likeComment(${comment.id})">
+                        ${heartIcon(comment.liked_by_me)} <span id="like-count-${comment.id}">${comment.likes_count || 0}</span>
+                    </button>
+                    <button type="button" class="cv-action" onclick="showReplyForm(${comment.id})">${REPLY_ICON}<span>Yanıtla</span></button>
+                    ${ownActions}`;
+                const below = replyFormHtml(comment) + repliesHtml(comment, viewerId);
+                return CommentView.card(comment, { viewerId, actions, below });
+            });
+            return `<div class="cv-list">${items.join('')}</div>`;
+        }
+
         async function loadComments() {
             try {
                 const response = await fetch(
@@ -1774,138 +1958,351 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 const data = await response.json();
                 const commentsList = data.comments || [];
 
-                let html = '<div style="display: flex; flex-direction: column; gap: 20px;">';
-
                 if (commentsList.length === 0) {
-                    html += '<p style="text-align: center; color: var(--color-text-faint); padding: 20px;">Henüz yorum yapılmamış...</p>';
-                } else {
-                    commentsList.forEach((comment) => {
-                        const isOwnComment = (typeof app !== 'undefined' && app.currentUser) ? (comment.user_id === app.currentUser.id) : false;
-                        const timeAgo = (typeof app !== 'undefined') ? app.getTimeAgo(comment.created_at) : comment.created_at;
-                        const safeUsername = app.escapeHtml(comment.username);
-                        const safeText = app.escapeHtml(comment.comment_text);
-                        // Ham metni onclick'e gömmek yerine haritada tutuyoruz (kaçış/enjeksiyon riski).
-                        commentTextById[comment.id] = comment.comment_text;
-
-                        const commentBodyInner = safeText.length > 200 ? `
-                                <span id="short-${comment.id}">${safeText.substring(0, 200)}...</span>
-                                <span id="full-${comment.id}" style="display: none;">${safeText}</span>
-                                <button onclick="toggleCommentText(${comment.id})" style="background: none; border: none; color: var(--color-accent); cursor: pointer; padding: 0; margin-left: 5px;">Daha Fazla</button>
-                            ` : safeText;
-                        const commentBodyHtml = comment.has_spoiler ? `
-                            <div class="spoiler-wrap" id="spoiler-${comment.id}">
-                                <button type="button" class="spoiler-reveal-btn" onclick="document.getElementById('spoiler-${comment.id}').classList.add('spoiler-revealed')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg><span>Spoileri gör</span></button>
-                                <div class="spoiler-content">${commentBodyInner}</div>
-                            </div>
-                        ` : commentBodyInner;
-
-                        const heartIcon = comment.liked_by_me 
-                            ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="2" style="vertical-align: -1px; margin-right: 4px;"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`
-                            : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 4px;"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`;
-
-                        html += `
-                    <div class="comment-item" id="comment-${comment.id}" style="background: var(--color-surface); padding: 20px; border-radius: 10px; border-left: 4px solid var(--color-accent);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                            <div>
-                                <strong style="color: var(--color-accent);">${safeUsername}</strong>
-                                <span style="color: var(--color-text-faint); font-size: 12px; margin-left: 10px;">${timeAgo}</span>
-                            </div>
-                        </div>
-
-                        <div id="comment-text-${comment.id}" style="margin: 10px 0; color: var(--color-text-muted);">
-                            ${commentBodyHtml}
-                        </div>
-
-                        <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px; align-items: center;">
-                            <button id="like-btn-${comment.id}" onclick="likeComment(${comment.id})" style="background: none; border: none; color: ${comment.liked_by_me ? 'var(--color-danger)' : 'var(--color-accent)'}; cursor: pointer; display: inline-flex; align-items: center;">
-                                ${heartIcon} <span id="like-count-${comment.id}">${comment.likes_count || 0}</span>
-                            </button>
-                            <button onclick="showReplyForm(${comment.id})" style="background: none; border: none; color: var(--color-accent); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                                <span>Yanıtla</span>
-                            </button>
-                            ${isOwnComment ? `
-                                <button onclick="showEditModal(${comment.id})" style="background: none; border: none; color: var(--color-accent); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-                                    <span>Düzenle</span>
-                                </button>
-                                <button onclick="deleteComment(${comment.id})" style="background: none; border: none; color: var(--color-danger); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                                    <span>Sil</span>
-                                </button>
-                            ` : `
-                                <button onclick="showReportModal(${comment.id})" style="background: none; border: none; color: var(--color-text-faint); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>
-                                    <span>Şikayet Et</span>
-                                </button>
-                            `}
-                        </div>
-
-
-                        <div id="reply-form-${comment.id}" style="display: none; margin-top: 15px; padding: 15px; background: var(--color-surface-2); border-radius: 8px;">
-                            <textarea id="reply-text-${comment.id}" placeholder="@${safeUsername} kullanıcısına yanıt yazın..." style="width: 100%; padding: 10px; border: 1px solid var(--color-border); border-radius: 5px; min-height: 80px; font-family: inherit;"></textarea>
-                            <label class="spoiler-checkbox-label">
-                                <input type="checkbox" id="reply-spoiler-${comment.id}">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 2px;"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
-                                <span>Bu yanıt spoiler (sürprizbozan) içeriyor</span>
-                            </label>
-                            <div style="display: flex; gap: 10px; margin-top: 10px;">
-                                <button onclick="submitReply(${comment.id})" class="btn btn-primary" style="padding: 8px 15px;">Yanıtla</button>
-                                <button onclick="hideReplyForm(${comment.id})" class="btn btn-secondary" style="padding: 8px 15px;">İptal</button>
-                            </div>
-                        </div>
-
-
-                        ${comment.replies && comment.replies.length > 0 ? `
-                            <div style="margin-top: 15px; margin-left: 20px; border-left: 2px solid var(--color-border); padding-left: 15px;">
-                                ${comment.replies.map(reply => {
-                            const isOwnReply = (typeof app !== 'undefined' && app.currentUser) ? (reply.user_id === app.currentUser.id) : false;
-                            const replyTimeAgo = (typeof app !== 'undefined') ? app.getTimeAgo(reply.created_at) : reply.created_at;
-                            const safeReplyUsername = app.escapeHtml(reply.username);
-                            const safeReplyText = app.escapeHtml(reply.comment_text);
-                            const replyBodyHtml = reply.has_spoiler ? `
-                                <div class="spoiler-wrap" id="spoiler-reply-${reply.id}">
-                                    <button type="button" class="spoiler-reveal-btn" onclick="document.getElementById('spoiler-reply-${reply.id}').classList.add('spoiler-revealed')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg><span>Spoileri gör</span></button>
-                                    <div class="spoiler-content">${safeReplyText}</div>
-                                </div>
-                            ` : safeReplyText;
-                            const replyHeart = reply.liked_by_me 
-                                ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="2" style="vertical-align: -1px; margin-right: 3px;"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`
-                                : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 3px;"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`;
-                            return `
-                                        <div style="background: var(--color-surface-2); padding: 12px; border-radius: 8px; margin-bottom: 10px;">
-                                            <div style="margin-bottom: 8px;">
-                                                <strong style="color: var(--color-accent); font-size: 14px;">${safeReplyUsername}</strong>
-                                                <span style="color: var(--color-text-faint); font-size: 11px; margin-left: 8px;">${replyTimeAgo}</span>
-                                            </div>
-                                            <div style="margin: 0; color: var(--color-text-muted); font-size: 14px;">${replyBodyHtml}</div>
-                                            <div style="display: flex; gap: 10px; margin-top: 8px; align-items: center;">
-                                                <button onclick="likeComment(${reply.id})" style="background: none; border: none; color: ${reply.liked_by_me ? 'var(--color-danger)' : 'var(--color-accent)'}; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center;">
-                                                    ${replyHeart} <span>${reply.likes_count || 0}</span>
-                                                </button>
-                                                ${isOwnReply ? `
-                                                    <button onclick="deleteComment(${reply.id})" style="background: none; border: none; color: var(--color-danger); cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 3px;">
-                                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                                                        <span>Sil</span>
-                                                    </button>
-                                                ` : ''}
-                                            </div>
-                                        </div>
-                                    `;
-                        }).join('')}
-                            </div>
-                        ` : ''}
-                    </div>
-                `;
-                    });
+                    document.getElementById('comments-section').innerHTML = '<p class="cv-empty">Henüz yorum yapılmamış...</p>';
+                    return;
                 }
-                html += '</div>';
-                document.getElementById('comments-section').innerHTML = html;
+                document.getElementById('comments-section').innerHTML = commentListHtml(commentsList);
             } catch (error) {
                 console.error('Yorum yükleme hatası:', error);
-                document.getElementById('comments-section').innerHTML = '<p style="color: var(--color-danger);">❌ Yorumlar yüklenemedi</p>';
+                document.getElementById('comments-section').innerHTML = '<p class="cv-empty cv-empty--error">❌ Yorumlar yüklenemedi</p>';
             }
         }
+
+        function replyFormHtml(comment) {
+            return `<div id="reply-form-${comment.id}" class="cv-reply-form" style="display: none;">
+                <textarea id="reply-text-${comment.id}" class="cv-textarea" maxlength="1000" aria-label="Yanıtın" placeholder="@${escapeHtml(comment.username)} kullanıcısına yanıt yazın..."></textarea>
+                <label class="spoiler-checkbox-label">
+                    <input type="checkbox" id="reply-spoiler-${comment.id}">
+                    <span>Bu yanıt spoiler (sürprizbozan) içeriyor</span>
+                </label>
+                <div class="cv-form-actions">
+                    <button type="button" class="btn btn-primary" onclick="submitReply(${comment.id})">Yanıtla</button>
+                    <button type="button" class="btn btn-secondary" onclick="hideReplyForm(${comment.id})">İptal</button>
+                </div>
+            </div>`;
+        }
+
+        function repliesHtml(comment, viewerId) {
+            if (!comment.replies || comment.replies.length === 0) {
+                return '';
+            }
+            const items = comment.replies.map((reply) => {
+                const isOwnReply = viewerId !== null && Number(reply.user_id) === Number(viewerId);
+                return `<article class="cv-reply" id="comment-${reply.id}">
+                    <header class="cv-head">
+                        <div class="cv-author"><strong class="cv-name">${escapeHtml(reply.username || 'Kullanıcı')}</strong></div>
+                        ${CommentView.times(reply)}
+                    </header>
+                    ${CommentView.body(reply, viewerId)}
+                    <div class="cv-actions">
+                        <button type="button" id="like-btn-${reply.id}" class="cv-action${reply.liked_by_me ? ' is-liked' : ''}" onclick="likeComment(${reply.id})">
+                            ${heartIcon(reply.liked_by_me)} <span id="like-count-${reply.id}">${reply.likes_count || 0}</span>
+                        </button>
+                        ${isOwnReply ? `<button type="button" class="cv-action cv-action--danger" onclick="deleteComment(${reply.id})">${TRASH_ICON}<span>Sil</span></button>` : ''}
+                    </div>
+                </article>`;
+            });
+            return `<div class="cv-replies">${items.join('')}</div>`;
+        }
+
+        // --- Tartışma alanı: genel yorumlar ve (diziler için) sezon sohbeti ---
+        const seasonChat = { loaded: false, seasons: [], season: null, episodes: [], openEpisode: null };
+
+        function selectDiscussPane(pane) {
+            document.querySelectorAll('[data-pane-btn]').forEach((button) => {
+                const active = button.dataset.paneBtn === pane;
+                button.classList.toggle('active', active);
+                button.setAttribute('aria-pressed', String(active));
+            });
+            document.getElementById('commentsPane').hidden = pane !== 'comments';
+            document.getElementById('seasonPane').hidden = pane !== 'season';
+            if (pane === 'season') {
+                initSeasonChat();
+            }
+        }
+
+        // Etkin alanı yeniler: bölüm sohbeti açıksa o, değilse genel yorumlar.
+        function refreshComments() {
+            const seasonPane = document.getElementById('seasonPane');
+            if (seasonPane && !seasonPane.hidden && seasonChat.openEpisode !== null) {
+                loadEpisodeThread();
+            } else {
+                loadComments();
+            }
+        }
+
+        function seasonLabel(number) {
+            return number === 0 ? 'Özel bölümler' : `Sezon ${number}`;
+        }
+
+        function formatAirDate(date) {
+            if (!date) return 'Tarih yok';
+            return new Date(`${date}T00:00:00Z`).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+        }
+
+        const EPISODE_STATE_CHIPS = {
+            this_week: '<span class="chip chip--accent">Bu hafta</span>',
+            upcoming: '<span class="chip chip--warm">Yakında</span>',
+        };
+
+        async function initSeasonChat() {
+            const list = document.getElementById('episodeList');
+            if (!app.currentUser) {
+                list.innerHTML = '<div class="notice notice--warn">Sezon sohbetini kullanmak için giriş yapmalısın.</div>';
+                return;
+            }
+            if (seasonChat.loaded) return;
+
+            list.innerHTML = '<div class="loading">Sezonlar yükleniyor...</div>';
+            try {
+                const response = await fetch(`/api/episodes.php?series_id=${encodeURIComponent(currentContentId)}`, { credentials: 'include' });
+                const data = await response.json();
+                if (!data.success) {
+                    list.innerHTML = `<div class="notice notice--warn">${escapeHtml(data.message || 'Bölüm listesi alınamadı.')}</div>`;
+                    return;
+                }
+                seasonChat.loaded = true;
+                seasonChat.seasons = data.seasons;
+                const regular = data.seasons.filter(season => season.number > 0);
+                const nextSeason = data.series.next_episode ? data.series.next_episode.season : null;
+                const start = nextSeason !== null && nextSeason !== undefined && data.seasons.some(s => s.number === nextSeason)
+                    ? nextSeason
+                    : (regular.length ? regular[regular.length - 1].number : (data.seasons[0] ? data.seasons[0].number : 1));
+                await loadSeason(start);
+            } catch (error) {
+                console.error('Sezon sohbeti yükleme hatası:', error);
+                list.innerHTML = '<div class="notice notice--danger">Bağlantı hatası: sezonlar alınamadı.</div>';
+            }
+        }
+
+        function renderSeasonTabs() {
+            document.getElementById('seasonTabs').innerHTML = seasonChat.seasons.map((season) => {
+                const progress = season.progress && season.progress.total ? `${season.progress.watched}/${season.progress.total}` : '';
+                return `<button type="button" class="chip" aria-pressed="${season.number === seasonChat.season}" onclick="loadSeason(${season.number})">${seasonLabel(season.number)}${progress ? ` <small>${progress}</small>` : ''}</button>`;
+            }).join('');
+        }
+
+        async function loadSeason(number) {
+            seasonChat.season = number;
+            seasonChat.openEpisode = null;
+            document.getElementById('episodeThread').innerHTML = '';
+            document.getElementById('seasonSummary').innerHTML = '';
+            renderSeasonTabs();
+
+            const list = document.getElementById('episodeList');
+            list.innerHTML = '<div class="loading">Bölümler yükleniyor...</div>';
+            try {
+                const response = await fetch(`/api/episodes.php?series_id=${encodeURIComponent(currentContentId)}&season=${number}`, { credentials: 'include' });
+                const data = await response.json();
+                if (!data.success) {
+                    list.innerHTML = `<div class="notice notice--warn">${escapeHtml(data.message || 'Bölümler alınamadı.')}</div>`;
+                    return;
+                }
+                seasonChat.episodes = data.episodes;
+                renderSeasonSummary();
+                renderEpisodeList();
+            } catch (error) {
+                console.error('Bölüm listesi hatası:', error);
+                list.innerHTML = '<div class="notice notice--danger">Bağlantı hatası: bölümler alınamadı.</div>';
+            }
+        }
+
+        function renderSeasonSummary() {
+            const total = seasonChat.episodes.length;
+            const watched = seasonChat.episodes.filter(episode => episode.watched).length;
+            const percent = total ? Math.round((watched / total) * 100) : 0;
+            const allDone = total > 0 && watched === total;
+            document.getElementById('seasonSummary').innerHTML = total ? `
+                <div class="sc-summary">
+                    <div class="meter" role="progressbar" aria-label="Sezon ilerlemesi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><span style="width: ${percent}%"></span></div>
+                    <span class="faint">${watched}/${total} bölüm izlendi</span>
+                    <button type="button" class="btn-glass btn-sm" onclick="markSeasonWatched(${!allDone})">${allDone ? 'İşaretleri kaldır' : 'Tüm sezonu izledim'}</button>
+                </div>` : '';
+        }
+
+        function renderEpisodeList() {
+            const list = document.getElementById('episodeList');
+            if (!seasonChat.episodes.length) {
+                list.innerHTML = '<div class="empty"><div class="empty-title">Bu sezonda bölüm bulunamadı</div></div>';
+                return;
+            }
+            list.innerHTML = seasonChat.episodes.map((episode) => {
+                const open = seasonChat.openEpisode === episode.number;
+                const upcoming = episode.state === 'upcoming';
+                const still = episode.still
+                    ? `<img class="sc-still" src="${escapeHtml(episode.still)}" alt="" loading="lazy">`
+                    : `<div class="sc-still sc-still--empty" aria-hidden="true">B${episode.number}</div>`;
+                return `
+                    <article class="sc-episode${open ? ' is-open' : ''}" id="episode-${episode.number}">
+                        ${still}
+                        <div class="sc-ep-main">
+                            <div class="sc-ep-title">B${episode.number} · ${escapeHtml(episode.name || 'İsimsiz bölüm')}</div>
+                            <div class="sc-ep-meta">
+                                <span>${formatAirDate(episode.air_date)}</span>
+                                ${episode.runtime ? `<span>${episode.runtime} dk</span>` : ''}
+                                ${EPISODE_STATE_CHIPS[episode.state] || ''}
+                                <span>${episode.thread_count} konu</span>
+                            </div>
+                        </div>
+                        <div class="sc-ep-actions">
+                            <button type="button" class="chip" aria-pressed="${episode.watched}" ${upcoming ? 'disabled' : ''} onclick="setEpisodeWatched(${seasonChat.season}, ${episode.number}, ${!episode.watched})">${episode.watched ? '✓ İzledim' : 'İzledim olarak işaretle'}</button>
+                            <button type="button" class="btn-glass btn-sm" onclick="openEpisodeThread(${episode.number})">${open ? 'Sohbeti kapat' : 'Sohbeti aç'}</button>
+                        </div>
+                    </article>`;
+            }).join('');
+        }
+
+        // Sunucudan gelen ilerleme durumunu bölümlere, sezon sekmelerine ve açık sohbete yansıtır.
+        function applyEpisodeProgress(data) {
+            const watched = data.watched || {};
+            const counts = data.season_counts || {};
+            seasonChat.episodes.forEach((episode) => {
+                episode.watched = Boolean(watched[`${seasonChat.season}:${episode.number}`]);
+            });
+            seasonChat.seasons.forEach((season) => {
+                const total = season.progress && season.progress.total ? season.progress.total : null;
+                const count = counts[season.number] || 0;
+                season.progress = { watched: count, total, percent: total ? Math.round((count / total) * 100) : null };
+            });
+            renderSeasonTabs();
+            renderSeasonSummary();
+            renderEpisodeList();
+            if (seasonChat.openEpisode !== null) {
+                loadEpisodeThread();
+            }
+        }
+
+        async function postEpisodeProgress(body) {
+            try {
+                const response = await fetch('/api/episode-progress.php', {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ series_id: Number(currentContentId), ...body })
+                });
+                const data = await response.json();
+                if (!data.success) {
+                    app.toast(data.message || 'İşaret kaydedilemedi', 'error');
+                    return;
+                }
+                applyEpisodeProgress(data);
+            } catch (error) {
+                console.error('Bölüm ilerlemesi hatası:', error);
+                app.toast('Bağlantı hatası', 'error');
+            }
+        }
+
+        function setEpisodeWatched(season, episode, watched) {
+            return postEpisodeProgress({ season, episode, watched });
+        }
+
+        function markSeasonWatched(watched) {
+            const numbers = seasonChat.episodes.filter(episode => episode.state !== 'upcoming').map(episode => episode.number);
+            return postEpisodeProgress({ season: seasonChat.season, episodes: numbers, watched });
+        }
+
+        function openEpisodeThread(number) {
+            seasonChat.openEpisode = seasonChat.openEpisode === number ? null : number;
+            renderEpisodeList();
+            if (seasonChat.openEpisode === null) {
+                document.getElementById('episodeThread').innerHTML = '';
+                return;
+            }
+            loadEpisodeThread().then(() => {
+                const thread = document.getElementById('episodeThread');
+                thread.scrollIntoView({ behavior: motionReduced() ? 'auto' : 'smooth', block: 'nearest' });
+            });
+        }
+
+        async function loadEpisodeThread() {
+            const thread = document.getElementById('episodeThread');
+            const number = seasonChat.openEpisode;
+            const episode = seasonChat.episodes.find(item => item.number === number);
+            if (!episode) {
+                thread.innerHTML = '';
+                return;
+            }
+            const title = `B${episode.number} · ${episode.name || 'Bölüm'}`;
+            thread.innerHTML = '<div class="sc-thread"><div class="loading">Sohbet yükleniyor...</div></div>';
+
+            try {
+                const response = await fetch(
+                    `/api/comments.php?content_type=series&content_id=${encodeURIComponent(currentContentId)}&season=${seasonChat.season}&episode=${number}`,
+                    { credentials: 'include' }
+                );
+                const data = await response.json();
+                if (!data.success) {
+                    thread.innerHTML = `<div class="sc-thread"><div class="notice notice--warn">${escapeHtml(data.message || 'Sohbet yüklenemedi')}</div></div>`;
+                    return;
+                }
+
+                if (data.locked) {
+                    const lockIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+                    const action = episode.state === 'upcoming'
+                        ? '<p class="muted">Bu bölüm henüz yayınlanmadı.</p>'
+                        : `<button type="button" class="btn btn-primary" onclick="setEpisodeWatched(${seasonChat.season}, ${number}, true)">Bu bölümü izledim, sohbeti aç</button>`;
+                    thread.innerHTML = `<div class="sc-thread"><div class="sc-lock">${lockIcon}
+                        <div class="sc-thread-title">${escapeHtml(title)} sohbeti kilitli</div>
+                        <p class="muted">Bu bölümde ${data.thread_count} konu var. Spoiler yememen için yorumları, bölümü izlediğini işaretleyene kadar göstermiyoruz.</p>
+                        ${action}</div></div>`;
+                    return;
+                }
+
+                const sendIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
+                thread.innerHTML = `<div class="sc-thread">
+                    <div class="sc-thread-head"><span class="sc-thread-title">${escapeHtml(title)} sohbeti</span><span class="chip chip--accent">${data.comments.length} konu</span></div>
+                    <div class="comment-form">
+                        <textarea id="threadText" aria-label="Bölüm yorumun" maxlength="1000" placeholder="Bu bölüm hakkında ne düşünüyorsun?"></textarea>
+                        <div class="comment-form-row"><span class="faint">Yalnızca bu bölümü izleyenler görür.</span><button type="button" class="sc-send-btn" onclick="submitThreadComment()">${sendIcon}<span>Gönder</span></button></div>
+                    </div>
+                    ${data.comments.length ? commentListHtml(data.comments) : '<p class="cv-empty">Bu bölüm için henüz kimse yazmamış. İlk yorumu sen yaz!</p>'}
+                </div>`;
+            } catch (error) {
+                console.error('Bölüm sohbeti hatası:', error);
+                thread.innerHTML = '<div class="sc-thread"><div class="notice notice--danger">Bağlantı hatası: sohbet alınamadı.</div></div>';
+            }
+        }
+
+        async function submitThreadComment() {
+            const textarea = document.getElementById('threadText');
+            const text = textarea ? textarea.value.trim() : '';
+            if (!text) {
+                app.toast('Lütfen yorumunu yaz!', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/comments.php', {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        content_type: 'series',
+                        content_id: currentContentId,
+                        comment_text: text,
+                        season_number: seasonChat.season,
+                        episode_number: seasonChat.openEpisode
+                    })
+                });
+                const data = await response.json();
+                if (!data.success) {
+                    app.toast(data.message || 'Yorum gönderilemedi', 'error');
+                    return;
+                }
+                app.toast('Yorumun gönderildi!', 'success');
+                const episode = seasonChat.episodes.find(item => item.number === seasonChat.openEpisode);
+                if (episode) {
+                    episode.thread_count += 1;
+                    renderEpisodeList();
+                }
+                loadEpisodeThread();
+            } catch (error) {
+                console.error('Bölüm yorumu hatası:', error);
+                app.toast('Bağlantı hatası!', 'error');
+            }
+        }
+
         function showReplyForm(commentId) {
             if (typeof app === 'undefined' || !app.currentUser) {
                 app.toast('Yanıt yazmak için giriş yapmalısınız!', 'error');
@@ -1943,7 +2340,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 const data = await response.json();
                 if (data.success) {
                     hideReplyForm(parentCommentId);
-                    loadComments();
+                    refreshComments();
                     app.toast('Yanıtınız gönderildi!', 'success');
                 } else {
                     app.toast('Yanıt gönderilemedi: ' + (data.message || 'Hata oluştu'), 'error');
@@ -1967,7 +2364,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 
                 const data = await response.json();
                 if (data.success) {
-                    loadComments();
+                    refreshComments();
                     app.toast('Yorum silindi!', 'success');
                 } else {
                     app.toast(data.message || 'Yorum silinemedi', 'error');
@@ -1975,22 +2372,6 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             } catch (error) {
                 console.error('Yorum silme hatası:', error);
                 app.toast('Hata oluştu', 'error');
-            }
-        }
-
-        function toggleCommentText(commentId) {
-            const shortSpan = document.getElementById(`short-${commentId}`);
-            const fullSpan = document.getElementById(`full-${commentId}`);
-            const btn = event.target;
-
-            if (fullSpan.style.display === 'none') {
-                shortSpan.style.display = 'none';
-                fullSpan.style.display = 'inline';
-                btn.textContent = 'Az Göster';
-            } else {
-                shortSpan.style.display = 'inline';
-                fullSpan.style.display = 'none';
-                btn.textContent = 'Daha Fazla';
             }
         }
 
@@ -2106,7 +2487,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 const data = await response.json();
                 if (data.success) {
                     document.getElementById('editModal').remove();
-                    loadComments();
+                    refreshComments();
                     app.toast('Yorum düzenlendi!', 'success');
                 } else {
                     app.toast(data.message || 'Yorum düzenlenemedi', 'error');
@@ -2138,20 +2519,10 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 const data = await response.json();
 
                 if (data.success) {
-                    const likeCountSpan = document.getElementById(`like-count-${commentId}`);
                     const likeBtn = document.getElementById(`like-btn-${commentId}`);
-
-                    if (likeCountSpan) {
-                        likeCountSpan.textContent = data.likes_count;
-                    }
                     if (likeBtn) {
-                        if (data.liked) {
-                            likeBtn.innerHTML = `❤️ <span id="like-count-${commentId}">${data.likes_count}</span>`;
-                            likeBtn.style.color = 'var(--color-danger)';
-                        } else {
-                            likeBtn.innerHTML = `🤍 <span id="like-count-${commentId}">${data.likes_count}</span>`;
-                            likeBtn.style.color = 'var(--color-accent)';
-                        }
+                        likeBtn.classList.toggle('is-liked', Boolean(data.liked));
+                        likeBtn.innerHTML = `${heartIcon(Boolean(data.liked))} <span id="like-count-${commentId}">${data.likes_count}</span>`;
                     }
                 } else {
                     console.error('Like error:', data.message);
@@ -2271,13 +2642,6 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 console.error('Kaydetme hatası:', error);
                 app.toast('Bir hata oluştu!', 'error');
             }
-        }
-
-        function logout() {
-            if (app) {
-                app.logout();
-            }
-            window.location.href = 'index.html';
         }
     </script>
 </body>
