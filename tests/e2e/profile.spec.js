@@ -1,0 +1,107 @@
+// Profil sayfası: biyografi, avatar, listeler, şifre kuralları ve sekmeler. Testin kendi geçici kullanıcısıyla çalışır.
+const { test, expect } = require('@playwright/test');
+const { createUser, deleteUsers, loginAs } = require('./helpers');
+
+test.describe.configure({ mode: 'serial' });
+
+let user;
+test.beforeAll(() => { user = createUser('profile'); });
+test.afterAll(() => { deleteUsers(user); });
+// Hareket düzeninden bağımsız: iki projede tekrar çalışmasına gerek yok.
+test.beforeEach(async ({}, testInfo) => { test.skip(testInfo.project.name !== 'chromium', 'Yalnızca varsayılan projede çalışır'); });
+
+test.describe('profilim', () => {
+    test('boş profil: sahte biyografi yok, kütüphane boş durumları yönlendirir', async ({ page }) => {
+        await loginAs(page, user);
+        await page.goto('/profile.html');
+        await expect(page.locator('#profileUsername')).toHaveText(user.username);
+        await expect(page.locator('#profileBio.is-placeholder')).toBeVisible();
+        await expect(page.locator('#profileBio')).not.toContainText('Harry Potter');
+        await expect(page.locator('#watchedMovies .empty a[href="search.html"]')).toBeVisible();
+        await expect(page.locator('#moviesCount')).toHaveText('0');
+    });
+
+    test('biyografi kaydolur, bağlantılı biyografi reddedilir, Escape pencereyi kapatır', async ({ page }) => {
+        await loginAs(page, user);
+        await page.goto('/profile.html');
+        await expect(page.locator('#profileContent')).toBeVisible();
+
+        await page.getByRole('button', { name: 'Profili Düzenle' }).click();
+        await expect(page.locator('.sk-dialog textarea')).toBeFocused();
+        await page.keyboard.press('Escape');
+        await expect(page.locator('.sk-dialog')).toHaveCount(0);
+        await expect(page.getByRole('button', { name: 'Profili Düzenle' })).toBeFocused();
+
+        await page.getByRole('button', { name: 'Profili Düzenle' }).click();
+        await page.fill('.sk-dialog textarea', 'Gel: www.spam.example');
+        await page.click('.sk-dialog button[type=submit]');
+        await expect(page.locator('.toast-error')).toContainText('bağlantı');
+        await expect(page.locator('#profileBio.is-placeholder')).toBeVisible();
+
+        await page.getByRole('button', { name: 'Profili Düzenle' }).click();
+        await page.fill('.sk-dialog textarea', 'Bilim kurgu ve polisiye');
+        await page.click('.sk-dialog button[type=submit]');
+        await expect(page.locator('#profileBio')).toHaveText('Bilim kurgu ve polisiye');
+
+        await page.reload();
+        await expect(page.locator('#profileBio')).toHaveText('Bilim kurgu ve polisiye');
+    });
+
+    test('emoji avatar seçilir ve yenilemeden sonra kalıcıdır', async ({ page }) => {
+        await loginAs(page, user);
+        await page.goto('/profile.html');
+        await page.click('#profileAvatar');
+        const choice = (await page.locator('.avatar-pick').nth(8).textContent()).trim();
+        await page.locator('.avatar-pick').nth(8).click();
+        await expect(page.locator('.modal-box')).toHaveCount(0);
+        await expect(page.locator('#profileAvatar .avatar--emoji')).toHaveText(choice);
+
+        await page.reload();
+        await expect(page.locator('#profileAvatar .avatar--emoji')).toHaveText(choice);
+    });
+
+    test('sekmeler adres çubuğuna yazılır, #settings doğrudan açılır', async ({ page }) => {
+        await loginAs(page, user);
+        await page.goto('/profile.html');
+        await page.click('[data-tab=lists]');
+        await expect(page).toHaveURL(/#lists$/);
+        await expect(page.locator('[data-tab=lists]')).toHaveAttribute('aria-pressed', 'true');
+        await page.click('[data-tab=diary]');
+        await expect(page.locator('#diaryList .empty-title')).toContainText('henüz boş');
+
+        await page.goto('/profile.html#settings');
+        await expect(page.locator('#settingsTab')).toHaveClass(/active/);
+    });
+
+    test('liste oluşturma ve düzenleme penceresi; boş ad engellenir', async ({ page }) => {
+        await loginAs(page, user);
+        await page.goto('/profile.html#lists');
+        await expect(page.locator('#customLists .empty')).toBeVisible();
+
+        await page.getByRole('button', { name: '+ Yeni Liste Oluştur' }).click();
+        await page.click('.sk-dialog button[type=submit]');
+        await expect(page.locator('.sk-dialog-error')).toContainText('boş bırakılamaz');
+        await page.fill('.sk-dialog input[name=name]', 'Hafta sonu');
+        await page.fill('.sk-dialog textarea[name=description]', 'Cumartesi akşamı için');
+        await page.click('.sk-dialog button[type=submit]');
+        await expect(page.locator('#customLists .list-card-title')).toHaveText('Hafta sonu');
+
+        await page.getByRole('button', { name: 'Görüntüle' }).click();
+        await expect(page.locator('.modal-box-header h2')).toHaveText('Hafta sonu');
+        await expect(page.locator('.modal-box .empty')).toBeVisible();
+        await page.check('#listPublicToggle');
+        await expect(page.locator('#copyListLinkBtn')).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(page.locator('.modal-box')).toHaveCount(0);
+    });
+
+    test('şifre kuralları yazdıkça güncellenir', async ({ page }) => {
+        await loginAs(page, user);
+        await page.goto('/profile.html#settings');
+        await page.fill('#newPasswordInput', 'abc');
+        await expect(page.locator('#newPasswordRules li.is-met')).toHaveCount(1);
+        await page.fill('#newPasswordInput', 'Abcdef1!');
+        await expect(page.locator('#newPasswordRules li.is-met')).toHaveCount(4);
+        await expect(page.locator('#adminLinkCard')).toBeHidden();
+    });
+});
