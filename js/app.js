@@ -7,6 +7,11 @@ const fetchOptions = {
     credentials: 'include'
 };
 
+// Hareket tercihi js/motion.js tarafından <html data-motion> olarak yazılır; betikler yalnızca bunu okur.
+function motionReduced() {
+    return document.documentElement.getAttribute('data-motion') === 'reduced';
+}
+
 // Tema, beyaz flaş olmasın diye DOMContentLoaded'dan önce uygulanır.
 (function applyStoredTheme() {
     const saved = localStorage.getItem('theme');
@@ -131,6 +136,187 @@ class SocialLibraryApp {
             document.body.appendChild(overlay);
             confirmBtn.focus();
         });
+    }
+
+    // --- Avatar: yüklenmiş fotoğraf (yol/URL), emoji ya da kullanıcı adının baş harfi ---
+    // size: '' | 'sm' | 'lg' | 'xl' (css/ui.css .avatar--*). Dönen değer güvenlidir: her şey kaçışlanır.
+    avatarMarkup(avatar, username, size = '') {
+        const cls = 'avatar' + (size ? ' avatar--' + size : '');
+        const value = typeof avatar === 'string' ? avatar.trim() : '';
+        const name = this.escapeHtml(username || '');
+        if (value && /^(?:https?:\/\/|\/(?!\/))/i.test(value)) {
+            return `<span class="${cls}"><img src="${this.escapeHtml(value)}" alt="" loading="lazy" decoding="async"></span>`;
+        }
+        if (value) {
+            return `<span class="${cls} avatar--emoji" role="img" aria-label="${name}">${this.escapeHtml(value)}</span>`;
+        }
+        const initial = this.escapeHtml((username || '?').trim().charAt(0).toUpperCase() || '?');
+        return `<span class="${cls}" role="img" aria-label="${name}">${initial}</span>`;
+    }
+
+    // --- Küçük satır içi ikon seti (JS ile üretilen kartlar için; stil css/ui.css .ui-i) ---
+    icon(name) {
+        const paths = {
+            film: '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18M17 3v18M3 8h4M3 12h18M3 16h4M17 8h4M17 16h4"/>',
+            tv: '<rect width="20" height="15" x="2" y="7" rx="2"/><path d="m17 2-5 5-5-5"/>',
+            book: '<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h8M8 11h6"/>',
+            star: '<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9Z"/>',
+            message: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+            check: '<path d="M20 6 9 17l-5-5"/>',
+            list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+            calendar: '<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+            eye: '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+            trash: '<path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>',
+            shield: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>',
+            flag: '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/>',
+            user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+            users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+            pencil: '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
+            clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+            heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+            alert: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/>',
+            sparkles: '<path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>',
+            lock: '<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+            history: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/>',
+            search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+            restore: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
+            ban: '<circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/>',
+            volumeX: '<path d="M11 5 6 9H2v6h4l5 4zM22 9l-6 6M16 9l6 6"/>'
+        };
+        const body = paths[name] || paths.star;
+        return `<svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
+    }
+
+    // --- Form modalı (prompt() yerine): Promise<{alan: değer}|null> ---
+    // fields: [{ name, label, type: 'text'|'textarea'|'select'|'checkbox', value, placeholder, required, maxlength, hint, options: [{value, label}] }]
+    formDialog({ title, description = '', fields = [], submitText = 'Kaydet', cancelText = 'Vazgeç', danger = false } = {}) {
+        return new Promise(resolve => {
+            const previouslyFocused = document.activeElement;
+            const overlay = document.createElement('div');
+            overlay.className = 'confirm-overlay sk-dialog-overlay';
+
+            const form = document.createElement('form');
+            form.className = 'sk-dialog';
+            form.setAttribute('role', 'dialog');
+            form.setAttribute('aria-modal', 'true');
+            form.setAttribute('aria-labelledby', 'skDialogTitle');
+            form.noValidate = true;
+
+            const fieldHtml = fields.map((field, index) => {
+                const id = 'skDialogField' + index;
+                const label = this.escapeHtml(field.label || '');
+                const hint = field.hint ? `<div class="sk-dialog-hint">${this.escapeHtml(field.hint)}</div>` : '';
+                const required = field.required ? ' required' : '';
+                const max = field.maxlength ? ` maxlength="${Number(field.maxlength)}"` : '';
+                const placeholder = field.placeholder ? ` placeholder="${this.escapeHtml(field.placeholder)}"` : '';
+                const value = field.value == null ? '' : String(field.value);
+                if (field.type === 'checkbox') {
+                    return `<label class="sk-dialog-check" for="${id}"><input type="checkbox" id="${id}" name="${this.escapeHtml(field.name)}"${field.value ? ' checked' : ''}> <span>${label}</span></label>${hint}`;
+                }
+                if (field.type === 'select') {
+                    const options = (field.options || []).map(o => `<option value="${this.escapeHtml(o.value)}"${String(o.value) === value ? ' selected' : ''}>${this.escapeHtml(o.label)}</option>`).join('');
+                    return `<div class="field"><label for="${id}">${label}</label><select id="${id}" name="${this.escapeHtml(field.name)}" class="select">${options}</select>${hint}</div>`;
+                }
+                if (field.type === 'textarea') {
+                    return `<div class="field"><label for="${id}">${label}</label><textarea id="${id}" name="${this.escapeHtml(field.name)}" class="textarea"${required}${max}${placeholder}>${this.escapeHtml(value)}</textarea>${hint}</div>`;
+                }
+                return `<div class="field"><label for="${id}">${label}</label><input id="${id}" name="${this.escapeHtml(field.name)}" type="text" class="input" value="${this.escapeHtml(value)}"${required}${max}${placeholder}>${hint}</div>`;
+            }).join('');
+
+            form.innerHTML = `
+                <h2 id="skDialogTitle" class="sk-dialog-title">${this.escapeHtml(title || '')}</h2>
+                ${description ? `<p class="sk-dialog-desc">${this.escapeHtml(description)}</p>` : ''}
+                <div class="sk-dialog-fields">${fieldHtml}</div>
+                <div class="sk-dialog-error" role="alert" hidden></div>
+                <div class="confirm-actions">
+                    <button type="button" class="btn btn-secondary" data-dialog-cancel>${this.escapeHtml(cancelText)}</button>
+                    <button type="submit" class="btn ${danger ? 'btn-danger' : 'btn-primary'}">${this.escapeHtml(submitText)}</button>
+                </div>`;
+
+            const finish = (result) => {
+                document.removeEventListener('keydown', onKey, true);
+                overlay.remove();
+                if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+                resolve(result);
+            };
+            const onKey = (event) => {
+                if (event.key === 'Escape') {
+                    event.stopPropagation();
+                    finish(null);
+                }
+            };
+            document.addEventListener('keydown', onKey, true);
+
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const values = {};
+                const errorBox = form.querySelector('.sk-dialog-error');
+                for (let i = 0; i < fields.length; i++) {
+                    const field = fields[i];
+                    const el = form.querySelector('#skDialogField' + i);
+                    const value = field.type === 'checkbox' ? el.checked : el.value.trim();
+                    if (field.required && !value) {
+                        errorBox.textContent = `"${field.label}" alanı boş bırakılamaz.`;
+                        errorBox.hidden = false;
+                        el.focus();
+                        return;
+                    }
+                    values[field.name] = value;
+                }
+                finish(values);
+            });
+            form.querySelector('[data-dialog-cancel]').addEventListener('click', () => finish(null));
+            overlay.addEventListener('click', (event) => { if (event.target === overlay) finish(null); });
+
+            overlay.appendChild(form);
+            document.body.appendChild(overlay);
+            const first = form.querySelector('input:not([type=checkbox]), textarea, select') || form.querySelector('button[type=submit]');
+            first.focus();
+        });
+    }
+
+    // --- Genel modal: Escape ile kapanır, odağı geri verir, üst üste açılanlarda yalnızca en üsttekini kapatır ---
+    // html güvenilir olmalıdır (çağıran taraf kullanıcı metnini kaçışlar). Dönen: { el, body, close }
+    openModal({ title = '', html = '', width = 560 } = {}) {
+        const previouslyFocused = document.activeElement;
+        const titleId = 'skModalTitle' + Math.random().toString(36).slice(2, 8);
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.innerHTML = `
+            <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="${titleId}" style="max-width: ${Number(width)}px;">
+                <div class="modal-box-header">
+                    <h2 id="${titleId}">${this.escapeHtml(title)}</h2>
+                    <button type="button" class="modal-close-btn" aria-label="Kapat">&times;</button>
+                </div>
+                <div class="modal-body">${html}</div>
+            </div>`;
+
+        this._modalStack = this._modalStack || [];
+        const handle = { el: overlay, body: overlay.querySelector('.modal-body'), close: null };
+        const onKey = (event) => {
+            if (event.key === 'Escape' && this._modalStack[this._modalStack.length - 1] === handle) {
+                event.stopImmediatePropagation();
+                handle.close();
+            }
+        };
+        handle.close = () => {
+            if (!overlay.isConnected) return;
+            document.removeEventListener('keydown', onKey, true);
+            this._modalStack = this._modalStack.filter(item => item !== handle);
+            overlay.remove();
+            if (previouslyFocused && typeof previouslyFocused.focus === 'function' && previouslyFocused.isConnected) {
+                previouslyFocused.focus();
+            }
+        };
+        document.addEventListener('keydown', onKey, true);
+        overlay.addEventListener('click', (event) => { if (event.target === overlay) handle.close(); });
+        overlay.querySelector('.modal-close-btn').addEventListener('click', handle.close);
+
+        this._modalStack.push(handle);
+        document.body.appendChild(overlay);
+        const focusTarget = overlay.querySelector('.modal-body input, .modal-body textarea, .modal-body button, .modal-body a') || overlay.querySelector('.modal-close-btn');
+        focusTarget.focus();
+        return handle;
     }
 
     // --- Şifre göster/gizle (Kayma yapmayan SVG ikonlu yapı) ---
@@ -452,15 +638,128 @@ class SocialLibraryApp {
         }
     }
 
-    async getTopRatedMovies() {
+    // Film ve dizi atmosferi: her sayfanın arkasında, filmlerden ve dizilerden karelerin zıt yönlerde kaydığı satırlar.
+    // Kareler TMDB'nin popüler ve en yüksek puanlı listelerinden gelir. Hareket tercihine göre kayar ya da durağan kolaj olur.
+    async initAtmosphere() {
+        if (document.querySelector('.atmo')) return;
+        const stills = await this.getAtmosphereStills();
+        if (stills.length < 8) return;
+
+        const rowCount = window.matchMedia('(max-width: 720px)').matches ? 3 : 4;
+        const rows = Array.from({ length: rowCount }, (_, rowIndex) => {
+            const set = stills
+                .filter((_, i) => i % rowCount === rowIndex)
+                .slice(0, 10)
+                .map(path => `<img class="atmo-still" src="https://image.tmdb.org/t/p/w300${this.escapeHtml(path)}" alt="" loading="lazy" decoding="async">`)
+                .join('');
+            const style = `--atmo-duration:${110 + rowIndex * 14}s; --atmo-delay:-${rowIndex * 23}s; --atmo-i:${rowIndex}`;
+            return `<div class="atmo-row"><div class="atmo-track" style="${style}"><div class="atmo-set">${set}</div><div class="atmo-set" aria-hidden="true">${set}</div></div></div>`;
+        });
+
+        const layer = document.createElement('div');
+        layer.className = 'atmo';
+        layer.setAttribute('aria-hidden', 'true');
+        layer.innerHTML = `<div class="atmo-rows">${rows.join('')}</div>`;
+        document.body.prepend(layer);
+    }
+
+    // Film ve dizi kareleri sırayla karışır (aynı kare iki kez gelmez). Liste 6 saat oturum belleğinde tutulur,
+    // böylece her sayfa geçişinde TMDB listeleri yeniden istenmez.
+    async getAtmosphereStills() {
+        const CACHE_KEY = 'sk-atmo-stills-v2';
         try {
-            const response = await fetch(`${TMDB_PROXY_URL}?endpoint=list&type=movie&list=top_rated&page=1`);
-            const data = await response.json();
-            return (data.results || []).slice(0, 12);
+            const cached = JSON.parse(sessionStorage.getItem(CACHE_KEY) || 'null');
+            if (cached && Array.isArray(cached.paths) && Date.now() - cached.at < 6 * 3600 * 1000) return cached.paths;
         } catch (error) {
-            console.error('En iyi filmler hatası:', error);
-            return [];
+            // Oturum belleği kapalı olabilir; liste her seferinde alınır.
         }
+
+        const pick = (type, list) => fetch(`${TMDB_PROXY_URL}?endpoint=list&type=${type}&list=${list}&page=1`)
+            .then(response => (response.ok ? response.json() : { results: [] }))
+            .catch(() => ({ results: [] }))
+            .then(data => (data.results || []).map(item => item.backdrop_path).filter(Boolean));
+        const [moviePopular, seriesPopular, movieTop, seriesTop] = await Promise.all([
+            pick('movie', 'popular'), pick('series', 'popular'), pick('movie', 'top_rated'), pick('series', 'top_rated'),
+        ]);
+
+        const movies = [...moviePopular, ...movieTop];
+        const series = [...seriesPopular, ...seriesTop];
+        const seen = new Set();
+        const mixed = [];
+        for (let i = 0; i < Math.max(movies.length, series.length); i++) {
+            for (const path of [movies[i], series[i]]) {
+                if (path && !seen.has(path)) {
+                    seen.add(path);
+                    mixed.push(path);
+                }
+            }
+        }
+        const paths = mixed.slice(0, 48);
+        try {
+            sessionStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), paths }));
+        } catch (error) {
+            // Önbelleğe yazılamasa da arka plan çalışır.
+        }
+        return paths;
+    }
+
+    // Hareket düğmesi: navbar'daki tema düğmesinin yanına eklenir. Sistem hareketi azaltıyorsa ve kullanıcı henüz seçim
+    // yapmadıysa, nedenini açıklayan bir ipucu gösterilir (Windows'ta "Animasyon efektleri" kapalıyken tarayıcı bunu bildirir).
+    initMotionToggle() {
+        const motion = window.SKMotion;
+        if (!motion) return;
+        const reduced = motion.isReduced();
+        const label = reduced ? 'Animasyonları aç' : 'Animasyonları durdur';
+        document.querySelectorAll('.theme-toggle-btn').forEach((themeBtn) => {
+            if (themeBtn.parentElement.querySelector('.motion-toggle-btn')) return;
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'nav-icon-btn motion-toggle-btn';
+            button.setAttribute('aria-label', label);
+            button.setAttribute('aria-pressed', String(!reduced));
+            button.title = label;
+            const sparkle = '<path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/><path d="M19 3v4"/><path d="M21 5h-4"/>';
+            const attrs = 'viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
+            button.innerHTML = `<svg class="icon-motion-on" ${attrs}>${sparkle}</svg><svg class="icon-motion-off" ${attrs}>${sparkle}<line x1="3" y1="3" x2="21" y2="21"/></svg>`;
+            button.addEventListener('click', () => motion.toggle());
+            themeBtn.before(button);
+        });
+
+        if (reduced && motion.systemReduced && !motion.userChoice) {
+            this.showMotionHint();
+        }
+    }
+
+    showMotionHint() {
+        try {
+            if (Number(localStorage.getItem('sk-motion-hint-until') || 0) > Date.now()) return;
+        } catch (error) {
+            // Depolama kapalıysa ipucu her seferinde gösterilir.
+        }
+        if (!document.querySelector('.motion-toggle-btn')) return;
+
+        const hint = document.createElement('div');
+        hint.className = 'motion-hint';
+        hint.setAttribute('role', 'status');
+        hint.innerHTML = `<span><strong>Animasyonlar kapalı.</strong> Windows'ta "Animasyon efektleri" kapalı olduğu için sayfa durağan gösteriliyor.</span>
+            <div class="motion-hint-actions">
+                <button type="button" data-action="enable">Animasyonları aç</button>
+                <button type="button" data-action="dismiss">Şimdi değil</button>
+            </div>`;
+        hint.addEventListener('click', (event) => {
+            const action = event.target.dataset ? event.target.dataset.action : null;
+            if (action === 'enable') {
+                window.SKMotion.set('full');
+            } else if (action === 'dismiss') {
+                try {
+                    localStorage.setItem('sk-motion-hint-until', String(Date.now() + 7 * 24 * 3600 * 1000));
+                } catch (error) {
+                    // Kalıcı olmasa da bu sayfada kapanır.
+                }
+                hint.remove();
+            }
+        });
+        document.body.appendChild(hint);
     }
 
     async getPopularMovies() {
@@ -494,28 +793,6 @@ class SocialLibraryApp {
         } catch (error) {
             console.error('Dizi detay hatası:', error);
             return null;
-        }
-    }
-
-    async getTopRatedSeries() {
-        try {
-            const response = await fetch(`${TMDB_PROXY_URL}?endpoint=list&type=series&list=top_rated&page=1`);
-            const data = await response.json();
-            return (data.results || []).slice(0, 12);
-        } catch (error) {
-            console.error('En iyi diziler hatası:', error);
-            return [];
-        }
-    }
-
-    async getPopularSeries() {
-        try {
-            const response = await fetch(`${TMDB_PROXY_URL}?endpoint=list&type=series&list=popular&page=1`);
-            const data = await response.json();
-            return (data.results || []).slice(0, 12);
-        } catch (error) {
-            console.error('Popüler diziler hatası:', error);
-            return [];
         }
     }
 
@@ -785,9 +1062,18 @@ class SocialLibraryApp {
         }
     }
 
+    // Sunucu saat dilimi belirtmeden UTC zaman yazar ("2026-10-16 17:07:00"); bu biçim UTC olarak okunur,
+    // yoksa tarayıcı yerel saat sayar ve yaşlar tarayıcının UTC farkı kadar kayar.
+    parseServerDate(value) {
+        if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}(:\d{2})?$/.test(value)) {
+            return new Date(value.replace(' ', 'T') + 'Z');
+        }
+        return new Date(value);
+    }
+
     getTimeAgo(timestamp) {
         const now = new Date();
-        const past = new Date(timestamp);
+        const past = this.parseServerDate(timestamp);
         const seconds = Math.floor((now - past) / 1000);
 
         if (seconds < 60) return 'biraz önce';
@@ -798,7 +1084,7 @@ class SocialLibraryApp {
     }
 
     formatDate(timestamp) {
-        const date = new Date(timestamp);
+        const date = this.parseServerDate(timestamp);
         const now = new Date();
         const diffMs = now - date;
         const diffSec = Math.floor(diffMs / 1000);
@@ -899,7 +1185,7 @@ function wireNavToggle() {
 // --- Kart ve buton hareketleri: fare konumunu CSS değişkenlerine yazar, [data-tilt] öğeleri eğer ---
 function wirePointerEffects() {
     if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduceMotion = motionReduced();
 
     document.addEventListener('pointermove', (e) => {
         const surface = e.target.closest?.('.card, [data-tilt]');
@@ -927,7 +1213,7 @@ function wirePointerEffects() {
 function wireReveal() {
     const items = document.querySelectorAll('.reveal');
     if (!items.length) return;
-    if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (!('IntersectionObserver' in window) || motionReduced()) {
         items.forEach(el => el.classList.add('is-visible'));
         return;
     }
@@ -953,12 +1239,18 @@ document.addEventListener('DOMContentLoaded', () => {
     wirePointerEffects();
     wireReveal();
     app.wireCsvImport();
+    app.initAtmosphere();
+    app.initMotionToggle();
 
     // Bazı sayfalar giriş yapmadan da gezilebiliyor — çıkış yapmamış birine
     // hesap gerektiren nav ögelerini (Akış/Sosyal/Profilim/Mesajlar/bildirim)
     // göstermenin anlamı yok, sadece Keşfet + tema + Giriş Yap kalsın.
     const LOGIN_REQUIRED_NAV_HREFS = ['feed.html', 'social.html', 'profile.html', 'messages.html'];
     app.initPromise.then(() => {
+        if (app.currentUser && app.currentUser.is_admin) {
+            const adminLink = document.getElementById('navAdminLink');
+            if (adminLink) adminLink.hidden = false;
+        }
         if (app.currentUser) return;
 
         document.querySelectorAll('.logout-btn').forEach(btn => {
