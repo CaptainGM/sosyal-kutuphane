@@ -1,0 +1,52 @@
+name: Canlı duman testi
+
+# Canlı site (LIVE_URL repo değişkeni) üzerinde yalnızca okuma testleri çalışır.
+# Veriyi değiştiren testler (giriş, yorum, içe aktarma) canlıda çalıştırılmaz.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 6 * * *'
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    if: vars.LIVE_URL != ''
+    env:
+      E2E_BASE_URL: ${{ vars.LIVE_URL }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Node kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Siteyi uyandır (ücretsiz planda uyku modundan çıkarır)
+        run: |
+          for attempt in $(seq 1 12); do
+            if curl -sf --max-time 60 "$E2E_BASE_URL/index.html" > /dev/null; then
+              echo "Site hazır (deneme $attempt)"
+              exit 0
+            fi
+            echo "Henüz hazır değil, bekleniyor..."
+            sleep 15
+          done
+          echo "Site 3 dakikada yanıt vermedi"
+          exit 1
+
+      - name: Bağımlılıkları kur
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Salt okunur testleri çalıştır
+        run: npx playwright test tests/e2e/login.spec.js tests/e2e/a11y.spec.js
+
+      - name: Raporu yükle
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-playwright-report
+          path: playwright-report/
+          retention-days: 7

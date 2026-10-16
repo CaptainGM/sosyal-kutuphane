@@ -29,7 +29,7 @@ final class ApiTest extends TestCase
         $username = "phpunit_$suffix";
 
         $client = new ApiClient(TEST_BASE_URL);
-        $register = $client->register($username, $email, 'dogrusifre123');
+        $register = $client->register($username, $email, 'Dogrusifre123!');
         $this->assertTrue($register['data']['success'] ?? false, 'Kayıt başarısız olmamalı');
         $this->assertNotEmpty($register['data']['csrf_token'] ?? null);
 
@@ -38,7 +38,7 @@ final class ApiTest extends TestCase
         $this->assertSame(401, $wrongLogin['status']);
         $this->assertFalse($wrongLogin['data']['success'] ?? true);
 
-        $rightLogin = $fresh->login($email, 'dogrusifre123');
+        $rightLogin = $fresh->login($email, 'Dogrusifre123!');
         $this->assertTrue($rightLogin['data']['success'] ?? false);
         $this->assertSame($username, $rightLogin['data']['user']['username'] ?? null);
     }
@@ -47,7 +47,7 @@ final class ApiTest extends TestCase
     {
         $suffix = $this->uniqueSuffix();
         $client = new ApiClient(TEST_BASE_URL);
-        $client->register("phpunit_csrf_$suffix", "phpunit_csrf_$suffix@test.com", 'sifre123456');
+        $client->register("phpunit_csrf_$suffix", "phpunit_csrf_$suffix@test.com", 'Sifre123456!');
 
         // Aynı client'ta csrfToken var, onu geçici olarak silip header'sız isteği doğrula.
         $realToken = $client->csrfToken;
@@ -67,7 +67,7 @@ final class ApiTest extends TestCase
     {
         $suffix = $this->uniqueSuffix();
         $client = new ApiClient(TEST_BASE_URL);
-        $client->register("phpunit_cmt_$suffix", "phpunit_cmt_$suffix@test.com", 'sifre123456');
+        $client->register("phpunit_cmt_$suffix", "phpunit_cmt_$suffix@test.com", 'Sifre123456!');
 
         $contentId = 999100;
         $comment = $client->post('/api/comments.php', ['content_type' => 'movie', 'content_id' => $contentId, 'comment_text' => 'Ana yorum']);
@@ -98,11 +98,11 @@ final class ApiTest extends TestCase
     {
         $suffix = $this->uniqueSuffix();
         $followerClient = new ApiClient(TEST_BASE_URL);
-        $followerReg = $followerClient->register("phpunit_flw_a_$suffix", "phpunit_flw_a_$suffix@test.com", 'sifre123456');
+        $followerReg = $followerClient->register("phpunit_flw_a_$suffix", "phpunit_flw_a_$suffix@test.com", 'Sifre123456!');
         $followerId = $followerReg['data']['user']['id'];
 
         $targetClient = new ApiClient(TEST_BASE_URL);
-        $targetReg = $targetClient->register("phpunit_flw_b_$suffix", "phpunit_flw_b_$suffix@test.com", 'sifre123456');
+        $targetReg = $targetClient->register("phpunit_flw_b_$suffix", "phpunit_flw_b_$suffix@test.com", 'Sifre123456!');
         $targetId = $targetReg['data']['user']['id'];
 
         $follow = $followerClient->post('/api/follow.php', ['target_user_id' => $targetId]);
@@ -122,7 +122,7 @@ final class ApiTest extends TestCase
     {
         $suffix = $this->uniqueSuffix();
         $client = new ApiClient(TEST_BASE_URL);
-        $client->register("phpunit_rate_$suffix", "phpunit_rate_$suffix@test.com", 'sifre123456');
+        $client->register("phpunit_rate_$suffix", "phpunit_rate_$suffix@test.com", 'Sifre123456!');
 
         $contentId = 999200 + random_int(1, 999);
         $save = $client->post('/api/save-content-status.php', [
@@ -146,7 +146,7 @@ final class ApiTest extends TestCase
     {
         $suffix = $this->uniqueSuffix();
         $client = new ApiClient(TEST_BASE_URL);
-        $client->register("phpunit_list_$suffix", "phpunit_list_$suffix@test.com", 'sifre123456');
+        $client->register("phpunit_list_$suffix", "phpunit_list_$suffix@test.com", 'Sifre123456!');
 
         $create = $client->post('/api/custom-lists.php', ['action' => 'create', 'name' => 'PHPUnit Listem', 'description' => 'test']);
         $this->assertTrue($create['data']['success'] ?? false);
@@ -175,10 +175,10 @@ final class ApiTest extends TestCase
     {
         $suffix = $this->uniqueSuffix();
         $senderClient = new ApiClient(TEST_BASE_URL);
-        $senderClient->register("phpunit_msg_a_$suffix", "phpunit_msg_a_$suffix@test.com", 'sifre123456');
+        $senderClient->register("phpunit_msg_a_$suffix", "phpunit_msg_a_$suffix@test.com", 'Sifre123456!');
 
         $recipientClient = new ApiClient(TEST_BASE_URL);
-        $recipientReg = $recipientClient->register("phpunit_msg_b_$suffix", "phpunit_msg_b_$suffix@test.com", 'sifre123456');
+        $recipientReg = $recipientClient->register("phpunit_msg_b_$suffix", "phpunit_msg_b_$suffix@test.com", 'Sifre123456!');
         $recipientId = $recipientReg['data']['user']['id'];
 
         $send = $senderClient->post('/api/messages.php', ['to_user_id' => $recipientId, 'text' => 'Merhaba PHPUnit']);
@@ -202,16 +202,16 @@ final class ApiTest extends TestCase
         $suffix = $this->uniqueSuffix();
         $email = "phpunit_pwd_$suffix@test.com";
         $client = new ApiClient(TEST_BASE_URL);
-        $client->register("phpunit_pwd_$suffix", $email, 'ilkSifre123');
+        $client->register("phpunit_pwd_$suffix", $email, 'IlkSifre123!');
 
-        $wrong = $client->post('/api/change-password.php', ['current_password' => 'yanlis', 'new_password' => 'yeniSifre123']);
+        $wrong = $client->post('/api/change-password.php', ['current_password' => 'yanlis', 'new_password' => 'YeniSifre123!']);
         $this->assertSame(401, $wrong['status']);
 
-        $right = $client->post('/api/change-password.php', ['current_password' => 'ilkSifre123', 'new_password' => 'yeniSifre123']);
+        $right = $client->post('/api/change-password.php', ['current_password' => 'IlkSifre123!', 'new_password' => 'YeniSifre123!']);
         $this->assertTrue($right['data']['success'] ?? false);
 
         $reLogin = new ApiClient(TEST_BASE_URL);
-        $login = $reLogin->login($email, 'yeniSifre123');
+        $login = $reLogin->login($email, 'YeniSifre123!');
         $this->assertTrue($login['data']['success'] ?? false, 'Yeni şifreyle giriş yapılabilmeli');
     }
 }

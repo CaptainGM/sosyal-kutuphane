@@ -44,16 +44,40 @@ jobs:
           MONGO_URI: mongodb://localhost:27017
           MONGO_DB: social_library
         run: |
-          php -S localhost:8000 &
+          # Canlı akış (SSE) açık ve çok süreçli sunucu: akış testi, sayfa isteklerinin bloklanmadığını doğrular.
+          ENABLE_SSE=1 PHP_CLI_SERVER_WORKERS=4 php -S localhost:8000 &
           sleep 2
-          curl -sf http://localhost:8000/api/setup-db.php > /dev/null
+          php api/setup-db.php > /dev/null
 
       - name: PHPUnit testlerini çalıştır
         env:
           MONGO_URI: mongodb://localhost:27017
           MONGO_DB: social_library
+          # Sunucu social_library ile çalışıyor; test istemcisi aynı (tek kullanımlık) CI veritabanına bakar.
+          TEST_MONGO_DB: social_library
           TEST_BASE_URL: http://localhost:8000
         run: vendor/bin/phpunit --testdox
 
       - name: JS (escapeHtml) testlerini çalıştır
         run: node --test tests/escape-html.test.mjs
+
+      - name: Playwright bağımlılıklarını kur
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Tarayıcı ve erişilebilirlik testlerini çalıştır
+        env:
+          E2E_BASE_URL: http://localhost:8000
+          E2E_EXPECT_SSE: '1'
+          MONGO_URI: mongodb://localhost:27017
+          MONGO_DB: social_library
+        run: npx playwright test
+
+      - name: Playwright raporunu yükle
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

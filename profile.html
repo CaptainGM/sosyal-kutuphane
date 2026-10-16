@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#667eea">
+    <meta name="theme-color" content="#05060b">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <title>Profil - Sosyal Kütüphane</title>
     <link rel="stylesheet" href="css/style.css">
@@ -15,26 +15,6 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--color-bg);
-            color: var(--color-text);
-            line-height: 1.6;
-        }
-
-        .logout-btn {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid white;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
         }
 
         .profile-header {
@@ -125,18 +105,30 @@
         }
 
         .edit-profile-btn {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 2px solid white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             padding: 10px 20px;
-            border-radius: 8px;
+            white-space: nowrap;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffffff;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            border-radius: 9999px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             cursor: pointer;
-            transition: all 0.3s;
+            transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
         }
 
         .edit-profile-btn:hover {
-            background: var(--color-surface);
-            color: var(--color-accent);
+            transform: translateY(-2px);
+            background: #ffffff;
+            color: #312e81;
         }
 
         .tab-navigation {
@@ -324,55 +316,31 @@
 
 <body>
     <nav class="navbar">
-        <div class="navbar-inner">
-            <a href="search.html" class="logo" style="display: inline-flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: -0.4px;">
-                <div style="width: 36px; height: 36px; border-radius: 11px; background: linear-gradient(135deg, #6366f1, #8b5cf6, #d946ef); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45); flex-shrink: 0;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="m10 14 5 3-5 3v-6Z"/></svg>
+    <div class="navbar-inner">
+        <a href="search.html" class="logo">
+            <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="m10 14 5 3-5 3v-6Z"/></svg></span>
+            <span>Sosyal Kütüphane</span>
+        </a>
+        <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button>
+        <div class="nav-links">
+            <a href="search.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>Keşfet</a>
+            <a href="feed.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h6"/></svg>Akış</a>
+            <a href="social.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Sosyal</a>
+            <a href="profile.html" class="nav-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profilim</a>
+            <a href="messages.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Mesajlar</a>
+            <div class="nav-icon-wrap">
+                <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="nav-badge" id="notifBadge"></span></button>
+                <div class="nav-panel" id="notifPanel">
+                    <div class="nav-panel-header">Bildirimler</div>
+                    <div class="nav-panel-empty">Yükleniyor...</div>
                 </div>
-                <span>Sosyal Kütüphane</span>
-            </a>
-            <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
-            </button>
-            <div class="nav-links">
-                <a href="search.html" class="nav-link">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                    Keşfet
-                </a>
-                <a href="feed.html" class="nav-link">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
-                    Akış
-                </a>
-                <a href="social.html" class="nav-link">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                    Sosyal
-                </a>
-                <a href="profile.html" class="nav-link active">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                    Profilim
-                </a>
-                <a href="messages.html" class="nav-link">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                    Mesajlar
-                </a>
-                <div class="nav-icon-wrap">
-                    <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-                        <span class="nav-badge" id="notifBadge"></span>
-                    </button>
-                    <div class="nav-panel" id="notifPanel">
-                        <div class="nav-panel-header">Bildirimler</div>
-                        <div class="nav-panel-empty">Yükleniyor...</div>
-                    </div>
-                </div>
-                <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-                </button>
-                <button id="logoutBtn" class="logout-btn" onclick="logout()">Çıkış Yap</button>
             </div>
+            <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir"><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
+            <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
         </div>
-        <span id="userWelcome" style="display:none;"></span>
-    </nav>
+    </div>
+    <span id="userWelcome" style="display:none;"></span>
+</nav>
 
     <div class="profile-header">
         <div class="container">
@@ -419,6 +387,13 @@
     </div>
 
     <div class="container">
+        <section class="badges-section" aria-labelledby="badgesHeading">
+            <div class="section-head">
+                <h2 id="badgesHeading">Rozetler</h2>
+                <p>Kütüphanen büyüdükçe yeni rozetler açılır.</p>
+            </div>
+            <div id="badgesGrid" class="badges-grid"></div>
+        </section>
         <div class="tab-navigation">
             <button class="tab-btn active" onclick="switchTab('library')">📚 Kütüphanem</button>
             <button class="tab-btn" onclick="switchTab('diary')">📔 Günlük</button>
@@ -511,7 +486,7 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Yeni Şifre</label>
-                        <input type="password" id="newPasswordInput" class="form-control" minlength="6" required>
+                        <input type="password" id="newPasswordInput" class="form-control" minlength="8" required placeholder="En az 8 karakter, büyük/küçük harf ve özel karakter">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Yeni Şifre (Tekrar)</label>
@@ -588,6 +563,30 @@
                 </div>
             </div>
 
+            <div class="card csv-import-card" style="padding:25px;">
+                <h3 style="margin-bottom:10px;">🎞️ Letterboxd ve Goodreads'ten Aktar</h3>
+                <p style="color:var(--color-text-muted);font-size:14px;margin-bottom:16px;">Letterboxd'ın <strong>watched.csv</strong>, <strong>ratings.csv</strong> veya <strong>watchlist.csv</strong> dosyasını ya da Goodreads'in CSV dışa aktarımını yükle. Filmler TMDB'de, kitaplar Google Books'ta aranır; eşleşmeyen yapımlar bildirilir.</p>
+                <div class="csv-controls">
+                    <div>
+                        <label class="form-label" for="csvSource">Kaynak</label>
+                        <select id="csvSource" class="form-control">
+                            <option value="letterboxd">Letterboxd</option>
+                            <option value="goodreads">Goodreads</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label" for="csvList">Letterboxd listesi</label>
+                        <select id="csvList" class="form-control">
+                            <option value="watched">İzlediklerim (watched / ratings)</option>
+                            <option value="watchlist">İzleyeceklerim (watchlist)</option>
+                        </select>
+                    </div>
+                </div>
+                <input type="file" id="csvFileInput" accept=".csv,text/csv" class="csv-file-input">
+                <button type="button" class="btn btn-outline" id="csvImportBtn">İçe Aktar</button>
+                <div id="csvImportStatus" class="csv-status" role="status"></div>
+            </div>
+
             <div class="card" style="padding:25px;">
                 <h3 style="margin-bottom:10px;">📤 Kütüphaneni Dışa Aktar</h3>
                 <p style="color:var(--color-text-muted);font-size:14px;margin-bottom:20px;">İzlediklerin, okuduklarım, listelerin ve yorumların tek bir JSON dosyası olarak indirilir.</p>
@@ -627,6 +626,9 @@
                     return;
                 }
                 loadProfile();
+                if (app.currentUser && typeof app.renderBadges === 'function') {
+                    app.renderBadges(document.getElementById('badgesGrid'), app.currentUser.id);
+                }
             }
         }
         if (document.readyState === 'loading') {
@@ -1260,13 +1262,13 @@
                 ${moviesWatched.map(m => {
                 const posterUrl = m.poster_path
                     ? `https://image.tmdb.org/t/p/w300${m.poster_path}`
-                    : 'https://placehold.co/200x300?text=Poster+Yok';
+                    : 'img/no-poster.svg';
                 return `
                         <div class="content-item" onclick="goToDetail('movie', '${m.tmdb_id || m.id}')" style="cursor: pointer;">
                             <img src="${posterUrl}" 
                                  alt="${m.title}" 
                                  style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;"
-                                 onerror="this.src='https://placehold.co/200x300?text=Poster+Yok'">
+                                 onerror="this.src='img/no-poster.svg'">
                             <div class="info" style="padding: 10px;">
                                 <h4 style="font-size: 13px; text-align: center;">${m.title}</h4>
                             </div>
@@ -1281,13 +1283,13 @@
                 ${moviesWatchlist.map(m => {
                 const posterUrl = m.poster_path
                     ? `https://image.tmdb.org/t/p/w300${m.poster_path}`
-                    : 'https://placehold.co/200x300?text=Poster+Yok';
+                    : 'img/no-poster.svg';
                 return `
                         <div class="content-item" onclick="goToDetail('movie', '${m.tmdb_id || m.id}')" style="cursor: pointer;">
                             <img src="${posterUrl}" 
                                  alt="${m.title}" 
                                  style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;"
-                                 onerror="this.src='https://placehold.co/200x300?text=Poster+Yok'">
+                                 onerror="this.src='img/no-poster.svg'">
                             <div class="info" style="padding: 10px;">
                                 <h4 style="font-size: 13px; text-align: center;">${m.title}</h4>
                             </div>
@@ -1304,13 +1306,13 @@
                 ${booksRead.map(b => {
                 const coverUrl = b.cover_url
                     ? b.cover_url.replace('http://', 'https://')
-                    : 'https://placehold.co/200x300?text=Kapak+Yok';
+                    : 'img/no-poster.svg';
                 return `
                         <div class="content-item" onclick="goToDetail('book', '${b.google_books_id || b.id}')" style="cursor: pointer;">
                             <img src="${coverUrl}" 
                                  alt="${b.title}" 
                                  style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;"
-                                 onerror="this.src='https://placehold.co/200x300?text=Kapak+Yok'">
+                                 onerror="this.src='img/no-poster.svg'">
                             <div class="info" style="padding: 10px;">
                                 <h4 style="font-size: 13px; text-align: center;">${b.title}</h4>
                             </div>
@@ -1325,13 +1327,13 @@
                 ${booksReadinglist.map(b => {
                 const coverUrl = b.cover_url
                     ? b.cover_url.replace('http://', 'https://')
-                    : 'https://placehold.co/200x300?text=Kapak+Yok';
+                    : 'img/no-poster.svg';
                 return `
                         <div class="content-item" onclick="goToDetail('book', '${b.google_books_id || b.id}')" style="cursor: pointer;">
                             <img src="${coverUrl}" 
                                  alt="${b.title}" 
                                  style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;"
-                                 onerror="this.src='https://placehold.co/200x300?text=Kapak+Yok'">
+                                 onerror="this.src='img/no-poster.svg'">
                             <div class="info" style="padding: 10px;">
                                 <h4 style="font-size: 13px; text-align: center;">${b.title}</h4>
                             </div>
@@ -1661,7 +1663,7 @@
                 if (contentType === 'movie') {
                     const posterUrl = item.poster_path
                         ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-                        : 'https://placehold.co/150x225?text=Poster+Yok';
+                        : 'img/no-poster.svg';
                     const title = item.title || 'Bilinmiyor';
 
                     html += `
@@ -1675,7 +1677,7 @@
                     const volumeInfo = item.volumeInfo || {};
                     const coverUrl = volumeInfo.imageLinks?.thumbnail
                         ? volumeInfo.imageLinks.thumbnail.replace('http://', 'https://')
-                        : 'https://placehold.co/150x225?text=Kapak+Yok';
+                        : 'img/no-poster.svg';
                     const title = volumeInfo.title || 'Bilinmiyor';
 
                     html += `
@@ -1771,7 +1773,7 @@
                                     <div id="listItemsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px;">
                                         ${items.map(item => `
                                             <div id="item-${item.id}" class="pick-card" style="cursor: default; display: flex; flex-direction: column; gap: 8px;">
-                                                <img src="https://placehold.co/140x200?text=Yükleniyor" alt="${app.escapeHtml(item.content_title)}" class="item-poster" data-item-id="${item.content_id}" data-item-type="${item.content_type}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 5px;">
+                                                <img src="img/no-poster.svg" alt="${app.escapeHtml(item.content_title)}" class="item-poster" data-item-id="${item.content_id}" data-item-type="${item.content_type}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 5px;">
                                                 <div style="font-size: 12px; font-weight: 600; word-break: break-word; line-height: 1.3;">${app.escapeHtml(item.content_title)}</div>
                                                 <button onclick="removeFromList('${listId}', '${item.id}')" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;">🗑️ Çıkar</button>
                                             </div>
@@ -1830,7 +1832,7 @@
         async function loadListItemPosters(items) {
             for (const item of items) {
                 try {
-                    let posterUrl = 'https://placehold.co/140x200?text=Resim+Yok';
+                    let posterUrl = 'img/no-poster.svg';
 
                     if (item.content_type === 'movie') {
                         const movie = await app.getMovieDetail(item.content_id);
@@ -1887,7 +1889,7 @@
             if (app) {
                 app.logout();
             }
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         }
 
     </script>

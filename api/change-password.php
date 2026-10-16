@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/lib/password.php';
 requireLogin();
 requireCsrf();
 
@@ -16,8 +17,9 @@ if (empty($currentPassword) || empty($newPassword)) {
     jsonResponse(['success' => false, 'message' => 'Mevcut ve yeni şifre gereklidir!'], 400);
 }
 
-if (strlen($newPassword) < 6) {
-    jsonResponse(['success' => false, 'message' => 'Yeni şifre en az 6 karakter olmalıdır!'], 400);
+$passwordError = passwordPolicyError(is_string($newPassword) ? $newPassword : '');
+if ($passwordError !== null) {
+    jsonResponse(['success' => false, 'message' => $passwordError], 400);
 }
 
 $user = $db->users->findOne(['_id' => $userId]);

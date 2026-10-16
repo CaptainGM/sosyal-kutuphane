@@ -72,6 +72,19 @@ function requireLogin() {
     if (!isset($_SESSION['user_id'])) {
         jsonResponse(['success' => false, 'message' => 'Giriş yapmalısınız'], 401);
     }
+    enforceAccountStatus();
+}
+
+// Askıya alınan hesap tek merkezden kesilir: oturum kapanır ve giriş gerektiren hiçbir uç (beğeni, mesaj, takip,
+// liste, yorum) çalışmaz. Bedeli istek başına tek bir _id sorgusudur.
+function enforceAccountStatus() {
+    global $db;
+    $user = $db->users->findOne(['_id' => $_SESSION['user_id']], ['projection' => ['status' => 1]]);
+    if ($user && ($user['status'] ?? 'active') === 'suspended') {
+        $_SESSION = [];
+        session_destroy();
+        jsonResponse(['success' => false, 'message' => 'Hesabınız askıya alındı.', 'suspended' => true], 403);
+    }
 }
 
 function getCurrentUserId() {

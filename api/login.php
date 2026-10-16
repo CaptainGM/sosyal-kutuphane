@@ -1,11 +1,12 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/lib/audit.php';
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonResponse(['success' => false, 'message' => 'Geçersiz istek'], 405);
 }
 $input = json_decode(file_get_contents('php://input'), true);
-$email = trim($input['email'] ?? '');
-$password = trim($input['password'] ?? '');
+$email = (is_string($input['email'] ?? null) ? trim($input['email']) : '');
+$password = (is_string($input['password'] ?? null) ? trim($input['password']) : '');
 if (empty($email) || empty($password)) {
     jsonResponse([
         'success' => false,
@@ -27,6 +28,10 @@ if (!$user || !password_verify($password, $user->password)) {
 
 clearLoginAttempts($db, $email);
 
+if (($user->status ?? 'active') === 'suspended') {
+    jsonResponse(['success' => false, 'message' => 'Hesabınız askıya alındı. Destek için yönetici ile iletişime geçin.', 'suspended' => true], 403);
+}
+
 if ($user->totp_enabled ?? false) {
     $_SESSION['pending_2fa_user_id'] = $user->_id;
     jsonResponse([
@@ -39,6 +44,7 @@ if ($user->totp_enabled ?? false) {
 $_SESSION['user_id'] = $user->_id;
 $_SESSION['username'] = $user->username;
 $_SESSION['email'] = $user->email;
+recordLogin($db, $user->_id);
 
 jsonResponse([
     'success' => true,

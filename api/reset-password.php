@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/lib/password.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonResponse(['success' => false, 'message' => 'Geçersiz istek'], 405);
@@ -13,8 +14,13 @@ if (empty($token)) {
     jsonResponse(['success' => false, 'message' => 'Token gereklidir!'], 400);
 }
 
-if (empty($password) || strlen($password) < 6) {
-    jsonResponse(['success' => false, 'message' => 'Şifre en az 6 karakter olmalıdır!'], 400);
+if (empty($password)) {
+    jsonResponse(['success' => false, 'message' => 'Şifre gereklidir!'], 400);
+}
+
+$passwordError = passwordPolicyError(is_string($password) ? $password : '');
+if ($passwordError !== null) {
+    jsonResponse(['success' => false, 'message' => $passwordError], 400);
 }
 
 $reset = $db->password_resets->findOne(['token' => $token]);

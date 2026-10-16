@@ -70,7 +70,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#667eea">
+    <meta name="theme-color" content="#05060b">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <title><?= htmlspecialchars($pageTitle) ?></title>
 
@@ -90,17 +90,6 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--color-bg);
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 15px;
-            align-items: center;
         }
 
         .container {
@@ -189,58 +178,6 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             color: var(--color-text);
         }
 
-        .user-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
-            margin-bottom: 30px;
-        }
-
-        .action-btn {
-            padding: 12px 16px;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            background: rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            color: var(--color-text);
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 13.5px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            user-select: none;
-        }
-
-        .action-btn svg {
-            width: 17px;
-            height: 17px;
-            flex-shrink: 0;
-            stroke-width: 2;
-        }
-
-        .action-btn:hover {
-            background: rgba(255, 255, 255, 0.09);
-            border-color: rgba(255, 255, 255, 0.28);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-            color: #ffffff;
-        }
-
-        .action-btn:active {
-            transform: translateY(0) scale(0.97);
-        }
-
-        .action-btn.active {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
-            border-color: transparent !important;
-            color: #ffffff !important;
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45) !important;
-        }
 
         .rating-input {
             display: flex;
@@ -509,9 +446,6 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 margin: 0 auto;
             }
 
-            .user-actions {
-                grid-template-columns: 1fr;
-            }
 
             .content-title {
                 font-size: 24px;
@@ -672,50 +606,31 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 <body>
 
     <nav class="navbar">
-        <div class="navbar-inner">
-            <a href="search.html" class="logo" style="display: inline-flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: -0.4px;">
-                <div style="width: 36px; height: 36px; border-radius: 11px; background: linear-gradient(135deg, #6366f1, #8b5cf6, #d946ef); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45); flex-shrink: 0;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="m10 14 5 3-5 3v-6Z"/></svg>
+    <div class="navbar-inner">
+        <a href="search.html" class="logo">
+            <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="m10 14 5 3-5 3v-6Z"/></svg></span>
+            <span>Sosyal Kütüphane</span>
+        </a>
+        <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button>
+        <div class="nav-links">
+            <a href="search.html" class="nav-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>Keşfet</a>
+            <a href="feed.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h6"/></svg>Akış</a>
+            <a href="social.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Sosyal</a>
+            <a href="profile.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profilim</a>
+            <a href="messages.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Mesajlar</a>
+            <div class="nav-icon-wrap">
+                <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="nav-badge" id="notifBadge"></span></button>
+                <div class="nav-panel" id="notifPanel">
+                    <div class="nav-panel-header">Bildirimler</div>
+                    <div class="nav-panel-empty">Yükleniyor...</div>
                 </div>
-                <span>Sosyal Kütüphane</span>
-            </a>
-            <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
-            </button>
-            <div class="nav-links">
-                <a href="search.html" class="nav-link">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                    Keşfet
-                </a>
-                <a href="feed.html" class="nav-link">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
-                    Akış
-                </a>
-                <a href="messages.html" class="nav-link">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                    Mesajlar
-                </a>
-                <a href="profile.html" class="nav-link">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                    Profilim
-                </a>
-                <div class="nav-icon-wrap">
-                    <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-                        <span class="nav-badge" id="notifBadge"></span>
-                    </button>
-                    <div class="nav-panel" id="notifPanel">
-                        <div class="nav-panel-header">Bildirimler</div>
-                        <div class="nav-panel-empty">Yükleniyor...</div>
-                    </div>
-                </div>
-                <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-                </button>
-                <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
             </div>
+            <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir"><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
+            <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
         </div>
-    </nav>
+    </div>
+    <span id="userWelcome" style="display:none;"></span>
+</nav>
 
 
     <div class="detail-header">
@@ -997,6 +912,19 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
         });
 
         /* --- Nerede İzlenir? (Watch Providers) --- */
+        // Platformun kendi arama sayfası (başlık bazlı). Eşleşmeyen platformda TMDB'nin bölge sayfası açılır.
+        const PROVIDER_SEARCH_URLS = [
+            { match: /netflix/i, url: (t) => `https://www.netflix.com/search?q=${t}` },
+            { match: /prime video|amazon/i, url: (t) => `https://www.primevideo.com/search?phrase=${t}` },
+            { match: /apple tv|itunes/i, url: (t) => `https://tv.apple.com/search?term=${t}` },
+            { match: /youtube/i, url: (t) => `https://www.youtube.com/results?search_query=${t}` },
+        ];
+
+        function providerLink(providerName, title, fallback) {
+            const rule = PROVIDER_SEARCH_URLS.find(r => r.match.test(providerName || ''));
+            return rule && title ? rule.url(encodeURIComponent(title)) : (fallback || '#');
+        }
+
         function displayWatchProviders(content) {
             const section = document.getElementById('providersSection');
             const list = document.getElementById('providersList');
@@ -1049,14 +977,17 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 heading.innerHTML = `📺 Nerede İzlenir? ${isFallbackUS ? '<span style="font-size:11px;font-weight:normal;opacity:0.7;">(Global)</span>' : '(Türkiye)'}`;
             }
 
+            const title = content.title || content.name || '';
+            const regionLink = trData.link || '';
             list.innerHTML = all.slice(0, 8).map(p => {
                 const logoUrl = p.logo_path ? `https://image.tmdb.org/t/p/w92${p.logo_path}` : '';
+                const href = providerLink(p.provider_name, title, regionLink);
                 return `
-                    <div class="provider-badge" title="${app.escapeHtml(p.provider_name)}">
+                    <a class="provider-badge" href="${app.escapeHtml(href)}" target="_blank" rel="noopener noreferrer" title="${app.escapeHtml(p.provider_name)} üzerinde ara">
                         ${logoUrl ? `<img src="${logoUrl}" class="provider-logo" alt="${app.escapeHtml(p.provider_name)}">` : ''}
                         <span>${app.escapeHtml(p.provider_name)}</span>
                         <span class="provider-type-tag">${p.typeLabel}</span>
-                    </div>
+                    </a>
                 `;
             }).join('');
 
@@ -1256,7 +1187,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                     items = (data.results || []).slice(0, 12).map(item => ({
                         id: item.id,
                         title: item.title || item.name || 'Bilinmiyor',
-                        poster: item.poster_path ? `https://image.tmdb.org/t/p/w200${item.poster_path}` : 'https://placehold.co/110x160?text=Yok',
+                        poster: item.poster_path ? `https://image.tmdb.org/t/p/w200${item.poster_path}` : 'img/no-poster.svg',
                         type
                     }));
                 } else {
@@ -1273,7 +1204,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                                 title: b.volumeInfo?.title || 'Bilinmiyor',
                                 poster: b.volumeInfo?.imageLinks?.thumbnail
                                     ? b.volumeInfo.imageLinks.thumbnail.replace('http://', 'https://')
-                                    : 'https://placehold.co/110x160?text=Kitap',
+                                    : 'img/no-poster.svg',
                                 type: 'book'
                             }));
                     }
@@ -1283,7 +1214,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 
                 scroll.innerHTML = items.map(item => `
                     <div class="reco-card" onclick="goToDetail('${item.type}', '${item.id}')">
-                        <img src="${item.poster}" alt="${app.escapeHtml(item.title)}" loading="lazy" onerror="this.src='https://placehold.co/110x160?text=Yok'">
+                        <img src="${item.poster}" alt="${app.escapeHtml(item.title)}" loading="lazy" onerror="this.src='img/no-poster.svg'">
                         <div class="reco-card-title">${app.escapeHtml(item.title)}</div>
                     </div>
                 `).join('');
@@ -1375,7 +1306,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 
             const posterUrl = movie.poster_path
                 ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                : 'https://placehold.co/300x450?text=Poster+Yok';
+                : 'img/no-poster.svg';
             document.getElementById('contentPoster').src = posterUrl;
 
             const year = movie.release_date ? movie.release_date.split('-')[0] : 'Bilinmiyor';
@@ -1429,7 +1360,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 
             const posterUrl = series.poster_path
                 ? `https://image.tmdb.org/t/p/w500${series.poster_path}`
-                : 'https://placehold.co/300x450?text=Poster+Yok';
+                : 'img/no-poster.svg';
             document.getElementById('contentPoster').src = posterUrl;
 
             const year = series.first_air_date ? series.first_air_date.split('-')[0] : 'Bilinmiyor';
@@ -1504,7 +1435,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 
             const coverUrl = volumeInfo.imageLinks?.thumbnail
                 ? volumeInfo.imageLinks.thumbnail.replace('http://', 'https://')
-                : 'https://placehold.co/300x450?text=Kapak+Yok';
+                : 'img/no-poster.svg';
             document.getElementById('contentPoster').src = coverUrl;
 
             const authors = volumeInfo.authors ? volumeInfo.authors.join(', ') : 'Bilinmiyor';
@@ -1863,7 +1794,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                             ` : safeText;
                         const commentBodyHtml = comment.has_spoiler ? `
                             <div class="spoiler-wrap" id="spoiler-${comment.id}">
-                                <button type="button" class="spoiler-reveal-btn" onclick="document.getElementById('spoiler-${comment.id}').classList.add('spoiler-revealed')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg><span>Spoiler İçerik — Görmek İçin Tıklayın</span></button>
+                                <button type="button" class="spoiler-reveal-btn" onclick="document.getElementById('spoiler-${comment.id}').classList.add('spoiler-revealed')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg><span>Spoileri gör</span></button>
                                 <div class="spoiler-content">${commentBodyInner}</div>
                             </div>
                         ` : commentBodyInner;
@@ -1934,7 +1865,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                             const safeReplyText = app.escapeHtml(reply.comment_text);
                             const replyBodyHtml = reply.has_spoiler ? `
                                 <div class="spoiler-wrap" id="spoiler-reply-${reply.id}">
-                                    <button type="button" class="spoiler-reveal-btn" onclick="document.getElementById('spoiler-reply-${reply.id}').classList.add('spoiler-revealed')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg><span>Spoiler İçerik — Görmek İçin Tıklayın</span></button>
+                                    <button type="button" class="spoiler-reveal-btn" onclick="document.getElementById('spoiler-reply-${reply.id}').classList.add('spoiler-revealed')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg><span>Spoileri gör</span></button>
                                     <div class="spoiler-content">${safeReplyText}</div>
                                 </div>
                             ` : safeReplyText;
@@ -2241,7 +2172,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
         async function showCustomListModal() {
             if (!app?.currentUser) {
                 app.toast('Bu özellik için giriş yapmalısınız!', 'error');
-                window.location.href = 'login.html';
+                window.location.href = 'index.html';
                 return;
             }
 
@@ -2346,7 +2277,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             if (app) {
                 app.logout();
             }
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         }
     </script>
 </body>

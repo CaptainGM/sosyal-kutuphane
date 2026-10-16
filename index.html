@@ -5,194 +5,277 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#090d16">
+    <meta name="theme-color" content="#05060b">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-    <title>Sosyal Kütüphane - Giriş & Kayıt</title>
+    <title>Giriş & Kayıt - Sosyal Kütüphane</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* Giriş sayfasına özel stiller. Ortak token'lar ve bileşenler css/style.css içinde. */
 
-        body {
-            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #030712;
-            background-image: 
-                radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.25) 0%, rgba(139, 92, 246, 0.1) 35%, transparent 70%),
-                radial-gradient(rgba(255, 255, 255, 0.08) 1.2px, transparent 1.2px);
-            background-size: 100% 100%, 32px 32px;
-            background-position: center top, 0 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 24px;
-            position: relative;
-            overflow-x: hidden;
-            color: #f8fafc;
-        }
-
-        /* Modern atmosferik ortam ışıkları */
-        .ambient-mesh {
-            position: fixed;
-            inset: 0;
-            overflow: hidden;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .ambient-orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(85px);
-            opacity: 0.5;
-            will-change: transform;
-            animation: orbFloat 18s ease-in-out infinite alternate;
-        }
-
-        .ambient-orb-1 {
-            width: 550px;
-            height: 550px;
-            background: radial-gradient(circle, #6366f1 0%, rgba(99, 102, 241, 0) 70%);
-            top: -120px;
-            left: -120px;
-            animation-duration: 22s;
-        }
-
-        .ambient-orb-2 {
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, #d946ef 0%, rgba(217, 70, 239, 0) 70%);
-            bottom: -150px;
-            right: -120px;
-            animation-duration: 26s;
-            animation-delay: -5s;
-        }
-
-        .ambient-orb-3 {
-            width: 450px;
-            height: 450px;
-            background: radial-gradient(circle, #06b6d4 0%, rgba(6, 182, 212, 0) 70%);
-            top: 40%;
-            left: 55%;
-            opacity: 0.35;
-            animation-duration: 20s;
-            animation-delay: -9s;
-        }
-
-        @keyframes orbFloat {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(35px, -25px) scale(1.08); }
-            100% { transform: translate(-25px, 30px) scale(0.94); }
-        }
-
-        /* Ana Glassmorphism Kartı */
-        .auth-container {
+        .auth-shell {
             position: relative;
             z-index: 1;
+            width: min(1180px, calc(100% - 40px));
+            min-height: 100vh;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+            align-items: center;
+            gap: 56px;
+            padding: 48px 0;
+        }
+
+        /* --- Sol: hero --- */
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            padding: 7px 14px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-pill);
+            background: rgba(var(--color-accent-rgb), 0.08);
+            color: var(--color-text-muted);
+            font-size: 12.5px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        .eyebrow .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--color-accent-gradient);
+            box-shadow: 0 0 12px rgba(var(--color-accent-rgb), 0.9);
+        }
+
+        .hero-title {
+            margin-top: 22px;
+            font-size: clamp(42px, 6vw, 76px);
+            font-weight: 800;
+            line-height: 1.02;
+            letter-spacing: -0.04em;
+        }
+
+        .hero-lead {
+            max-width: 520px;
+            margin-top: 18px;
+            font-size: 16.5px;
+            color: var(--color-text-muted);
+        }
+
+        .feature-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 26px;
+            list-style: none;
+        }
+
+        .feature-chips li {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-pill);
+            background: var(--color-surface);
+            color: var(--color-text-muted);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .feature-chips svg {
+            width: 15px;
+            height: 15px;
+            color: var(--color-accent);
+        }
+
+        /* --- 3D poster halkası (CSS 3D, WebGL gerektirmez) --- */
+        .stage3d {
+            position: relative;
+            height: 300px;
+            margin-top: 40px;
+            perspective: 1100px;
+        }
+
+        .ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 170px;
+            height: 240px;
+            margin: -120px 0 0 -85px;
+            transform-style: preserve-3d;
+            animation: ring-spin 34s linear infinite;
+        }
+
+        .poster {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 16px;
+            overflow: hidden;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            background: var(--poster);
+            color: #ffffff;
+            box-shadow: 0 30px 60px -22px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+            transform: rotateY(calc(var(--i) * 72deg)) translateZ(240px);
+            backface-visibility: hidden;
+        }
+
+        .poster::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 40%);
+            pointer-events: none;
+        }
+
+        .poster-kind {
+            position: relative;
+            z-index: 1;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            opacity: 0.85;
+        }
+
+        .poster-body {
+            position: relative;
+            z-index: 1;
+        }
+
+        .poster strong {
+            display: block;
+            font-size: 17px;
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.01em;
+        }
+
+        .poster small {
+            font-size: 12px;
+            opacity: 0.85;
+        }
+
+        @keyframes ring-spin {
+            from { transform: rotateY(0deg); }
+            to { transform: rotateY(360deg); }
+        }
+
+        /* --- Sağ: cam giriş kartı --- */
+        .auth-card-wrap {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .auth-card {
+            position: relative;
             width: 100%;
-            max-width: 480px;
-            background: rgba(15, 23, 42, 0.82);
-            backdrop-filter: blur(28px);
-            -webkit-backdrop-filter: blur(28px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 24px;
-            padding: 40px 36px;
-            box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.85),
-                        0 0 50px -10px rgba(99, 102, 241, 0.2),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.22);
-            transition: all 0.3s ease;
+            max-width: 440px;
+            padding: 34px 32px 30px;
+            border: 1px solid var(--color-border);
+            border-radius: 26px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015)), var(--color-surface);
+            box-shadow: var(--shadow-hover), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(24px) saturate(150%);
+            -webkit-backdrop-filter: blur(24px) saturate(150%);
         }
 
-        /* Üst Logo ve Başlık */
-        .auth-header {
-            text-align: center;
-            margin-bottom: 28px;
+        /* Kartın kenarında ince gradyan çizgi. */
+        .auth-card::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            padding: 1px;
+            border-radius: inherit;
+            background: var(--color-accent-gradient);
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.5;
+            pointer-events: none;
         }
 
-        .brand-icon-wrap {
-            width: 58px;
-            height: 58px;
-            margin: 0 auto 16px;
-            border-radius: 18px;
-            background: linear-gradient(135deg, #6366f1, #8b5cf6, #d946ef);
+        .auth-brand {
             display: flex;
             align-items: center;
-            justify-content: center;
-            box-shadow: 0 10px 25px -4px rgba(99, 102, 241, 0.5),
-                        inset 0 1px 1px rgba(255, 255, 255, 0.4);
+            gap: 14px;
+            margin-bottom: 26px;
         }
 
-        .brand-icon-wrap svg {
-            width: 30px;
-            height: 30px;
-            color: #ffffff;
+        .auth-brand .logo-mark {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
         }
 
-        .auth-title {
-            font-size: 24px;
+        .auth-brand .logo-mark svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .auth-brand-name {
+            font-size: 17px;
             font-weight: 800;
-            letter-spacing: -0.5px;
-            color: #ffffff;
-            margin-bottom: 6px;
+            letter-spacing: -0.02em;
         }
 
-        .auth-subtitle {
-            font-size: 13.5px;
-            color: #94a3b8;
-            font-weight: 500;
+        .auth-brand-sub {
+            font-size: 13px;
+            color: var(--color-text-muted);
         }
 
-        /* Segmented Tab Seçici (Giriş / Kayıt) */
         .auth-tabs {
             display: flex;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.07);
-            border-radius: 14px;
-            padding: 4px;
-            margin-bottom: 24px;
             gap: 4px;
+            margin-bottom: 24px;
+            padding: 4px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            background: var(--color-surface-2);
         }
 
         .auth-tab-btn {
             flex: 1;
-            padding: 10px 14px;
-            background: transparent;
-            border: none;
-            color: #94a3b8;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 7px;
+            gap: 8px;
+            padding: 10px 14px;
+            border: 0;
+            border-radius: 10px;
+            background: transparent;
+            color: var(--color-text-muted);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .auth-tab-btn svg {
+            width: 16px;
+            height: 16px;
         }
 
         .auth-tab-btn.active {
-            background: rgba(255, 255, 255, 0.1);
-            color: #ffffff;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            background: var(--color-surface);
+            color: var(--color-text);
+            box-shadow: var(--shadow-sm), inset 0 0 0 1px rgba(var(--color-accent-rgb), 0.3);
         }
 
-        .auth-tab-btn:hover:not(.active) {
-            color: #e2e8f0;
-            background: rgba(255, 255, 255, 0.04);
-        }
-
-        /* Form Alanları */
         .form-container {
             display: none;
         }
 
         .form-container.active {
             display: block;
-            animation: fadeInTab 0.25s ease-out;
+            animation: fadeInTab 0.3s ease-out;
         }
 
         @keyframes fadeInTab {
@@ -202,14 +285,6 @@
 
         .form-group {
             margin-bottom: 18px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 7px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #cbd5e1;
         }
 
         .input-wrapper {
@@ -223,7 +298,7 @@
             left: 14px;
             width: 18px;
             height: 18px;
-            color: #64748b;
+            color: var(--color-text-faint);
             pointer-events: none;
             transition: color 0.2s;
             z-index: 2;
@@ -231,206 +306,198 @@
 
         .input-field {
             width: 100%;
-            padding: 13px 16px 13px 44px;
-            background: rgba(10, 15, 26, 0.65) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            border-radius: 12px;
+            padding: 13px 16px;
             font-size: 14px;
-            color: #ffffff !important;
-            font-family: inherit;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .input-field::placeholder {
-            color: #475569 !important;
+        .input-wrapper .input-field {
+            padding-left: 44px;
         }
 
-        .input-field:focus {
-            outline: none;
-            border-color: #8b5cf6 !important;
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25) !important;
-            background: rgba(15, 23, 42, 0.85) !important;
-        }
-
-        .input-field:focus ~ .input-icon,
         .input-wrapper:focus-within .input-icon {
-            color: #a78bfa;
+            color: var(--color-accent);
         }
 
-        /* Şifremi unuttum satırı */
+        .input-field.otp {
+            padding: 14px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 8px;
+        }
+
         .form-meta {
             display: flex;
             justify-content: flex-end;
-            margin-top: -6px;
-            margin-bottom: 20px;
+            margin: -6px 0 20px;
         }
 
-        .meta-link {
-            color: #a78bfa;
-            text-decoration: none;
+        .meta-link,
+        .guest-link {
+            color: var(--color-accent);
             font-size: 13px;
-            font-weight: 500;
+            font-weight: 600;
+            text-decoration: none;
             transition: color 0.2s;
         }
 
-        .meta-link:hover {
-            color: #c4b5fd;
-            text-decoration: underline;
+        .meta-link:hover,
+        .guest-link:hover {
+            color: var(--color-text);
         }
 
-        /* Modern OpenSourceUI Stili Ana Buton */
-        .btn-submit {
+        .btn-block {
             width: 100%;
-            padding: 13.5px 20px;
-            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-            color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            border-radius: 12px;
-            font-size: 14.5px;
-            font-weight: 600;
-            letter-spacing: -0.2px;
-            cursor: pointer;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            position: relative;
-            overflow: hidden;
         }
 
-        .btn-submit::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+        .btn-block + .btn-block {
+            margin-top: 10px;
         }
 
-        .btn-submit:hover {
-            background: linear-gradient(180deg, #334155 0%, #1e293b 100%);
-            border-color: rgba(255, 255, 255, 0.35);
-            transform: translateY(-1px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 20px rgba(99, 102, 241, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        .btn-submit svg {
+            width: 18px;
+            height: 18px;
         }
 
-        .btn-submit:active {
-            transform: translateY(0) scale(0.98);
-        }
-
-        /* Caps Lock Uyarı Rozeti */
         .caps-warning {
             display: inline-flex;
             align-items: center;
             gap: 6px;
             margin-top: 6px;
+            padding: 4px 10px;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 6px;
+            background: rgba(245, 158, 11, 0.1);
+            color: #d97706;
             font-size: 12px;
             font-weight: 600;
-            color: #f59e0b;
-            background: rgba(245, 158, 11, 0.1);
-            border: 1px solid rgba(245, 158, 11, 0.25);
-            padding: 4px 10px;
-            border-radius: 6px;
             animation: fadeInTab 0.15s ease-out;
         }
 
-        /* Demo Hızlı Giriş Kutusu */
+        :root[data-theme="dark"] .caps-warning {
+            color: #fbbf24;
+        }
+
+        .alert-box {
+            display: none;
+            margin-bottom: 18px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-size: 13.5px;
+            font-weight: 500;
+            animation: fadeInTab 0.2s ease-out;
+        }
+
+        .form-head {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-head h2 {
+            font-size: 21px;
+            font-weight: 800;
+        }
+
+        .form-head p {
+            margin-top: 6px;
+            font-size: 13.5px;
+            color: var(--color-text-muted);
+        }
+
+        .form-head .lock-badge {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 12px;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            background: rgba(var(--color-accent-rgb), 0.14);
+            border: 1px solid rgba(var(--color-accent-rgb), 0.35);
+            color: var(--color-accent);
+        }
+
+        .form-head .lock-badge svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        /* Demo hızlı giriş */
         .demo-box {
             margin-top: 24px;
             padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid var(--color-border);
             text-align: center;
         }
 
         .demo-title {
-            font-size: 12px;
-            font-weight: 600;
-            color: #94a3b8;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
+            margin-bottom: 12px;
+            color: var(--color-text-muted);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
         }
 
         .demo-title svg {
             width: 14px;
             height: 14px;
-            color: #f59e0b;
+            color: var(--color-warm);
         }
 
         .demo-chips {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
             justify-content: center;
+            gap: 8px;
         }
 
         .demo-chip {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #cbd5e1;
-            padding: 7px 12px;
-            border-radius: 20px;
-            font-size: 12.5px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            padding: 7px 14px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-pill);
+            background: var(--color-surface-2);
+            color: var(--color-text);
+            font-family: inherit;
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, background-color 0.2s;
         }
 
         .demo-chip:hover {
-            background: rgba(255, 255, 255, 0.12);
-            border-color: rgba(255, 255, 255, 0.25);
-            color: #ffffff;
             transform: translateY(-1px);
+            border-color: rgba(var(--color-accent-rgb), 0.5);
         }
 
         .demo-chip:active {
-            transform: translateY(0) scale(0.96);
+            transform: translateY(1px) scale(0.97);
         }
 
-        .demo-chip.chip-admin {
-            border-color: rgba(245, 158, 11, 0.3);
-            background: rgba(245, 158, 11, 0.08);
-            color: #fbbf24;
+
+        .demo-note {
+            margin-top: 10px;
+            font-size: 11.5px;
+            color: var(--color-text-faint);
         }
 
-        .demo-chip.chip-admin:hover {
-            background: rgba(245, 158, 11, 0.18);
-            border-color: rgba(245, 158, 11, 0.5);
-            color: #fef3c7;
-        }
-
-        /* Giriş Yapmadan Gez Bağlantısı */
         .guest-box {
-            text-align: center;
             margin-top: 18px;
+            text-align: center;
         }
 
         .guest-link {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            color: #94a3b8;
-            text-decoration: none;
-            font-size: 13.5px;
-            font-weight: 500;
-            transition: all 0.2s;
             padding: 6px 12px;
             border-radius: 8px;
-        }
-
-        .guest-link:hover {
-            color: #ffffff;
-            background: rgba(255, 255, 255, 0.04);
         }
 
         .guest-link svg {
@@ -443,268 +510,297 @@
             transform: translateX(3px);
         }
 
-        /* Hata ve Başarı Bildirimleri */
-        .alert-box {
-            padding: 12px 14px;
-            border-radius: 10px;
-            font-size: 13.5px;
-            font-weight: 500;
-            margin-bottom: 18px;
-            display: none;
-            animation: fadeInTab 0.2s ease-out;
-        }
-
-        .alert-danger {
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #fca5a5;
-        }
-
-        .alert-success {
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: #6ee7b7;
-        }
-
-        .btn-ghost {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #cbd5e1;
-            padding: 12px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
+        /* 3D arka plan canvas'ı: tam ekran, içeriğin altında, tıklamaları geçirir. */
+        #scene3d {
+            position: fixed;
+            inset: 0;
             width: 100%;
-            transition: all 0.2s;
-            margin-top: 10px;
+            height: 100%;
+            z-index: 0;
+            display: block;
+            pointer-events: none;
         }
 
-        .btn-ghost:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.2);
-            color: #ffffff;
+        @media (max-width: 899px) {
+            .auth-shell {
+                grid-template-columns: minmax(0, 1fr);
+                gap: 28px;
+                padding: 28px 0 40px;
+            }
+
+            .auth-card-wrap {
+                min-width: 0;
+                order: -1;
+                justify-content: center;
+            }
+
+            .hero-title {
+                font-size: 40px;
+            }
+
+            .stage3d {
+                height: 230px;
+                margin-top: 26px;
+                transform: scale(0.8);
+                transform-origin: center top;
+                margin-bottom: -40px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .auth-card {
+                padding: 28px 22px 24px;
+            }
+
+            .auth-shell {
+                width: calc(100% - 28px);
+            }
         }
     </style>
 </head>
 
 <body>
-    <!-- motionsites.ai stili arka plan ışıkları -->
-    <div class="ambient-mesh">
-        <div class="ambient-orb ambient-orb-1"></div>
-        <div class="ambient-orb ambient-orb-2"></div>
-        <div class="ambient-orb ambient-orb-3"></div>
-    </div>
+    <main class="auth-shell">
+        <section class="auth-hero">
+            <span class="eyebrow reveal"><span class="dot"></span>Film · Dizi · Kitap</span>
+            <h1 class="hero-title reveal">Kütüphaneni<br><span class="gradient-text">sahneye çıkar.</span></h1>
+            <p class="hero-lead reveal">İzlediklerini, okuduklarını ve puanlarını tek yerde topla. Arkadaşlarını takip et, nerede izleyeceğini bul, hikâye kartını paylaş.</p>
 
-    <div class="auth-container">
-        <!-- Logo ve Başlık -->
-        <div class="auth-header">
-            <div class="brand-icon-wrap">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
-                    <path d="M6 6h10"/>
-                    <path d="M6 10h10"/>
-                    <path d="m10 14 5 3-5 3v-6Z"/>
-                </svg>
+            <div class="stage3d reveal" aria-hidden="true">
+                <div class="ring">
+                    <div class="poster" style="--i: 0; --poster: linear-gradient(160deg, #4f46e5, #7c3aed 55%, #db2777);">
+                        <span class="poster-kind">Film</span>
+                        <div class="poster-body"><strong>Dune</strong><small>Puan 9.1 · 2021</small></div>
+                    </div>
+                    <div class="poster" style="--i: 1; --poster: linear-gradient(160deg, #0891b2, #2563eb 60%, #7c3aed);">
+                        <span class="poster-kind">Dizi</span>
+                        <div class="poster-body"><strong>Dark</strong><small>3 sezon · Netflix</small></div>
+                    </div>
+                    <div class="poster" style="--i: 2; --poster: linear-gradient(160deg, #f59e0b, #ef4444 60%, #9d174d);">
+                        <span class="poster-kind">Kitap</span>
+                        <div class="poster-body"><strong>Sapiens</strong><small>Okudum · 9/10</small></div>
+                    </div>
+                    <div class="poster" style="--i: 3; --poster: linear-gradient(160deg, #10b981, #0ea5e9 60%, #4338ca);">
+                        <span class="poster-kind">Film</span>
+                        <div class="poster-body"><strong>Interstellar</strong><small>İzledim · 9.4</small></div>
+                    </div>
+                    <div class="poster" style="--i: 4; --poster: linear-gradient(160deg, #e11d48, #a21caf 60%, #1e1b4b);">
+                        <span class="poster-kind">Kitap</span>
+                        <div class="poster-body"><strong>Kürk Mantolu Madonna</strong><small>Okuyacaklarım</small></div>
+                    </div>
+                </div>
             </div>
-            <h1 class="auth-title">Sosyal Kütüphane</h1>
-            <p class="auth-subtitle">Film, dizi ve kitap tutkunlarının buluşma noktası</p>
-        </div>
 
-        <!-- Sekme Geçişi (Giriş / Kayıt) -->
-        <div class="auth-tabs" id="authTabsNav">
-            <button type="button" class="auth-tab-btn active" id="tabBtnLogin" onclick="showLogin()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
-                Giriş Yap
-            </button>
-            <button type="button" class="auth-tab-btn" id="tabBtnRegister" onclick="showRegister()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
-                Kayıt Ol
-            </button>
-        </div>
+            <ul class="feature-chips reveal">
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="15" x="2" y="7" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>Nerede izlenir?</li>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>Spoiler koruması</li>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="4"/><circle cx="12" cy="12" r="4"/></svg>Hikâye kartı</li>
+            </ul>
+        </section>
 
-        <!-- 1. GİRİŞ FORMU -->
-        <div class="form-container active" id="loginForm">
-            <div class="alert-box alert-danger" id="loginError"></div>
-            <div class="alert-box alert-success" id="loginSuccess"></div>
-
-            <form onsubmit="handleLogin(event)">
-                <div class="form-group">
-                    <label class="form-label" for="loginEmail">E-posta Adresi</label>
-                    <div class="input-wrapper">
-                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                        <input type="email" class="input-field" id="loginEmail" placeholder="ornek@email.com" required autocomplete="email">
+        <section class="auth-card-wrap reveal">
+            <div class="auth-card" data-tilt>
+                <div class="auth-brand">
+                    <span class="logo-mark">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="m10 14 5 3-5 3v-6Z"/></svg>
+                    </span>
+                    <div>
+                        <div class="auth-brand-name">Sosyal Kütüphane</div>
+                        <div class="auth-brand-sub">Film, dizi ve kitap tutkunlarının alanı</div>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label" for="loginPassword">Şifre</label>
-                    <div class="input-wrapper">
-                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                        <input type="password" class="input-field" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
-                    </div>
-                    <div id="loginCapsLockWarning" class="caps-warning" style="display: none;">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v10"/><path d="m16 8-4-4-4 4"/><rect width="18" height="6" x="3" y="16" rx="2"/></svg>
-                        <span>Caps Lock açık</span>
-                    </div>
-                </div>
-
-                <div class="form-meta">
-                    <a href="#" class="meta-link" onclick="showForgotPassword(); return false;">Şifremi Unuttum?</a>
-                </div>
-
-                <button type="submit" class="btn-submit" id="loginSubmitBtn">
-                    <span>Giriş Yap</span>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                </button>
-            </form>
-
-            <!-- Hızlı Demo Girişi -->
-            <div class="demo-box">
-                <div class="demo-title">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                    Tek Tıkla Demo Girişi
-                </div>
-                <div class="demo-chips">
-                    <button type="button" class="demo-chip chip-admin" onclick="quickLogin('admin@test.com', '123456', true)" title="Yönetici Hesabı">
-                        👑 Admin
+                <!-- Sekme geçişi (Giriş / Kayıt) -->
+                <div class="auth-tabs" id="authTabsNav">
+                    <button type="button" class="auth-tab-btn active" id="tabBtnLogin" onclick="showLogin()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
+                        Giriş Yap
                     </button>
-                    <button type="button" class="demo-chip" onclick="quickLogin('ahmet@test.com', '123456', true)" title="Örnek Kullanıcı">
-                        👤 Ahmet
-                    </button>
-                    <button type="button" class="demo-chip" onclick="quickLogin('ayse@test.com', '123456', true)" title="Örnek Kullanıcı">
-                        ✨ Ayşe
-                    </button>
-                    <button type="button" class="demo-chip" onclick="quickLogin('test@test.com', '123456', true)" title="Test Hesabı">
-                        🧪 Test
+                    <button type="button" class="auth-tab-btn" id="tabBtnRegister" onclick="showRegister()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+                        Kayıt Ol
                     </button>
                 </div>
-                <p style="font-size: 11.5px; color: #64748b; margin-top: 8px;">Tüm demo hesapların varsayılan şifresi: <code>123456</code></p>
+
+                <!-- 1. GİRİŞ FORMU -->
+                <div class="form-container active" id="loginForm">
+                    <div class="alert-box alert-danger" id="loginError"></div>
+                    <div class="alert-box alert-success" id="loginSuccess"></div>
+
+                    <form onsubmit="handleLogin(event)">
+                        <div class="form-group">
+                            <label class="form-label" for="loginEmail">E-posta Adresi</label>
+                            <div class="input-wrapper">
+                                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                                <input type="email" class="input-field" id="loginEmail" placeholder="ornek@email.com" required autocomplete="email">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="loginPassword">Şifre</label>
+                            <div class="input-wrapper">
+                                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                <input type="password" class="input-field" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+                            </div>
+                            <div id="loginCapsLockWarning" class="caps-warning" style="display: none;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v10"/><path d="m16 8-4-4-4 4"/><rect width="18" height="6" x="3" y="16" rx="2"/></svg>
+                                <span>Caps Lock açık</span>
+                            </div>
+                        </div>
+
+                        <div class="form-meta">
+                            <a href="#" class="meta-link" onclick="showForgotPassword(); return false;">Şifremi Unuttum?</a>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block btn-submit" id="loginSubmitBtn">
+                            <span>Giriş Yap</span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                        </button>
+                    </form>
+
+                    <!-- Hızlı demo girişi -->
+                    <div class="demo-box">
+                        <div class="demo-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                            Tek Tıkla Demo Girişi
+                        </div>
+                        <div class="demo-chips">
+                            <button type="button" class="demo-chip" onclick="quickLogin('ahmet@test.com', '123456', true)" title="Örnek Kullanıcı">Ahmet</button>
+                            <button type="button" class="demo-chip" onclick="quickLogin('ayse@test.com', '123456', true)" title="Örnek Kullanıcı">Ayşe</button>
+                            <button type="button" class="demo-chip" onclick="quickLogin('test@test.com', '123456', true)" title="Test Hesabı">Test</button>
+                        </div>
+                        <p class="demo-note">Tüm demo hesapların varsayılan şifresi: <code>123456</code></p>
+                    </div>
+
+                    <div class="guest-box">
+                        <a href="search.html" class="guest-link">
+                            <span>Giriş yapmadan keşfet</span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 2. KAYIT FORMU -->
+                <div class="form-container" id="registerForm">
+                    <div class="alert-box alert-danger" id="registerError"></div>
+                    <div class="alert-box alert-success" id="registerSuccess"></div>
+
+                    <form onsubmit="handleRegister(event)">
+                        <div class="form-group">
+                            <label class="form-label" for="registerUsername">Kullanıcı Adı</label>
+                            <div class="input-wrapper">
+                                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                <input type="text" class="input-field" id="registerUsername" placeholder="kullanici_adi" required minlength="3">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="registerEmail">E-posta Adresi</label>
+                            <div class="input-wrapper">
+                                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                                <input type="email" class="input-field" id="registerEmail" placeholder="ornek@email.com" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="registerPassword">Şifre</label>
+                            <div class="input-wrapper">
+                                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                <input type="password" class="input-field" id="registerPassword" placeholder="En az 8 karakter" required minlength="8" aria-describedby="registerPasswordRules">
+                            </div>
+                            <ul class="pw-rules" id="registerPasswordRules" aria-live="polite">
+                                <li data-rule="length">En az 8 karakter</li>
+                                <li data-rule="upper">En az bir büyük harf</li>
+                                <li data-rule="lower">En az bir küçük harf</li>
+                                <li data-rule="special">En az bir özel karakter (! @ # ? vb.)</li>
+                            </ul>
+                            <div id="registerCapsLockWarning" class="caps-warning" style="display: none;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v10"/><path d="m16 8-4-4-4 4"/><rect width="18" height="6" x="3" y="16" rx="2"/></svg>
+                                <span>Caps Lock açık</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="registerPasswordConfirm">Şifre Tekrarı</label>
+                            <div class="input-wrapper">
+                                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                <input type="password" class="input-field" id="registerPasswordConfirm" placeholder="Şifrenizi doğrulayın" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block btn-submit">
+                            <span>Hesap Oluştur</span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 3. İKİ ADIMLI DOĞRULAMA -->
+                <div class="form-container" id="twoFactorForm">
+                    <div class="form-head">
+                        <div class="lock-badge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        </div>
+                        <h2>İki Adımlı Doğrulama</h2>
+                        <p>Authenticator uygulamanızdaki 6 haneli kodu giriniz.</p>
+                    </div>
+
+                    <div class="alert-box alert-danger" id="twoFactorError"></div>
+
+                    <form onsubmit="handleVerify2fa(event)">
+                        <div class="form-group">
+                            <input type="text" class="input-field otp" id="twoFactorCode" placeholder="000000" autocomplete="one-time-code" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block btn-submit">Doğrula ve Giriş Yap</button>
+                        <button type="button" class="btn btn-glass btn-block" onclick="showLogin()">Girişe Dön</button>
+                    </form>
+                </div>
+
+                <!-- 4. KAYIT E-POSTA DOĞRULAMA -->
+                <div class="form-container" id="registerVerifyForm">
+                    <div class="form-head">
+                        <h2>E-postanı Doğrula</h2>
+                        <p><span id="registerVerifyEmailText">E-posta adresine</span> gelen 6 haneli kodu gir.</p>
+                    </div>
+
+                    <div class="alert-box alert-danger" id="registerVerifyError"></div>
+                    <div class="alert-box alert-success" id="registerVerifySuccess"></div>
+
+                    <form onsubmit="handleVerifyRegistration(event)">
+                        <div class="form-group">
+                            <input type="text" class="input-field otp" id="registerVerifyCode" placeholder="000000" autocomplete="one-time-code" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block btn-submit">Doğrula ve Tamamla</button>
+                        <button type="button" class="btn btn-glass btn-block" onclick="handleResendRegistrationCode()">Kodu Tekrar Gönder</button>
+                    </form>
+                </div>
+
+                <!-- 5. ŞİFRE SIFIRLAMA -->
+                <div class="form-container" id="forgotPasswordForm">
+                    <div class="form-head">
+                        <h2>Şifre Sıfırlama</h2>
+                        <p>Kayıtlı e-posta adresinize sıfırlama bağlantısı gönderelim.</p>
+                    </div>
+
+                    <div class="alert-box alert-danger" id="forgotError"></div>
+                    <div class="alert-box alert-success" id="forgotSuccess"></div>
+
+                    <form onsubmit="handleForgotPassword(event)">
+                        <div class="form-group">
+                            <label class="form-label" for="forgotEmail">E-posta Adresi</label>
+                            <div class="input-wrapper">
+                                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                                <input type="email" class="input-field" id="forgotEmail" placeholder="ornek@email.com" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block btn-submit">Sıfırlama Linki Gönder</button>
+                        <button type="button" class="btn btn-glass btn-block" onclick="showLogin()">Giriş Sayfasına Dön</button>
+                    </form>
+                </div>
             </div>
-
-            <div class="guest-box">
-                <a href="search.html" class="guest-link">
-                    <span>Giriş yapmadan keşfet</span>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                </a>
-            </div>
-        </div>
-
-        <!-- 2. KAYIT FORMU -->
-        <div class="form-container" id="registerForm">
-            <div class="alert-box alert-danger" id="registerError"></div>
-            <div class="alert-box alert-success" id="registerSuccess"></div>
-
-            <form onsubmit="handleRegister(event)">
-                <div class="form-group">
-                    <label class="form-label" for="registerUsername">Kullanıcı Adı</label>
-                    <div class="input-wrapper">
-                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                        <input type="text" class="input-field" id="registerUsername" placeholder="kullanici_adi" required minlength="3">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="registerEmail">E-posta Adresi</label>
-                    <div class="input-wrapper">
-                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                        <input type="email" class="input-field" id="registerEmail" placeholder="ornek@email.com" required>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="registerPassword">Şifre</label>
-                    <div class="input-wrapper">
-                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                        <input type="password" class="input-field" id="registerPassword" placeholder="En az 6 karakter" required minlength="6">
-                    </div>
-                    <div id="registerCapsLockWarning" class="caps-warning" style="display: none;">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v10"/><path d="m16 8-4-4-4 4"/><rect width="18" height="6" x="3" y="16" rx="2"/></svg>
-                        <span>Caps Lock açık</span>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="registerPasswordConfirm">Şifre Tekrarı</label>
-                    <div class="input-wrapper">
-                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                        <input type="password" class="input-field" id="registerPasswordConfirm" placeholder="Şifrenizi doğrulayın" required>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn-submit">
-                    <span>Hesap Oluştur</span>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                </button>
-            </form>
-        </div>
-
-        <!-- 3. 2FA DOĞRULAMA FORMU -->
-        <div class="form-container" id="twoFactorForm">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <div style="width: 48px; height: 48px; background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: #a78bfa;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                </div>
-                <h2 style="font-size: 20px; font-weight: 700; color: #fff;">İki Adımlı Doğrulama</h2>
-                <p style="font-size: 13.5px; color: #94a3b8; margin-top: 6px;">Authenticator uygulamanızdaki 6 haneli kodu giriniz.</p>
-            </div>
-
-            <div class="alert-box alert-danger" id="twoFactorError"></div>
-
-            <form onsubmit="handleVerify2fa(event)">
-                <div class="form-group">
-                    <input type="text" class="input-field" id="twoFactorCode" placeholder="000000" autocomplete="one-time-code" required style="text-align: center; font-size: 22px; letter-spacing: 8px; font-weight: 700; padding: 14px;">
-                </div>
-                <button type="submit" class="btn-submit">Doğrula ve Giriş Yap</button>
-                <button type="button" class="btn-ghost" onclick="showLogin()">Girişe Dön</button>
-            </form>
-        </div>
-
-        <!-- 4. KAYIT E-POSTA DOĞRULAMA FORMU -->
-        <div class="form-container" id="registerVerifyForm">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <h2 style="font-size: 20px; font-weight: 700; color: #fff;">E-postanı Doğrula</h2>
-                <p style="font-size: 13.5px; color: #94a3b8; margin-top: 6px;">
-                    <span id="registerVerifyEmailText">E-posta adresine</span> gelen 6 haneli kodu gir.
-                </p>
-            </div>
-
-            <div class="alert-box alert-danger" id="registerVerifyError"></div>
-            <div class="alert-box alert-success" id="registerVerifySuccess"></div>
-
-            <form onsubmit="handleVerifyRegistration(event)">
-                <div class="form-group">
-                    <input type="text" class="input-field" id="registerVerifyCode" placeholder="000000" autocomplete="one-time-code" required style="text-align: center; font-size: 22px; letter-spacing: 8px; font-weight: 700; padding: 14px;">
-                </div>
-                <button type="submit" class="btn-submit">Doğrula ve Tamamla</button>
-                <button type="button" class="btn-ghost" onclick="handleResendRegistrationCode()">Kodu Tekrar Gönder</button>
-            </form>
-        </div>
-
-        <!-- 5. ŞİFRE SIFIRLAMA FORMU -->
-        <div class="form-container" id="forgotPasswordForm">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <h2 style="font-size: 20px; font-weight: 700; color: #fff;">Şifre Sıfırlama</h2>
-                <p style="font-size: 13.5px; color: #94a3b8; margin-top: 6px;">Kayıtlı e-posta adresinize sıfırlama bağlantısı gönderelim.</p>
-            </div>
-
-            <div class="alert-box alert-danger" id="forgotError"></div>
-            <div class="alert-box alert-success" id="forgotSuccess"></div>
-
-            <form onsubmit="handleForgotPassword(event)">
-                <div class="form-group">
-                    <label class="form-label" for="forgotEmail">E-posta Adresi</label>
-                    <div class="input-wrapper">
-                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                        <input type="email" class="input-field" id="forgotEmail" placeholder="ornek@email.com" required>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn-submit">Sıfırlama Linki Gönder</button>
-                <button type="button" class="btn-ghost" onclick="showLogin()">Giriş Sayfasına Dön</button>
-            </form>
-        </div>
-    </div>
+        </section>
+    </main>
 
     <script>
         function hideAllForms() {
@@ -800,16 +896,17 @@
         document.addEventListener('DOMContentLoaded', () => {
             wireCapsLock('loginPassword', 'loginCapsLockWarning');
             wireCapsLock('registerPassword', 'registerCapsLockWarning');
+            wirePasswordRules('registerPassword', 'registerPasswordRules');
         });
 
-        // Tek tıkla demo girişi kolaylığı
+        // Tek tıkla demo girişi
         function quickLogin(email, password, autoSubmit = false) {
             showLogin();
             const emailInput = document.getElementById('loginEmail');
             const passInput = document.getElementById('loginPassword');
             emailInput.value = email;
             passInput.value = password;
-            
+
             // Hafif parlama efekti
             emailInput.style.borderColor = '#8b5cf6';
             passInput.style.borderColor = '#8b5cf6';
@@ -1000,9 +1097,31 @@
                 showError('forgotError', 'Bağlantı hatası: ' + error.message);
             }
         }
+        // Giriş ekranındaki 3D halka: gerçek popüler film afişleri (TMDB). Alınamazsa tasarımdaki gradyan posterler kalır.
+        async function loadRingPosters() {
+            try {
+                const res = await fetch('/api/tmdb-proxy.php?endpoint=list&type=movie&list=popular&page=1', { credentials: 'include' });
+                const data = await res.json();
+                const movies = (data.results || []).filter(movie => movie.poster_path).slice(0, 5);
+                document.querySelectorAll('.ring .poster').forEach((el, index) => {
+                    const movie = movies[index];
+                    if (!movie) return;
+                    const poster = "url('https://image.tmdb.org/t/p/w342" + movie.poster_path + "')";
+                    el.style.setProperty('--poster', 'linear-gradient(180deg, rgba(5, 6, 11, 0) 35%, rgba(5, 6, 11, 0.85) 100%), ' + poster + ' center / cover no-repeat');
+                    el.querySelector('.poster-kind').textContent = 'Popüler';
+                    el.querySelector('strong').textContent = movie.title;
+                    el.querySelector('small').textContent = movie.vote_average ? 'Puan ' + movie.vote_average.toFixed(1) : 'Yeni eklendi';
+                });
+            } catch (error) {
+                // Ağ ya da anahtar yoksa gradyan posterler olduğu gibi kalır.
+            }
+        }
+        loadRingPosters();
     </script>
     <script src="js/escape-html.js"></script>
+    <script src="js/password-rules.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/scene.js"></script>
 </body>
 
 </html>

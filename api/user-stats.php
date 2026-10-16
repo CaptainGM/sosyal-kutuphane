@@ -62,12 +62,12 @@ $stats = [
     'followers_count' => (int)($followers['count'] ?? 0),
     'following_count' => (int)($following['count'] ?? 0),
     'movies' => [
-        'total_watched' => (int)($movieStats['total_movies'] ?? 0),
+        'total_watched' => (int) $db->user_movie_status->countDocuments(['user_id' => $userId, 'status' => 'watched']),
         'avg_rating' => round($movieStats['avg_movie_rating'] ?? 0, 1),
         'highest_rating' => $movieStats['highest_rating'] ?? 0
     ],
     'books' => [
-        'total_read' => (int)($bookStats['total_books'] ?? 0),
+        'total_read' => (int) $db->user_book_status->countDocuments(['user_id' => $userId, 'status' => 'read']),
         'avg_rating' => round($bookStats['avg_book_rating'] ?? 0, 1)
     ],
     'favorite_genre' => $favoriteGenre['_id'] ?? 'Belirlenmedi',

@@ -23,7 +23,7 @@ final class FeatureTest extends TestCase
     {
         $suffix = $this->uniqueSuffix();
         $email = "phpunit_2fa_$suffix@test.com";
-        $password = 'sifre123456';
+        $password = 'Sifre123456!';
 
         $client = new ApiClient(TEST_BASE_URL);
         $client->register("phpunit_2fa_$suffix", $email, $password);
@@ -81,10 +81,10 @@ final class FeatureTest extends TestCase
         $genreId = 900000 + random_int(1, 9999); // gerçek TMDB tür kimlikleriyle çakışmasın diye ayrık bir aralık
 
         $userA = new ApiClient(TEST_BASE_URL);
-        $userA->register("phpunit_reco_a_$suffix", "phpunit_reco_a_$suffix@test.com", 'sifre123456');
+        $userA->register("phpunit_reco_a_$suffix", "phpunit_reco_a_$suffix@test.com", 'Sifre123456!');
 
         $userB = new ApiClient(TEST_BASE_URL);
-        $userB->register("phpunit_reco_b_$suffix", "phpunit_reco_b_$suffix@test.com", 'sifre123456');
+        $userB->register("phpunit_reco_b_$suffix", "phpunit_reco_b_$suffix@test.com", 'Sifre123456!');
 
         $movieAId = 800000 + random_int(1, 99999);
         $movieBId = 800000 + random_int(1, 99999);
@@ -136,7 +136,7 @@ final class FeatureTest extends TestCase
     {
         $suffix = $this->uniqueSuffix();
         $client = new ApiClient(TEST_BASE_URL);
-        $client->register("phpunit_export_$suffix", "phpunit_export_$suffix@test.com", 'sifre123456');
+        $client->register("phpunit_export_$suffix", "phpunit_export_$suffix@test.com", 'Sifre123456!');
 
         $movieId = 600000 + random_int(1, 99999);
         $client->post('/api/user-status.php', [

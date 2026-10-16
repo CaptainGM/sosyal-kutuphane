@@ -18,6 +18,7 @@ const fetchOptions = {
 class SocialLibraryApp {
     constructor() {
         this.currentUser = null;
+        this.realtimeEnabled = false;
         this.initPromise = this.init();
     }
 
@@ -27,6 +28,7 @@ class SocialLibraryApp {
                 credentials: 'include'
             });
             const data = await response.json();
+            this.realtimeEnabled = data.realtime === true;
 
             if (data.success && data.user) {
                 this.currentUser = data.user;
@@ -59,8 +61,9 @@ class SocialLibraryApp {
         const next = current === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', next);
         localStorage.setItem('theme', next);
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: next } }));
         document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
-            btn.textContent = next === 'dark' ? '☀️' : '🌙';
+            btn.classList.toggle('is-dark', next === 'dark');
         });
     }
 
@@ -188,7 +191,162 @@ class SocialLibraryApp {
         });
 
         await this._refreshNotifications(panel, badge, false);
-        setInterval(() => this._refreshNotifications(panel, badge, panel.classList.contains('open')), 20000);
+        // Akış açıksa sayaç değişince yenilenir; kapalıysa 20 saniyede bir yoklanır.
+        const refresh = () => this._refreshNotifications(panel, badge, panel.classList.contains('open'));
+        this.openRealtime({
+            onCounts: refresh,
+            onFallback: () => setInterval(refresh, 20000),
+        });
+    }
+
+    // Canlı akış (SSE). Sayfa başına tek bağlantı açılır; birden fazla dinleyici aynı akışı paylaşır.
+    // Kanal kapalıysa (404, ENABLE_SSE kapalı) ya da kalıcı hatada onFallback çağrılır ve yoklamaya geçilir.
+    // Normal kapanışta (25 sn) tarayıcı kendiliğinden yeniden bağlanır; bu yüzden yalnızca CLOSED'da vazgeçilir.
+    // conversationId verilmezse (undefined) mevcut konuşma değiştirilmez.
+    openRealtime(handlers = {}) {
+        if (!this.realtimeEnabled || !('EventSource' in window) || this._realtimeFailed) {
+            if (handlers.onFallback) handlers.onFallback();
+            return () => { };
+        }
+
+        const rt = this._realtime || (this._realtime = { source: null, conversationId: undefined, listeners: new Set() });
+        rt.listeners.add(handlers);
+
+        const wanted = handlers.conversationId;
+        const needsNewSource = !rt.source || (wanted !== undefined && wanted !== rt.conversationId);
+        if (needsNewSource) {
+            if (rt.source) rt.source.close();
+            if (wanted !== undefined) rt.conversationId = wanted;
+            const query = rt.conversationId ? `?conversation_id=${encodeURIComponent(rt.conversationId)}` : '';
+            const source = new EventSource(`${API_BASE_URL}/stream.php${query}`, { withCredentials: true });
+            rt.source = source;
+
+            source.addEventListener('counts', (event) => {
+                const counts = JSON.parse(event.data);
+                rt.listeners.forEach(listener => listener.onCounts && listener.onCounts(counts));
+            });
+            source.addEventListener('typing', (event) => {
+                const typing = JSON.parse(event.data).typing === true;
+                rt.listeners.forEach(listener => listener.onTyping && listener.onTyping(typing));
+            });
+            source.addEventListener('error', () => {
+                if (source.readyState !== EventSource.CLOSED) return;
+                this._realtimeFailed = true;
+                rt.source = null;
+                rt.listeners.forEach(listener => listener.onFallback && listener.onFallback());
+            });
+        }
+
+        return () => {
+            rt.listeners.delete(handlers);
+            if (rt.listeners.size === 0 && rt.source) {
+                rt.source.close();
+                rt.source = null;
+            }
+        };
+    }
+
+    // Rozet ızgarası. userId verilmezse oturum açmış kullanıcının rozetlerini gösterir.
+    async renderBadges(container, userId = null) {
+        if (!container) return;
+        const query = userId ? `?user_id=${encodeURIComponent(userId)}` : '';
+        const lockedIcon = '<svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+        const unlockedIcon = '<svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 15-3.5 2 .9-4-3-2.7 4.1-.4L12 6l1.5 3.9 4.1.4-3 2.7.9 4Z"/></svg>';
+        try {
+            const res = await fetch(`${API_BASE_URL}/badges.php${query}`, { credentials: 'include' });
+            const data = await res.json();
+            if (!data.success) {
+                container.innerHTML = '';
+                return;
+            }
+            container.innerHTML = data.badges.map(badge => {
+                const pct = Math.min(100, Math.round((badge.progress / badge.goal) * 100));
+                const title = this.escapeHtml(badge.title);
+                return `<article class="badge-card${badge.unlocked ? ' is-unlocked' : ''}">
+                    <span class="badge-icon">${badge.unlocked ? unlockedIcon : lockedIcon}</span>
+                    <div class="badge-text">
+                        <h3 class="badge-title">${title}</h3>
+                        <p class="badge-desc">${this.escapeHtml(badge.description)}</p>
+                        <div class="badge-bar" role="progressbar" aria-label="${title} ilerlemesi" aria-valuemin="0" aria-valuemax="${badge.goal}" aria-valuenow="${badge.progress}"><span style="width: ${pct}%"></span></div>
+                        <p class="badge-count">${badge.progress}/${badge.goal}${badge.unlocked ? ' · kazanıldı' : ''}</p>
+                    </div>
+                </article>`;
+            }).join('');
+        } catch (error) {
+            container.innerHTML = '';
+        }
+    }
+
+    // Letterboxd / Goodreads CSV içe aktarma (profil ayarları). Dosya önce ayrıştırılır,
+    // sonra 40'lık parçalar halinde içe aktarılır; ilerleme durum satırında gösterilir.
+    wireCsvImport() {
+        const fileInput = document.getElementById('csvFileInput');
+        const button = document.getElementById('csvImportBtn');
+        const status = document.getElementById('csvImportStatus');
+        if (!fileInput || !button || !status) return;
+
+        button.addEventListener('click', async () => {
+            const file = fileInput.files[0];
+            if (!file) {
+                status.textContent = 'Önce bir CSV dosyası seç.';
+                return;
+            }
+            if (file.size > 3 * 1024 * 1024) {
+                status.textContent = 'Dosya 3 MB\'tan büyük.';
+                return;
+            }
+
+            const source = document.getElementById('csvSource').value;
+            const list = document.getElementById('csvList').value;
+            button.disabled = true;
+            status.textContent = 'Dosya okunuyor...';
+
+            try {
+                const csv = await file.text();
+                const parseRes = await fetch(`${API_BASE_URL}/csv-import.php`, {
+                    method: 'POST',
+                    headers: this.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ action: 'parse', source, list, csv })
+                });
+                const parsed = await parseRes.json();
+                if (!parsed.success) {
+                    status.textContent = parsed.message || 'Dosya ayrıştırılamadı.';
+                    return;
+                }
+
+                const rows = parsed.rows;
+                let imported = 0;
+                const notFound = [];
+                for (let start = 0; start < rows.length; start += 40) {
+                    const chunk = rows.slice(start, start + 40);
+                    status.textContent = `İçe aktarılıyor: ${Math.min(start + 40, rows.length)} / ${rows.length}`;
+                    const res = await fetch(`${API_BASE_URL}/csv-import.php`, {
+                        method: 'POST',
+                        headers: this.authHeaders(),
+                        credentials: 'include',
+                        body: JSON.stringify({ action: 'import', rows: chunk })
+                    });
+                    const data = await res.json();
+                    if (!data.success) {
+                        status.textContent = data.message || 'İçe aktarma durdu.';
+                        return;
+                    }
+                    imported += data.imported;
+                    notFound.push(...data.not_found);
+                }
+
+                const missed = notFound.length
+                    ? `, ${notFound.length} yapım eşleşmedi (${notFound.slice(0, 3).map(t => this.escapeHtml(t)).join(', ')}${notFound.length > 3 ? '…' : ''})`
+                    : '';
+                status.textContent = `Tamamlandı: ${imported} kayıt eklendi${missed}.`;
+                fileInput.value = '';
+            } catch (error) {
+                status.textContent = 'Bağlantı hatası: ' + error.message;
+            } finally {
+                button.disabled = false;
+            }
+        });
     }
 
     async _refreshNotifications(panel, badge, renderList) {
@@ -227,6 +385,8 @@ class SocialLibraryApp {
                 return `<strong>${username}</strong> seni takip etmeye başladı`;
             case 'message':
                 return `<strong>${username}</strong> sana mesaj gönderdi`;
+            case 'release':
+                return `<strong>${this.escapeHtml(n.content_title || 'Bir yapım')}</strong> vizyona girdi`;
             default:
                 return `<strong>${username}</strong> bir bildirim gönderdi`;
         }
@@ -263,6 +423,8 @@ class SocialLibraryApp {
                     window.location.href = `user-profile.html?id=${actor}`;
                 } else if (type === 'message' && contentId) {
                     window.location.href = `messages.html?conversation_id=${contentId}`;
+                } else if (type === 'release' && contentId) {
+                    window.location.href = `detail.php?type=movie&id=${contentId}`;
                 }
             });
         });
@@ -734,14 +896,63 @@ function wireNavToggle() {
     });
 }
 
+// --- Kart ve buton hareketleri: fare konumunu CSS değişkenlerine yazar, [data-tilt] öğeleri eğer ---
+function wirePointerEffects() {
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    document.addEventListener('pointermove', (e) => {
+        const surface = e.target.closest?.('.card, [data-tilt]');
+        if (!surface) return;
+        const rect = surface.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        surface.style.setProperty('--mx', x + 'px');
+        surface.style.setProperty('--my', y + 'px');
+
+        if (!reduceMotion && surface.hasAttribute('data-tilt')) {
+            const rx = (y / rect.height - 0.5) * -8;
+            const ry = (x / rect.width - 0.5) * 8;
+            surface.style.transform = 'perspective(900px) rotateX(' + rx.toFixed(2) + 'deg) rotateY(' + ry.toFixed(2) + 'deg)';
+        }
+    });
+
+    document.addEventListener('pointerout', (e) => {
+        const surface = e.target.closest?.('[data-tilt]');
+        if (surface && !surface.contains(e.relatedTarget)) surface.style.transform = '';
+    });
+}
+
+// --- Kaydırma ile belirme: .reveal öğeleri görünür olunca yumuşakça açılır ---
+function wireReveal() {
+    const items = document.querySelectorAll('.reveal');
+    if (!items.length) return;
+    if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        items.forEach(el => el.classList.add('is-visible'));
+        return;
+    }
+    document.documentElement.classList.add('js-motion');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+        });
+    }, { threshold: 0.12 });
+    items.forEach(el => observer.observe(el));
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     app.wireAllPasswordToggles();
     document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
-        btn.textContent = app.isDarkMode() ? '☀️' : '🌙';
+        btn.classList.toggle('is-dark', app.isDarkMode());
         btn.addEventListener('click', () => app.toggleTheme());
     });
     app.initNotifications();
     wireNavToggle();
+    wirePointerEffects();
+    wireReveal();
+    app.wireCsvImport();
 
     // Bazı sayfalar giriş yapmadan da gezilebiliyor — çıkış yapmamış birine
     // hesap gerektiren nav ögelerini (Akış/Sosyal/Profilim/Mesajlar/bildirim)
