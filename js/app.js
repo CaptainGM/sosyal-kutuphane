@@ -130,7 +130,7 @@ class SocialLibraryApp {
         });
     }
 
-    // --- Şifre göster/gizle ---
+    // --- Şifre göster/gizle (Kayma yapmayan SVG ikonlu yapı) ---
     wirePasswordToggle(input) {
         if (!input || input.dataset.toggleWired) return;
         input.dataset.toggleWired = '1';
@@ -140,15 +140,22 @@ class SocialLibraryApp {
         input.parentNode.insertBefore(wrap, input);
         wrap.appendChild(input);
 
+        const eyeOpenSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`;
+        const eyeClosedSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>`;
+
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'password-toggle-btn';
-        btn.setAttribute('aria-label', 'Şifreyi göster/gizle');
-        btn.textContent = '👁️';
-        btn.onclick = () => {
+        btn.setAttribute('aria-label', 'Şifreyi göster veya gizle');
+        btn.tabIndex = -1;
+        btn.innerHTML = eyeOpenSvg;
+        btn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             const showing = input.type === 'text';
             input.type = showing ? 'password' : 'text';
-            btn.textContent = showing ? '👁️' : '🙈';
+            btn.innerHTML = showing ? eyeOpenSvg : eyeClosedSvg;
+            btn.setAttribute('aria-label', showing ? 'Şifreyi göster' : 'Şifreyi gizle');
         };
         wrap.appendChild(btn);
     }
@@ -347,6 +354,44 @@ class SocialLibraryApp {
         } catch (error) {
             console.error('Popüler diziler hatası:', error);
             return [];
+        }
+    }
+
+    async discoverMovies(filters = {}, page = 1) {
+        try {
+            const qs = new URLSearchParams({
+                endpoint: 'discover',
+                type: 'movie',
+                page: page,
+                year: filters.year || '',
+                genre: filters.genre || '',
+                min_rating: filters.min_rating || '',
+                sort_by: filters.sort_by || 'popularity'
+            }).toString();
+            const response = await fetch(`${TMDB_PROXY_URL}?${qs}`);
+            return await response.json();
+        } catch (error) {
+            console.error('Film keşif hatası:', error);
+            return { results: [], total_pages: 0, total_results: 0 };
+        }
+    }
+
+    async discoverSeries(filters = {}, page = 1) {
+        try {
+            const qs = new URLSearchParams({
+                endpoint: 'discover',
+                type: 'series',
+                page: page,
+                year: filters.year || '',
+                genre: filters.genre || '',
+                min_rating: filters.min_rating || '',
+                sort_by: filters.sort_by || 'popularity'
+            }).toString();
+            const response = await fetch(`${TMDB_PROXY_URL}?${qs}`);
+            return await response.json();
+        } catch (error) {
+            console.error('Dizi keşif hatası:', error);
+            return { results: [], total_pages: 0, total_results: 0 };
         }
     }
 

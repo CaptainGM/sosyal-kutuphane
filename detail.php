@@ -191,35 +191,55 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 
         .user-actions {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
             margin-bottom: 30px;
         }
 
         .action-btn {
-            padding: 12px;
-            border: 2px solid var(--color-accent);
-            background: var(--color-surface);
-            color: var(--color-accent);
-            border-radius: 8px;
+            padding: 12px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: var(--color-text);
+            border-radius: 12px;
             cursor: pointer;
             font-weight: 600;
-            transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+            font-size: 13.5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            user-select: none;
         }
 
-        .action-btn.active {
-            background: var(--color-accent);
-            color: white;
-            box-shadow: 0 4px 14px rgba(var(--color-accent-rgb), 0.4);
+        .action-btn svg {
+            width: 17px;
+            height: 17px;
+            flex-shrink: 0;
+            stroke-width: 2;
         }
 
         .action-btn:hover {
+            background: rgba(255, 255, 255, 0.09);
+            border-color: rgba(255, 255, 255, 0.28);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(var(--color-accent-rgb), 0.25);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            color: #ffffff;
         }
 
         .action-btn:active {
-            transform: translateY(0) scale(0.98);
+            transform: translateY(0) scale(0.97);
+        }
+
+        .action-btn.active {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+            border-color: transparent !important;
+            color: #ffffff !important;
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45) !important;
         }
 
         .rating-input {
@@ -296,27 +316,46 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 
         .comment-form textarea {
             width: 100%;
-            padding: 15px;
-            border: 2px solid var(--color-border);
-            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
             resize: vertical;
-            min-height: 100px;
+            min-height: 110px;
             margin-bottom: 15px;
             font-family: inherit;
+            background: var(--color-surface-2) !important;
+            color: var(--color-text) !important;
+            font-size: 14.5px;
+            line-height: 1.6;
+            transition: all 0.2s ease;
+        }
+
+        .comment-form textarea:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb), 0.25);
+            background: var(--color-surface) !important;
         }
 
         .comment-form button {
             padding: 12px 24px;
-            background: var(--color-accent);
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .comment-form button:hover {
-            background: var(--color-accent-2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.5);
+            filter: brightness(1.05);
         }
 
         .comment-item {
@@ -634,16 +673,35 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 
     <nav class="navbar">
         <div class="navbar-inner">
-            <a href="search.html" class="logo">🎬 Sosyal Kütüphane</a>
-            <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false">☰</button>
+            <a href="search.html" class="logo" style="display: inline-flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: -0.4px;">
+                <div style="width: 36px; height: 36px; border-radius: 11px; background: linear-gradient(135deg, #6366f1, #8b5cf6, #d946ef); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45); flex-shrink: 0;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="m10 14 5 3-5 3v-6Z"/></svg>
+                </div>
+                <span>Sosyal Kütüphane</span>
+            </a>
+            <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+            </button>
             <div class="nav-links">
-                <a href="search.html" class="nav-link">🔍 Keşfet</a>
-                <a href="feed.html" class="nav-link">📰 Akış</a>
-                <a href="messages.html" class="nav-link">💬 Mesajlar</a>
-                <a href="profile.html" class="nav-link">👤 Profilim</a>
+                <a href="search.html" class="nav-link">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    Keşfet
+                </a>
+                <a href="feed.html" class="nav-link">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
+                    Akış
+                </a>
+                <a href="messages.html" class="nav-link">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    Mesajlar
+                </a>
+                <a href="profile.html" class="nav-link">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Profilim
+                </a>
                 <div class="nav-icon-wrap">
                     <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler">
-                        🔔
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
                         <span class="nav-badge" id="notifBadge"></span>
                     </button>
                     <div class="nav-panel" id="notifPanel">
@@ -651,8 +709,10 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                         <div class="nav-panel-empty">Yükleniyor...</div>
                     </div>
                 </div>
-                <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">🌙</button>
-                <button class="logout-btn" onclick="logout()">Çıkış</button>
+                <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                </button>
+                <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
             </div>
         </div>
     </nav>
@@ -660,7 +720,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 
     <div class="detail-header">
         <div class="container">
-            <div id="loadingDetail" class="loading">📖 İçerik yükleniyor...</div>
+            <div id="loadingDetail" class="loading">İçerik yükleniyor...</div>
             <div id="detailContent" style="display: none;">
                 <div class="detail-content">
                     <div class="poster-container">
@@ -672,7 +732,10 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                         <div class="platform-rating" id="userPlatformRating"
                             style="margin-top: 10px; background: rgba(var(--color-accent-rgb), 0.3);">
                             <div class="rating-score" id="userRatingScore">-/-</div>
-                            <div class="rating-count" id="userRatingCount">👥 Kullanıcı Puanı</div>
+                            <div class="rating-count" id="userRatingCount" style="display:inline-flex; align-items:center; justify-content:center; gap:4px;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                <span>Kullanıcı Puanı</span>
+                            </div>
                         </div>
                     </div>
                     <div class="content-info">
@@ -688,32 +751,59 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 
     <div class="container">
         <div style="margin-bottom: 20px;">
-            <button id="followCreatorBtn" class="btn btn-primary" style="display: none;">
-                👥 Yazarı Takip Et
+            <button id="followCreatorBtn" class="btn btn-primary" style="display: none; align-items:center; gap:6px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg>
+                <span>Yazarı Takip Et</span>
             </button>
         </div>
 
         <div class="rating-section">
-            <h3>🎯 İşlemleriniz</h3>
+            <h3 style="display: flex; align-items: center; gap: 8px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/><circle cx="12" cy="12" r="4"/></svg>
+                İşlemleriniz
+            </h3>
 
             <div class="user-actions">
-                <button id="rateBtn" class="action-btn" onclick="showRatingSection()">⭐ Puan Ver</button>
+                <button id="rateBtn" class="action-btn" onclick="showRatingSection()">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <span class="btn-label">Puan Ver</span>
+                </button>
                 <button id="watchBtn" class="action-btn" onclick="toggleList('watched')">
-                    <span id="watchBtnText">🎬 İzledim</span>
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span class="btn-label" id="watchBtnText">İzledim</span>
                 </button>
                 <button id="watchlistBtn" class="action-btn" onclick="toggleList('watchlist')">
-                    <span id="watchlistBtnText">📋 İzlenecekler</span>
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+                    <span class="btn-label" id="watchlistBtnText">İzlenecekler</span>
                 </button>
                 <button id="readBtn" class="action-btn" onclick="toggleList('read')" style="display: none;">
-                    <span id="readBtnText">📖 Okudum</span>
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                    <span class="btn-label" id="readBtnText">Okudum</span>
                 </button>
-                <button id="readinglistBtn" class="action-btn" onclick="toggleList('readinglist')"
-                    style="display: none;">
-                    <span id="readinglistBtnText">📚 Okunacaklar</span>
+                <button id="readinglistBtn" class="action-btn" onclick="toggleList('readinglist')" style="display: none;">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
+                    <span class="btn-label" id="readinglistBtnText">Okunacaklar</span>
                 </button>
                 <button id="customListBtn" class="action-btn" onclick="showCustomListModal()">
-                    <span>📁 Özel Listeye Ekle</span>
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/><line x1="12" x2="12" y1="11" y2="17"/><line x1="9" x2="15" y1="14" y2="14"/></svg>
+                    <span class="btn-label">Özel Listeye Ekle</span>
                 </button>
+                <button id="watchTrailerBtn" class="action-btn btn-shimmer" onclick="handleWatchTrailerClick()" style="display: none;">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+                    <span class="btn-label">Fragmanı İzle</span>
+                </button>
+                <button id="storyCardBtn" class="action-btn" onclick="openStoryModal()">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="4" ry="4"/><circle cx="12" cy="12" r="3"/><line x1="16.5" x2="16.5" y1="7.5" y2="7.5"/></svg>
+                    <span class="btn-label">Hikaye Kartı</span>
+                </button>
+            </div>
+
+            <div id="providersSection" class="providers-section" style="display: none;">
+                <h4 style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
+                    Nerede İzlenir? (Türkiye)
+                </h4>
+                <div id="providersList" class="providers-grid"></div>
             </div>
 
             <div id="ratingSection" style="display: none;">
@@ -738,22 +828,33 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
 
             <div id="userRatingSection"
                 style="display: none; margin-top: 20px; padding: 15px; background: var(--color-surface-2); border-radius: 8px;">
-                <h4>⭐ Sizin Puanınız</h4>
+                <h4 style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    Sizin Puanınız
+                </h4>
                 <div id="userRatingDisplay"></div>
-                <button class="btn btn-primary" onclick="showRatingSection()" style="margin-top: 10px;">Puanı
-                    Değiştir</button>
+                <button class="btn btn-primary" onclick="showRatingSection()" style="margin-top: 10px;">Puanı Değiştir</button>
             </div>
         </div>
 
         <div class="comments-section">
-            <h3>💬 Yorumlar</h3>
+            <h3 style="display: flex; align-items: center; gap: 8px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Yorumlar
+            </h3>
 
             <div class="comment-form">
-                <textarea id="commentText" placeholder="Yorumunuzu yazın..."></textarea>
-                <label class="spoiler-checkbox-label">
-                    <input type="checkbox" id="commentSpoiler"> 🙈 Bu yorum spoiler içeriyor
-                </label>
-                <button onclick="submitComment()">✍️ Yorum Gönder</button>
+                <textarea id="commentText" placeholder="Bu içerik hakkında düşüncelerinizi paylaşın..."></textarea>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 6px;">
+                    <label class="spoiler-checkbox-label" style="margin: 0;">
+                        <input type="checkbox" id="commentSpoiler">
+                        <span>Bu yorum spoiler (sürprizbozan) içeriyor</span>
+                    </label>
+                    <button onclick="submitComment()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        <span>Yorum Gönder</span>
+                    </button>
+                </div>
             </div>
 
             <div id="comments-section">
@@ -762,7 +863,12 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
         </div>
 
         <div class="reco-section" id="similarSection" style="display:none;">
-            <h2 class="reco-title">🎯 Benzer İçerikler</h2>
+            <h2 class="reco-title">
+                <span class="showcase-badge" style="background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="12 8 8 12 12 16 12 8"/></svg>
+                </span>
+                Benzer İçerikler
+            </h2>
             <div class="reco-scroll" id="similarScroll"></div>
         </div>
     </div>
@@ -784,6 +890,52 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
         </div>
     </div>
 
+    <!-- Fragman Modalı -->
+    <div id="trailerModal" class="trailer-modal-overlay" onclick="closeTrailerModal(event)">
+        <div class="trailer-modal-box" onclick="event.stopPropagation()">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                <span style="font-size: 14px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+                    Resmi Fragman
+                </span>
+                <button type="button" class="trailer-bar-close-btn" onclick="closeTrailerModal()" aria-label="Fragmanı Kapat" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #fca5a5; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+                    <span>Kapat</span>
+                </button>
+            </div>
+            <div class="trailer-iframe-wrap">
+                <iframe id="trailerIframe" src="" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hikaye Kartı (Instagram Story) Modalı -->
+    <div id="storyModal" class="story-modal-overlay" onclick="closeStoryModal(event)">
+        <div class="story-modal-box" onclick="event.stopPropagation()">
+            <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                <h3 style="margin: 0; font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="4" ry="4"/><circle cx="12" cy="12" r="3"/><line x1="16.5" x2="16.5" y1="7.5" y2="7.5"/></svg>
+                    Hikaye Kartı
+                </h3>
+                <button class="modal-close" onclick="closeStoryModal()" style="font-size: 24px; cursor: pointer; background: none; border: none; color: var(--color-text);">&times;</button>
+            </div>
+            <p style="font-size: 13px; color: var(--color-text-muted); margin: 0; text-align: center;">Instagram veya sosyal medyada paylaşabileceğin özel kart</p>
+            <div class="story-canvas-container">
+                <canvas id="storyCanvas" width="720" height="1280"></canvas>
+            </div>
+            <div class="story-modal-actions">
+                <button class="btn btn-primary" onclick="downloadStoryCard()" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                    <span>Görseli İndir</span>
+                </button>
+                <button class="btn btn-secondary" onclick="shareStoryCard()" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>
+                    <span>Paylaş</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/escape-html.js"></script>
     <script src="js/app.js"></script>
     <script>
@@ -791,7 +943,278 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
         let currentRating = 0;
         let currentContentType = '';
         let currentContentId = '';
+        let currentTrailerKey = null;
         const commentTextById = {};
+
+        /* --- Fragman Oynatıcı Yönetimi --- */
+        function setupTrailerButton(content) {
+            const btn = document.getElementById('watchTrailerBtn');
+            if (!btn) return;
+            currentTrailerKey = null;
+
+            const videos = content.videos?.results || [];
+            let trailer = videos.find(v => v.site === 'YouTube' && v.type === 'Trailer');
+            if (!trailer) {
+                trailer = videos.find(v => v.site === 'YouTube' && (v.type === 'Teaser' || v.type === 'Clip'));
+            }
+            if (!trailer && videos.length > 0 && videos[0].site === 'YouTube') {
+                trailer = videos[0];
+            }
+
+            if (trailer && trailer.key) {
+                currentTrailerKey = trailer.key;
+                btn.style.display = 'inline-flex';
+            } else {
+                btn.style.display = 'none';
+            }
+        }
+
+        function handleWatchTrailerClick() {
+            if (!currentTrailerKey) {
+                if (typeof app !== 'undefined') app.toast('Bu içerik için fragman bulunamadı.', 'info');
+                return;
+            }
+            const modal = document.getElementById('trailerModal');
+            const iframe = document.getElementById('trailerIframe');
+            iframe.src = `https://www.youtube.com/embed/${currentTrailerKey}?autoplay=1&rel=0`;
+            modal.classList.add('active');
+        }
+
+        function closeTrailerModal(e) {
+            if (e && e.target && e.target.classList.contains('trailer-modal-box')) return;
+            const modal = document.getElementById('trailerModal');
+            const iframe = document.getElementById('trailerIframe');
+            if (modal) modal.classList.remove('active');
+            if (iframe) iframe.src = '';
+        }
+
+        // ESC tuşu ile modalları kapatma
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeTrailerModal();
+                closeStoryModal();
+            }
+        });
+
+        /* --- Nerede İzlenir? (Watch Providers) --- */
+        function displayWatchProviders(content) {
+            const section = document.getElementById('providersSection');
+            const list = document.getElementById('providersList');
+            if (!section || !list) return;
+
+            const providersData = content['watch/providers']?.results || {};
+            const trData = providersData['TR'] || providersData['US'] || null;
+            const isFallbackUS = !providersData['TR'] && !!providersData['US'];
+
+            list.innerHTML = '';
+            if (!trData) {
+                section.style.display = 'none';
+                return;
+            }
+
+            const flatrate = trData.flatrate || [];
+            const rent = trData.rent || [];
+            const buy = trData.buy || [];
+
+            const all = [];
+            const seen = new Set();
+
+            flatrate.forEach(p => {
+                if (!seen.has(p.provider_id)) {
+                    seen.add(p.provider_id);
+                    all.push({ ...p, typeLabel: 'Abonelik' });
+                }
+            });
+            rent.forEach(p => {
+                if (!seen.has(p.provider_id)) {
+                    seen.add(p.provider_id);
+                    all.push({ ...p, typeLabel: 'Kiralık' });
+                }
+            });
+            buy.forEach(p => {
+                if (!seen.has(p.provider_id)) {
+                    seen.add(p.provider_id);
+                    all.push({ ...p, typeLabel: 'Satın Al' });
+                }
+            });
+
+            if (all.length === 0) {
+                list.innerHTML = '<span class="no-providers-msg">Şu anda dijital platformlarda yayında bulunmuyor.</span>';
+                section.style.display = 'block';
+                return;
+            }
+
+            const heading = section.querySelector('h4');
+            if (heading) {
+                heading.innerHTML = `📺 Nerede İzlenir? ${isFallbackUS ? '<span style="font-size:11px;font-weight:normal;opacity:0.7;">(Global)</span>' : '(Türkiye)'}`;
+            }
+
+            list.innerHTML = all.slice(0, 8).map(p => {
+                const logoUrl = p.logo_path ? `https://image.tmdb.org/t/p/w92${p.logo_path}` : '';
+                return `
+                    <div class="provider-badge" title="${app.escapeHtml(p.provider_name)}">
+                        ${logoUrl ? `<img src="${logoUrl}" class="provider-logo" alt="${app.escapeHtml(p.provider_name)}">` : ''}
+                        <span>${app.escapeHtml(p.provider_name)}</span>
+                        <span class="provider-type-tag">${p.typeLabel}</span>
+                    </div>
+                `;
+            }).join('');
+
+            section.style.display = 'block';
+        }
+
+        /* --- Görsel Hikaye Kartı (Instagram Story) --- */
+        function openStoryModal() {
+            const modal = document.getElementById('storyModal');
+            modal.classList.add('active');
+            renderStoryCardCanvas();
+        }
+
+        function closeStoryModal(e) {
+            if (e && e.target && e.target.classList.contains('story-modal-box')) return;
+            const modal = document.getElementById('storyModal');
+            modal.classList.remove('active');
+        }
+
+        function renderStoryCardCanvas() {
+            const canvas = document.getElementById('storyCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width;  // 720
+            const H = canvas.height; // 1280
+
+            // Arka plan gradient
+            const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+            bgGrad.addColorStop(0, '#0f172a');
+            bgGrad.addColorStop(0.5, '#1e1b4b');
+            bgGrad.addColorStop(1, '#090d16');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, W, H);
+
+            // Üst Başlık & Rozet
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 26px Plus Jakarta Sans, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('📚 SOSYAL KÜTÜPHANE', W / 2, 85);
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+            ctx.font = '16px Plus Jakarta Sans, sans-serif';
+            const typeLabel = currentContentType === 'movie' ? '🎬 Film İncelemesi' : (currentContentType === 'series' ? '📺 Dizi İncelemesi' : '📖 Kitap İncelemesi');
+            ctx.fillText(typeLabel, W / 2, 118);
+
+            // Poster çizimi
+            const posterImg = document.getElementById('contentPoster');
+            const posterW = 320;
+            const posterH = 480;
+            const posterX = (W - posterW) / 2;
+            const posterY = 160;
+
+            // Poster gölgesi
+            ctx.save();
+            ctx.shadowColor = 'rgba(99, 102, 241, 0.55)';
+            ctx.shadowBlur = 35;
+            ctx.shadowOffsetY = 12;
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath();
+            ctx.roundRect(posterX, posterY, posterW, posterH, 18);
+            ctx.fill();
+            ctx.restore();
+
+            if (posterImg && posterImg.complete && posterImg.naturalWidth > 0) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.roundRect(posterX, posterY, posterW, posterH, 18);
+                ctx.clip();
+                ctx.drawImage(posterImg, posterX, posterY, posterW, posterH);
+                ctx.restore();
+            }
+
+            // İçerik Başlığı
+            const title = document.getElementById('contentTitle')?.textContent || 'Sosyal Kütüphane';
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 32px Plus Jakarta Sans, sans-serif';
+            ctx.textAlign = 'center';
+
+            const words = title.split(' ');
+            let line1 = '';
+            let line2 = '';
+            words.forEach(w => {
+                if ((line1 + ' ' + w).length < 24) {
+                    line1 += (line1 ? ' ' : '') + w;
+                } else {
+                    line2 += (line2 ? ' ' : '') + w;
+                }
+            });
+            let titleY = posterY + posterH + 65;
+            ctx.fillText(line1, W / 2, titleY);
+            if (line2) {
+                titleY += 40;
+                ctx.fillText(line2.substring(0, 26) + (line2.length > 26 ? '...' : ''), W / 2, titleY);
+            }
+
+            // Puan Kutusu
+            const ratingBoxY = titleY + 45;
+            const userRatingEl = document.getElementById('userRatingDisplay');
+            const userRatingText = (userRatingEl && userRatingEl.style.display !== 'none') ? userRatingEl.textContent.trim() : '';
+            const platformRatingText = document.getElementById('ratingScore')?.textContent?.trim() || '8.5/10';
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.roundRect(W / 2 - 180, ratingBoxY, 360, 105, 22);
+            ctx.fill();
+            ctx.stroke();
+
+            const username = (typeof app !== 'undefined' && app.currentUser) ? app.currentUser.username : 'Kitapkurdu';
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = 'bold 30px Plus Jakarta Sans, sans-serif';
+            ctx.fillText(userRatingText ? `⭐ ${userRatingText}` : `⭐ TMDb ${platformRatingText}`, W / 2, ratingBoxY + 48);
+
+            ctx.fillStyle = '#cbd5e1';
+            ctx.font = '600 16px Plus Jakarta Sans, sans-serif';
+            ctx.fillText(`@${username} tarafından puanlandı`, W / 2, ratingBoxY + 84);
+
+            // Alt Bilgi
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+            ctx.font = '15px Plus Jakarta Sans, sans-serif';
+            ctx.fillText('sosyalkutuphane.com • Birlikte Keşfet', W / 2, H - 55);
+        }
+
+        function downloadStoryCard() {
+            const canvas = document.getElementById('storyCanvas');
+            if (!canvas) return;
+            const link = document.createElement('a');
+            const title = (document.getElementById('contentTitle')?.textContent || 'icerik')
+                .toLowerCase().replace(/[^a-z0-9]/g, '-');
+            link.download = `sosyal-kutuphane-${title}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            if (typeof app !== 'undefined') app.toast('Hikaye kartı başarıyla indirildi!', 'success');
+        }
+
+        async function shareStoryCard() {
+            const canvas = document.getElementById('storyCanvas');
+            if (!canvas) return;
+            try {
+                canvas.toBlob(async (blob) => {
+                    if (!blob) return;
+                    const file = new File([blob], 'hikaye-karti.png', { type: 'image/png' });
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            files: [file],
+                            title: document.getElementById('contentTitle')?.textContent || 'Sosyal Kütüphane',
+                            text: 'Sosyal Kütüphane profilimde inceledim! 🎬📚'
+                        });
+                    } else {
+                        downloadStoryCard();
+                    }
+                });
+            } catch (e) {
+                console.error('Paylaşım hatası:', e);
+                downloadStoryCard();
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', async function () {
             if (typeof app !== 'undefined' && app.initPromise) {
@@ -943,7 +1366,9 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 genres: movie.genres,
                 vote_average: movie.vote_average,
                 vote_count: movie.vote_count,
-                credits: movie.credits
+                credits: movie.credits,
+                videos: movie.videos,
+                'watch/providers': movie['watch/providers']
             };
 
             document.getElementById('contentTitle').textContent = movie.title;
@@ -980,6 +1405,9 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                     followBtn.style.display = 'block';
                 }
             }
+
+            setupTrailerButton(movie);
+            displayWatchProviders(movie);
         }
 
         function displaySeriesDetail(series) {
@@ -992,7 +1420,9 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 genres: series.genres,
                 vote_average: series.vote_average,
                 vote_count: series.vote_count,
-                credits: series.credits
+                credits: series.credits,
+                videos: series.videos,
+                'watch/providers': series['watch/providers']
             };
 
             document.getElementById('contentTitle').textContent = series.name;
@@ -1027,6 +1457,9 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 followBtn.dataset.creatorId = creator.id;
                 followBtn.style.display = 'block';
             }
+
+            setupTrailerButton(series);
+            displayWatchProviders(series);
         }
 
         async function followCreator(creatorName, creatorId) {
@@ -1092,6 +1525,11 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 ? `${volumeInfo.averageRating}/5`
                 : '-/-';
             document.getElementById('ratingCount').textContent = '📚 Google Books Puanı';
+
+            const trailerBtn = document.getElementById('watchTrailerBtn');
+            if (trailerBtn) trailerBtn.style.display = 'none';
+            const providersSec = document.getElementById('providersSection');
+            if (providersSec) providersSec.style.display = 'none';
         }
 
         
@@ -1296,30 +1734,28 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             if (status === 'to_read') status = 'readinglist';
 
             const watchKey = currentContentType === 'series' ? 'watching' : 'watched';
-            const watchLabel = currentContentType === 'series' ? '📺 İzliyorum' : '🎬 İzledim';
+            const watchLabel = currentContentType === 'series' ? 'İzliyorum' : 'İzledim';
 
             const buttons = {
                 [watchKey]: { btn: document.getElementById('watchBtn'), text: watchLabel },
-                'watchlist': { btn: document.getElementById('watchlistBtn'), text: '📋 İzlenecekler' },
-                'read': { btn: document.getElementById('readBtn'), text: '📖 Okudum' },
-                'readinglist': { btn: document.getElementById('readinglistBtn'), text: '📚 Okunacaklar' }
+                'watchlist': { btn: document.getElementById('watchlistBtn'), text: 'İzlenecekler' },
+                'read': { btn: document.getElementById('readBtn'), text: 'Okudum' },
+                'readinglist': { btn: document.getElementById('readinglistBtn'), text: 'Okunacaklar' }
             };
             Object.entries(buttons).forEach(([key, { btn, text }]) => {
                 if (btn && btn.style.display !== 'none') {
                     btn.classList.remove('active');
-                    btn.style.background = 'var(--color-surface)';
-                    btn.style.color = 'var(--color-accent)';
-                    const span = btn.querySelector('span');
-                    if (span) span.textContent = text;
+                    btn.style.background = '';
+                    btn.style.color = '';
+                    const label = btn.querySelector('.btn-label') || btn.querySelector('span');
+                    if (label) label.textContent = text;
                 }
             });
             if (status && buttons[status] && buttons[status].btn && buttons[status].btn.style.display !== 'none') {
                 const activeBtn = buttons[status].btn;
                 activeBtn.classList.add('active');
-                activeBtn.style.background = 'var(--color-accent)';
-                activeBtn.style.color = 'white';
-                const span = activeBtn.querySelector('span');
-                if (span) span.textContent = '✓ ' + buttons[status].text;
+                const label = activeBtn.querySelector('.btn-label') || activeBtn.querySelector('span');
+                if (label) label.textContent = '✓ ' + buttons[status].text;
             }
         }
         async function loadUserInteractions() {
@@ -1427,10 +1863,14 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                             ` : safeText;
                         const commentBodyHtml = comment.has_spoiler ? `
                             <div class="spoiler-wrap" id="spoiler-${comment.id}">
-                                <button type="button" class="spoiler-reveal-btn" onclick="document.getElementById('spoiler-${comment.id}').classList.add('spoiler-revealed')">🙈 Spoiler içeriyor — göstermek için dokun</button>
+                                <button type="button" class="spoiler-reveal-btn" onclick="document.getElementById('spoiler-${comment.id}').classList.add('spoiler-revealed')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg><span>Spoiler İçerik — Görmek İçin Tıklayın</span></button>
                                 <div class="spoiler-content">${commentBodyInner}</div>
                             </div>
                         ` : commentBodyInner;
+
+                        const heartIcon = comment.liked_by_me 
+                            ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="2" style="vertical-align: -1px; margin-right: 4px;"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`
+                            : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 4px;"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`;
 
                         html += `
                     <div class="comment-item" id="comment-${comment.id}" style="background: var(--color-surface); padding: 20px; border-radius: 10px; border-left: 4px solid var(--color-accent);">
@@ -1445,23 +1885,27 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                             ${commentBodyHtml}
                         </div>
 
-                        <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px;">
-                            <button id="like-btn-${comment.id}" onclick="likeComment(${comment.id})" style="background: none; border: none; color: ${comment.liked_by_me ? 'var(--color-danger)' : 'var(--color-accent)'}; cursor: pointer;">
-                                ${comment.liked_by_me ? '❤️' : '🤍'} <span id="like-count-${comment.id}">${comment.likes_count || 0}</span>
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px; align-items: center;">
+                            <button id="like-btn-${comment.id}" onclick="likeComment(${comment.id})" style="background: none; border: none; color: ${comment.liked_by_me ? 'var(--color-danger)' : 'var(--color-accent)'}; cursor: pointer; display: inline-flex; align-items: center;">
+                                ${heartIcon} <span id="like-count-${comment.id}">${comment.likes_count || 0}</span>
                             </button>
-                            <button onclick="showReplyForm(${comment.id})" style="background: none; border: none; color: var(--color-accent); cursor: pointer;">
-                                💬 Yanıtla
+                            <button onclick="showReplyForm(${comment.id})" style="background: none; border: none; color: var(--color-accent); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                <span>Yanıtla</span>
                             </button>
                             ${isOwnComment ? `
-                                <button onclick="showEditModal(${comment.id})" style="background: none; border: none; color: var(--color-accent); cursor: pointer;">
-                                    ✏️ Düzenle
+                                <button onclick="showEditModal(${comment.id})" style="background: none; border: none; color: var(--color-accent); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                                    <span>Düzenle</span>
                                 </button>
-                                <button onclick="deleteComment(${comment.id})" style="background: none; border: none; color: var(--color-danger); cursor: pointer;">
-                                    🗑️ Sil
+                                <button onclick="deleteComment(${comment.id})" style="background: none; border: none; color: var(--color-danger); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                    <span>Sil</span>
                                 </button>
                             ` : `
-                                <button onclick="showReportModal(${comment.id})" style="background: none; border: none; color: var(--color-text-faint); cursor: pointer;">
-                                    🚩 Şikayet Et
+                                <button onclick="showReportModal(${comment.id})" style="background: none; border: none; color: var(--color-text-faint); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>
+                                    <span>Şikayet Et</span>
                                 </button>
                             `}
                         </div>
@@ -1470,7 +1914,9 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                         <div id="reply-form-${comment.id}" style="display: none; margin-top: 15px; padding: 15px; background: var(--color-surface-2); border-radius: 8px;">
                             <textarea id="reply-text-${comment.id}" placeholder="@${safeUsername} kullanıcısına yanıt yazın..." style="width: 100%; padding: 10px; border: 1px solid var(--color-border); border-radius: 5px; min-height: 80px; font-family: inherit;"></textarea>
                             <label class="spoiler-checkbox-label">
-                                <input type="checkbox" id="reply-spoiler-${comment.id}"> 🙈 Bu yanıt spoiler içeriyor
+                                <input type="checkbox" id="reply-spoiler-${comment.id}">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 2px;"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                                <span>Bu yanıt spoiler (sürprizbozan) içeriyor</span>
                             </label>
                             <div style="display: flex; gap: 10px; margin-top: 10px;">
                                 <button onclick="submitReply(${comment.id})" class="btn btn-primary" style="padding: 8px 15px;">Yanıtla</button>
@@ -1488,10 +1934,13 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                             const safeReplyText = app.escapeHtml(reply.comment_text);
                             const replyBodyHtml = reply.has_spoiler ? `
                                 <div class="spoiler-wrap" id="spoiler-reply-${reply.id}">
-                                    <button type="button" class="spoiler-reveal-btn" onclick="document.getElementById('spoiler-reply-${reply.id}').classList.add('spoiler-revealed')">🙈 Spoiler içeriyor — göstermek için dokun</button>
+                                    <button type="button" class="spoiler-reveal-btn" onclick="document.getElementById('spoiler-reply-${reply.id}').classList.add('spoiler-revealed')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg><span>Spoiler İçerik — Görmek İçin Tıklayın</span></button>
                                     <div class="spoiler-content">${safeReplyText}</div>
                                 </div>
                             ` : safeReplyText;
+                            const replyHeart = reply.liked_by_me 
+                                ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="2" style="vertical-align: -1px; margin-right: 3px;"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`
+                                : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 3px;"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`;
                             return `
                                         <div style="background: var(--color-surface-2); padding: 12px; border-radius: 8px; margin-bottom: 10px;">
                                             <div style="margin-bottom: 8px;">
@@ -1499,12 +1948,15 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                                                 <span style="color: var(--color-text-faint); font-size: 11px; margin-left: 8px;">${replyTimeAgo}</span>
                                             </div>
                                             <div style="margin: 0; color: var(--color-text-muted); font-size: 14px;">${replyBodyHtml}</div>
-                                            <div style="display: flex; gap: 10px; margin-top: 8px;">
-                                                <button onclick="likeComment(${reply.id})" style="background: none; border: none; color: ${reply.liked_by_me ? 'var(--color-danger)' : 'var(--color-accent)'}; cursor: pointer; font-size: 12px;">
-                                                    ${reply.liked_by_me ? '❤️' : '🤍'} ${reply.likes_count || 0}
+                                            <div style="display: flex; gap: 10px; margin-top: 8px; align-items: center;">
+                                                <button onclick="likeComment(${reply.id})" style="background: none; border: none; color: ${reply.liked_by_me ? 'var(--color-danger)' : 'var(--color-accent)'}; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center;">
+                                                    ${replyHeart} <span>${reply.likes_count || 0}</span>
                                                 </button>
                                                 ${isOwnReply ? `
-                                                    <button onclick="deleteComment(${reply.id})" style="background: none; border: none; color: var(--color-danger); cursor: pointer; font-size: 12px;">🗑️ Sil</button>
+                                                    <button onclick="deleteComment(${reply.id})" style="background: none; border: none; color: var(--color-danger); cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 3px;">
+                                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                                        <span>Sil</span>
+                                                    </button>
                                                 ` : ''}
                                             </div>
                                         </div>
