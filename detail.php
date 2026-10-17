@@ -1157,15 +1157,30 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             renderStoryCardCanvas();
         }
 
+        // Afişi tuvale CORS izniyle yükler. Sayfadaki <img> CORS'suz yüklendiği için onu çizmek tuvali "kirletir"
+        // ve toDataURL/toBlob sessizce hata verirdi (indir/paylaş çalışmazdı). Yüklenemezse null döner, kart afişsiz çizilir.
+        function loadStoryPoster() {
+            const source = document.getElementById('contentPoster')?.src;
+            if (!source) return Promise.resolve(null);
+            return new Promise((resolve) => {
+                const image = new Image();
+                image.crossOrigin = 'anonymous';
+                image.onload = () => resolve(image);
+                image.onerror = () => resolve(null);
+                image.src = source;
+            });
+        }
+
         function closeStoryModal(e) {
             if (e && e.target && e.target.classList.contains('story-modal-box')) return;
             const modal = document.getElementById('storyModal');
             modal.classList.remove('active');
         }
 
-        function renderStoryCardCanvas() {
+        async function renderStoryCardCanvas() {
             const canvas = document.getElementById('storyCanvas');
             if (!canvas) return;
+            const posterImg = await loadStoryPoster();
             const ctx = canvas.getContext('2d');
             const W = canvas.width;  // 720
             const H = canvas.height; // 1280
@@ -1190,7 +1205,6 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             ctx.fillText(typeLabel, W / 2, 118);
 
             // Poster çizimi
-            const posterImg = document.getElementById('contentPoster');
             const posterW = 320;
             const posterH = 480;
             const posterX = (W - posterW) / 2;
@@ -1207,7 +1221,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             ctx.fill();
             ctx.restore();
 
-            if (posterImg && posterImg.complete && posterImg.naturalWidth > 0) {
+            if (posterImg && posterImg.naturalWidth > 0) {
                 ctx.save();
                 ctx.beginPath();
                 ctx.roundRect(posterX, posterY, posterW, posterH, 18);
@@ -1243,7 +1257,8 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             const ratingBoxY = titleY + 45;
             const userRatingEl = document.getElementById('userRatingDisplay');
             const userRatingText = (userRatingEl && userRatingEl.style.display !== 'none') ? userRatingEl.textContent.trim() : '';
-            const platformRatingText = document.getElementById('ratingScore')?.textContent?.trim() || '8.5/10';
+            const rawPlatformRating = document.getElementById('ratingScore')?.textContent?.trim() || '';
+            const platformRatingText = /\d/.test(rawPlatformRating) ? rawPlatformRating : '';
 
             ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
@@ -1256,11 +1271,12 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             const username = (typeof app !== 'undefined' && app.currentUser) ? app.currentUser.username : 'Kitapkurdu';
             ctx.fillStyle = '#fbbf24';
             ctx.font = 'bold 30px Plus Jakarta Sans, sans-serif';
-            ctx.fillText(userRatingText ? `⭐ ${userRatingText}` : `⭐ TMDb ${platformRatingText}`, W / 2, ratingBoxY + 48);
+            const ratingLine = userRatingText ? `⭐ ${userRatingText}` : (platformRatingText ? `⭐ TMDb ${platformRatingText}` : (isUnreleasedContent ? '⏳ Çok yakında' : '⭐ Sosyal Kütüphane'));
+            ctx.fillText(ratingLine, W / 2, ratingBoxY + 48);
 
             ctx.fillStyle = '#cbd5e1';
             ctx.font = '600 16px Plus Jakarta Sans, sans-serif';
-            ctx.fillText(`@${username} tarafından puanlandı`, W / 2, ratingBoxY + 84);
+            ctx.fillText(userRatingText ? `@${username} tarafından puanlandı` : `@${username} ile keşfedildi`, W / 2, ratingBoxY + 84);
 
             // Alt Bilgi
             ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
@@ -1268,39 +1284,77 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             ctx.fillText('sosyalkutuphane.com • Birlikte Keşfet', W / 2, H - 55);
         }
 
-        function downloadStoryCard() {
-            const canvas = document.getElementById('storyCanvas');
-            if (!canvas) return;
-            const link = document.createElement('a');
+        function storyFileName() {
             const title = (document.getElementById('contentTitle')?.textContent || 'icerik')
-                .toLowerCase().replace(/[^a-z0-9]/g, '-');
-            link.download = `sosyal-kutuphane-${title}.png`;
-            link.href = canvas.toDataURL('image/png');
+                .toLocaleLowerCase('tr')
+                .replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ş/g, 's').replace(/ü/g, 'u')
+                .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'icerik';
+            return `sosyal-kutuphane-${title}.png`;
+        }
+
+        // Tuvali PNG dosyasına çevirir; tuval kirlenmişse (afiş CORS'suz geldiyse) null döner.
+        function storyBlob() {
+            const canvas = document.getElementById('storyCanvas');
+            return new Promise((resolve) => {
+                try {
+                    canvas.toBlob((blob) => resolve(blob), 'image/png');
+                } catch (error) {
+                    console.error('Hikaye kartı dışa aktarılamadı:', error);
+                    resolve(null);
+                }
+            });
+        }
+
+        function saveBlob(blob, fileName) {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.download = fileName;
+            link.href = url;
+            document.body.appendChild(link);
             link.click();
-            if (typeof app !== 'undefined') app.toast('Hikaye kartı başarıyla indirildi!', 'success');
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 2000);
+        }
+
+        async function downloadStoryCard() {
+            const blob = await storyBlob();
+            if (!blob) {
+                app.toast('Kart görseli oluşturulamadı. Sayfayı yenileyip tekrar dene.', 'error');
+                return;
+            }
+            saveBlob(blob, storyFileName());
+            app.toast('Hikaye kartı indirildi!', 'success');
         }
 
         async function shareStoryCard() {
-            const canvas = document.getElementById('storyCanvas');
-            if (!canvas) return;
-            try {
-                canvas.toBlob(async (blob) => {
-                    if (!blob) return;
-                    const file = new File([blob], 'hikaye-karti.png', { type: 'image/png' });
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        await navigator.share({
-                            files: [file],
-                            title: document.getElementById('contentTitle')?.textContent || 'Sosyal Kütüphane',
-                            text: 'Sosyal Kütüphane profilimde inceledim! 🎬📚'
-                        });
-                    } else {
-                        downloadStoryCard();
-                    }
-                });
-            } catch (e) {
-                console.error('Paylaşım hatası:', e);
-                downloadStoryCard();
+            const blob = await storyBlob();
+            if (!blob) {
+                app.toast('Kart görseli oluşturulamadı. Sayfayı yenileyip tekrar dene.', 'error');
+                return;
             }
+            const title = document.getElementById('contentTitle')?.textContent || 'Sosyal Kütüphane';
+            const file = new File([blob], storyFileName(), { type: 'image/png' });
+            try {
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file], title, text: `${title} - Sosyal Kütüphane` });
+                    return;
+                }
+                // Dosya paylaşımı desteklenmiyorsa (masaüstü tarayıcılar) sayfa bağlantısını paylaşmayı dene.
+                if (navigator.share) {
+                    await navigator.share({ title, text: `${title} - Sosyal Kütüphane`, url: window.location.href });
+                    return;
+                }
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(window.location.href);
+                    app.toast('Bağlantı panoya kopyalandı. Görseli indirip birlikte paylaşabilirsin.', 'success');
+                    return;
+                }
+            } catch (error) {
+                if (error && error.name === 'AbortError') return; // kullanıcı paylaşım penceresini kapattı
+                console.error('Paylaşım hatası:', error);
+            }
+            saveBlob(blob, storyFileName());
+            app.toast('Paylaşım bu cihazda desteklenmiyor; görsel indirildi.', 'info');
         }
 
         document.addEventListener('DOMContentLoaded', async function () {

@@ -48,9 +48,26 @@ test.describe('tam hareket (sistem tercihi yok)', () => {
         expect(await viewport.evaluate(el => el.scrollLeft)).toBe(0);
         await expect(page.locator('#topRatedMovies .strip-arrow--next')).toBeVisible();
         await expect(page.locator('#topRatedMovies .strip-arrow--prev')).toBeDisabled();
+        // Hiçbir sayfada yarım kesilmiş afiş kalmaz: görünür alanın kenarına taşan kart sayısı sıfırdır.
+        const cutCards = () => viewport.evaluate((el) => {
+            const box = el.getBoundingClientRect();
+            return [...el.querySelectorAll('.strip-card')].filter((card) => {
+                const r = card.getBoundingClientRect();
+                return (r.left < box.left - 1 && r.right > box.left + 1) || (r.left < box.right - 1 && r.right > box.right + 1);
+            }).length;
+        });
+        expect(await cutCards()).toBe(0);
+        const firstTitle = await page.locator('#topRatedMovies .strip-card').first().getAttribute('aria-label');
         await page.click('#topRatedMovies .strip-arrow--next');
         await expect.poll(() => viewport.evaluate(el => el.scrollLeft)).toBeGreaterThan(100);
+        await page.waitForTimeout(900);
+        expect(await cutCards()).toBe(0);
         await expect(page.locator('#topRatedMovies .strip-arrow--prev')).toBeEnabled();
+        // Bir önceki sayfanın son afişi bu sayfada tekrar görünmez: ilk sayfanın başındaki kart artık ekran dışındadır.
+        const firstBox = await page.locator('#topRatedMovies .strip-card').first().boundingBox();
+        const viewBox = await viewport.boundingBox();
+        expect(firstBox.x + firstBox.width).toBeLessThanOrEqual(viewBox.x + 1);
+        expect(firstTitle).toBeTruthy();
 
         // Fareyle sürükleme: sola çekince içerik ilerler ve bırakılan fare afişe tıklama sayılmaz.
         const before = await viewport.evaluate(el => el.scrollLeft);

@@ -13,11 +13,30 @@
         </a>`;
     }
 
-    // Ok düğmeleri kenarlara yaklaşınca soluklaşır; fareyle sürükleyerek de kaydırılır (dokunmatikte kaydırma zaten yerleşiktir).
+    const CARD_GAP = 18;
+    const CARD_MIN_WIDTH = 150;
+
+    // Ok düğmeleri sayfa sayfa ilerletir: her sayfada tam kartlar görünür (yarım afiş kalmaz), bir sonraki sayfa
+    // kaldığı yerden başlar. Fareyle sürüklenir, dokunmatikte kaydırılır; bırakınca en yakın karta oturur.
     function wire(host) {
         const viewport = host.querySelector('.strip-viewport');
         const prev = host.querySelector('.strip-arrow--prev');
         const next = host.querySelector('.strip-arrow--next');
+        let perPage = 2;
+        let step = CARD_MIN_WIDTH + CARD_GAP;
+
+        // Görünür genişliğe sığan tam kart sayısı; kartlar bu sayıyı tam dolduracak şekilde genişletilir.
+        function layout() {
+            const inner = viewport.clientWidth;
+            if (!inner) return;
+            const oldIndex = Math.round(viewport.scrollLeft / step);
+            perPage = Math.max(2, Math.floor((inner + CARD_GAP) / (CARD_MIN_WIDTH + CARD_GAP)));
+            const width = (inner - (perPage - 1) * CARD_GAP) / perPage;
+            step = width + CARD_GAP;
+            host.style.setProperty('--strip-card-w', `${width}px`);
+            viewport.scrollLeft = oldIndex * step;
+            syncArrows();
+        }
 
         function syncArrows() {
             const max = viewport.scrollWidth - viewport.clientWidth;
@@ -25,17 +44,21 @@
             next.disabled = viewport.scrollLeft >= max - 2;
         }
 
-        [prev, next].forEach((button) => {
-            button.addEventListener('click', () => {
-                const direction = button === next ? 1 : -1;
-                viewport.scrollBy({ left: direction * Math.max(240, viewport.clientWidth * 0.8), behavior: 'smooth' });
-            });
-        });
+        function goPage(direction) {
+            const max = viewport.scrollWidth - viewport.clientWidth;
+            const index = Math.round(viewport.scrollLeft / step) + direction * perPage;
+            viewport.scrollTo({ left: Math.max(0, Math.min(max, index * step)), behavior: 'smooth' });
+        }
+
+        prev.addEventListener('click', () => goPage(-1));
+        next.addEventListener('click', () => goPage(1));
         viewport.addEventListener('scroll', syncArrows, { passive: true });
-        window.addEventListener('resize', syncArrows, { passive: true });
-        syncArrows();
-        // Afişler geç yüklenince genişlik değişir; bir kez daha eşitle.
-        requestAnimationFrame(syncArrows);
+        if (typeof ResizeObserver === 'function') {
+            new ResizeObserver(layout).observe(viewport);
+        } else {
+            window.addEventListener('resize', layout, { passive: true });
+        }
+        layout();
 
         let startX = 0;
         let startScroll = 0;

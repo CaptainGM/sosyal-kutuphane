@@ -121,9 +121,10 @@ final class PickerTest extends TestCase
 
     public function testRatingAndLanguageFiltersAreWhitelisted(): void
     {
-        $query = pickerDiscoverQuery(pickerNormalizeParams(['rating' => '8', 'lang' => 'ko']), 1, '2026-10-17')['query'];
+        $query = pickerDiscoverQuery(pickerNormalizeParams(['rating' => '8', 'lang' => 'tr']), 1, '2026-10-17')['query'];
         $this->assertSame(8.0, $query['vote_average.gte']);
-        $this->assertSame('ko', $query['with_original_language']);
+        $this->assertSame('tr', $query['with_original_language']);
+        $this->assertSame('', pickerNormalizeParams(['lang' => 'ko'])['lang'], 'Desteklenmeyen dil yok sayılır');
 
         // Taban eşikten düşük istek tabanı gevşetmez; tanımsız değerler yok sayılır.
         $series = pickerDiscoverQuery(pickerNormalizeParams(['kind' => 'series', 'rating' => '7']), 1, '2026-10-17')['query'];

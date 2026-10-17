@@ -315,6 +315,45 @@
             align-content: center;
         }
 
+        /* Boş sahnede rastgele film afişleri: her birkaç saniyede biri yenisiyle değişir. */
+        .teaser {
+            display: flex;
+            justify-content: center;
+            gap: clamp(6px, 1.6vw, 12px);
+            margin-bottom: 8px;
+        }
+
+        .teaser:empty {
+            display: none;
+        }
+
+        .teaser-card {
+            width: clamp(44px, 12vw, 104px);
+            aspect-ratio: 2 / 3;
+            overflow: hidden;
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            background: var(--color-surface-2);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .teaser-card:nth-child(odd) {
+            transform: translateY(10px);
+        }
+
+        .teaser-card img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 1;
+            transition: opacity 0.45s ease;
+        }
+
+        .teaser-card img.is-out {
+            opacity: 0;
+        }
+
         @media (max-width: 900px) {
             .picker-grid {
                 grid-template-columns: minmax(0, 1fr);
@@ -420,7 +459,8 @@
 
             <section class="picker-stage" id="pickerStage" aria-live="polite" aria-label="Öneri">
                 <div class="empty stage-empty">
-                    <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg></div>
+                    <div class="teaser" id="teaser" aria-hidden="true"></div>
+                    <div class="empty-icon" id="stageIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg></div>
                     <div class="empty-title">Hazır olduğunda çevir</div>
                     <div>Öneri burada beliriyor: afişler çark gibi dönüp birinde duruyor.</div>
                 </div>
@@ -445,7 +485,7 @@
         const FILTERS = {
             era: { group: 'eraGroup', fallback: 'modern', options: [['any', 'Hepsi'], ['recent', 'Son 5 yıl'], ['modern', '2000 ve sonrası'], ['classic', 'Klasikler']] },
             rating: { group: 'ratingGroup', fallback: '0', options: [['0', 'Fark etmez'], ['7', '7+'], ['8', '8+']] },
-            lang: { group: 'langGroup', fallback: '', options: [['', 'Hepsi'], ['tr', 'Türkçe'], ['en', 'İngilizce'], ['ko', 'Korece']] },
+            lang: { group: 'langGroup', fallback: '', options: [['', 'Hepsi'], ['tr', 'Türkçe'], ['en', 'İngilizce']] },
         };
         const state = { kind: 'movie', duration: 'any', moods: new Set(), era: 'modern', rating: '0', lang: '', busy: false, history: [] };
 
@@ -480,6 +520,74 @@
             ).join('');
         }
 
+        // Boş sahnedeki rastgele afişler (TMDB popüler listesinin rastgele sayfası).
+        const teaser = { pool: [], timer: null, kind: null, shown: [] };
+
+        function teaserSlots() {
+            return document.querySelectorAll('#teaser .teaser-card img');
+        }
+
+        function teaserNext() {
+            const used = new Set(teaser.shown);
+            const fresh = teaser.pool.filter(item => !used.has(item.poster_path));
+            return fresh[Math.floor(Math.random() * fresh.length)] || null;
+        }
+
+        function teaserTick() {
+            const slots = teaserSlots();
+            if (!slots.length) {
+                clearInterval(teaser.timer);
+                teaser.timer = null;
+                return;
+            }
+            const next = teaserNext();
+            if (!next) return;
+            const index = Math.floor(Math.random() * slots.length);
+            const image = slots[index];
+            const url = `https://image.tmdb.org/t/p/w185${next.poster_path}`;
+            const preload = new Image();
+            preload.onload = () => {
+                image.classList.add('is-out');
+                setTimeout(() => {
+                    teaser.shown[index] = next.poster_path;
+                    image.src = url;
+                    image.alt = '';
+                    image.title = next.title || next.name || '';
+                    image.classList.remove('is-out');
+                }, 460);
+            };
+            preload.src = url;
+        }
+
+        async function loadTeaser() {
+            const host = document.getElementById('teaser');
+            if (!host || teaser.kind === state.kind) return;
+            teaser.kind = state.kind;
+            clearInterval(teaser.timer);
+            teaser.timer = null;
+            try {
+                const page = 1 + Math.floor(Math.random() * 5);
+                const response = await fetch(`/api/tmdb-proxy.php?endpoint=list&type=${state.kind}&list=popular&page=${page}`, { credentials: 'include' });
+                const data = await response.json();
+                const pool = (data.results || []).filter(item => item.poster_path);
+                for (let i = pool.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [pool[i], pool[j]] = [pool[j], pool[i]];
+                }
+                if (pool.length < 8 || teaser.kind !== state.kind || !document.getElementById('teaser')) return;
+                teaser.pool = pool;
+                teaser.shown = pool.slice(0, 5).map(item => item.poster_path);
+                host.innerHTML = pool.slice(0, 5).map(item =>
+                    `<div class="teaser-card"><img src="https://image.tmdb.org/t/p/w185${item.poster_path}" alt="" title="${escapeHtml(item.title || item.name || '')}" decoding="async"></div>`
+                ).join('');
+                document.getElementById('stageIcon')?.setAttribute('hidden', '');
+                if (!motionReduced()) teaser.timer = setInterval(teaserTick, 2200);
+            } catch (error) {
+                // Afişler gelmezse sahne simgeyle kalır.
+                teaser.kind = null;
+            }
+        }
+
         function setKind(kind) {
             state.kind = kind;
             document.querySelectorAll('[data-kind]').forEach((button) => {
@@ -489,6 +597,7 @@
             });
             renderDurations();
             syncUrl();
+            loadTeaser();
         }
 
         document.addEventListener('click', (event) => {
@@ -679,7 +788,7 @@
 
         document.getElementById('rollBtn').addEventListener('click', roll);
 
-        // Paylaşılan bağlantı: ?kind=series&duration=short&moods=gerilim,komedi&era=recent&rating=7&lang=ko seçimi geri yükler.
+        // Paylaşılan bağlantı: ?kind=series&duration=short&moods=gerilim,komedi&era=recent&rating=7&lang=tr seçimi geri yükler.
         (function restoreFromUrl() {
             const params = new URLSearchParams(window.location.search);
             if (params.get('kind') === 'series') state.kind = 'series';

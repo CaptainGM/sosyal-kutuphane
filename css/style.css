@@ -2122,14 +2122,13 @@ html {
 
 .strip {
     position: relative;
-    width: 100vw;
-    margin-left: calc(50% - 50vw);
 }
 
 .strip-viewport {
     overflow-x: auto;
-    padding: 8px max(var(--gutter), calc((100vw - var(--page-w)) / 2 + var(--gutter))) 18px;
+    padding: 10px 0 18px;
     scrollbar-width: none;
+    scroll-snap-type: x mandatory;
     cursor: grab;
     overscroll-behavior-x: contain;
 }
@@ -2146,6 +2145,7 @@ html {
 .strip-viewport.is-dragging {
     cursor: grabbing;
     user-select: none;
+    scroll-snap-type: none;
 }
 
 .strip-viewport.is-dragging .strip-card {
@@ -2169,12 +2169,17 @@ html {
     color: var(--color-text);
     text-decoration: none;
     -webkit-user-drag: none;
+    scroll-snap-align: start;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.strip-card:last-child {
+    margin-right: 0;
 }
 
 .strip-card:hover,
 .strip-card:focus-visible {
-    transform: translateY(-6px) scale(1.02);
+    transform: translateY(-6px);
     box-shadow: var(--shadow-hover);
     outline: none;
 }
@@ -2248,11 +2253,11 @@ html {
 }
 
 .strip-arrow--prev {
-    left: 14px;
+    left: -22px;
 }
 
 .strip-arrow--next {
-    right: 14px;
+    right: -22px;
 }
 
 .strip-arrow svg {
@@ -2266,18 +2271,21 @@ html {
     text-align: center;
 }
 
-@media (max-width: 640px) {
-    .strip-arrow {
-        width: 40px;
-        height: 40px;
-    }
-
+/* Sayfa genişliği dar olunca oklar kartların üstüne, kenarın içine oturur. */
+@media (max-width: 1320px) {
     .strip-arrow--prev {
         left: 6px;
     }
 
     .strip-arrow--next {
         right: 6px;
+    }
+}
+
+@media (max-width: 640px) {
+    .strip-arrow {
+        width: 40px;
+        height: 40px;
     }
 }
 
@@ -2288,24 +2296,24 @@ html {
 
 /* Açık temada kareler beyaza yakın zemine karıştığı için daha opak ve daha az örtülü; koyu temada tersi. */
 :root {
-    --atmo-opacity: 0.42;
-    --atmo-veil-mid: 10%;
-    --atmo-veil-edge: 48%;
+    --atmo-opacity: 0.55;
+    --atmo-veil-mid: 8%;
+    --atmo-veil-edge: 40%;
     --atmo-saturate: 1.15;
 }
 
 :root[data-theme="dark"] {
-    --atmo-opacity: 0.3;
-    --atmo-veil-mid: 25%;
-    --atmo-veil-edge: 62%;
+    --atmo-opacity: 0.42;
+    --atmo-veil-mid: 14%;
+    --atmo-veil-edge: 52%;
     --atmo-saturate: 1;
 }
 
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-        --atmo-opacity: 0.3;
-        --atmo-veil-mid: 25%;
-        --atmo-veil-edge: 62%;
+        --atmo-opacity: 0.42;
+        --atmo-veil-mid: 14%;
+        --atmo-veil-edge: 52%;
         --atmo-saturate: 1;
     }
 }

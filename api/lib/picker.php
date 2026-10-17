@@ -32,7 +32,7 @@ const PICKER_ERAS = [
 const PICKER_DEFAULT_ERA = 'modern';
 // En düşük TMDB puanı (0 = türün taban eşiği). Orijinal dil: boş = fark etmez.
 const PICKER_RATINGS = [0, 7, 8];
-const PICKER_LANGUAGES = ['tr', 'en', 'ko'];
+const PICKER_LANGUAGES = ['tr', 'en'];
 
 // İstemciden gelen değerleri doğrular ve güvenli bir parametre dizisine çevirir. Bilinmeyen ruh halleri atılır.
 function pickerNormalizeParams(array $input): array {

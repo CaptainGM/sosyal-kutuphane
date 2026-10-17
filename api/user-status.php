@@ -106,6 +106,10 @@ $content = $contentCollection->findOne([$contentDbIdCol => $contentId]);
 $dbContentId = $content->_id ?? null;
 
 if (!$dbContentId) {
+    // Hiç kimse bu içeriği listesine eklememişse kayıt yoktur; okuma isteği hata değil "durum yok" döner.
+    if ($method === 'GET') {
+        jsonResponse(['success' => true, 'data' => ['status' => null, 'rating' => null]]);
+    }
     jsonResponse(['success' => false, 'message' => 'İçerik veritabanında bulunamadı.'], 404);
 }
 

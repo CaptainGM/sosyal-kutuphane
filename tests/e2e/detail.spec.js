@@ -97,4 +97,33 @@ test.describe('detay sayfası düğmeleri', () => {
         await expect(page.locator('#unreleasedNotice')).toHaveCount(0);
         await expect(page.locator('#rateBtn')).toBeEnabled();
     });
+
+    test('hikaye kartı: afişli kart PNG olarak indirilir (tuval CORS yüzünden kirlenmez)', async ({ page }) => {
+        const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
+        // TMDB görselleri gerçekte CORS başlığıyla gelir; sahte yanıt da aynısını yapar.
+        await page.route('https://image.tmdb.org/**', route => route.fulfill({ body: png, contentType: 'image/png', headers: { 'access-control-allow-origin': '*' } }));
+        await mockDetail(page, fakeMovie({ poster_path: '/mock.png' }));
+        await page.goto('/detail.php?type=movie&id=987001');
+        await expect(page.locator('#contentTitle')).toHaveText('Deneme Filmi');
+        await page.click('#storyCardBtn');
+        await expect(page.locator('#storyModal')).toHaveClass(/active/);
+        // Kart çizilene kadar bekle (afiş yüklenmesi asenkron).
+        await page.waitForTimeout(600);
+
+        const [download] = await Promise.all([
+            page.waitForEvent('download'),
+            page.click('#storyModal .btn-primary'),
+        ]);
+        expect(download.suggestedFilename()).toBe('sosyal-kutuphane-deneme-filmi.png');
+        const path = await download.path();
+        const header = require('node:fs').readFileSync(path).subarray(0, 8);
+        expect([...header]).toEqual([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+
+        // Paylaş: desteklenmeyen tarayıcıda görsel indirilir ya da bağlantı kopyalanır; hata vermez.
+        const errors = [];
+        page.on('pageerror', (error) => errors.push(error.message));
+        await page.click('#storyModal .btn-secondary');
+        await expect(page.locator('#toastContainer .toast').last()).toBeVisible();
+        expect(errors).toEqual([]);
+    });
 });
