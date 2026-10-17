@@ -1,12 +1,13 @@
 <?php
 // Yönetim konsolu API'si: yöneticinin her şeyi görebildiği tek uç, ?action= ile seçilir.
-//   Okuma (GET):  overview, users, user, comments, comment, deleted, reports, audit
+//   Okuma (GET):  overview, users, user, comments, comment, deleted, reports, audit, moderation
 //   Yazma (POST, CSRF + yönetici): delete_comment, restore_comment, resolve_report,
 //                                  suspend_user, unsuspend_user, mute_user, unmute_user
 // Her yazma işlemi audit_log'a kaydedilir. Silinen yorumlar kalıcı yok olmaz (deleted_comments arşivi),
 // düzenlemeler comment_revisions'ta saklanır. Özel mesajların içeriği bilinçli olarak kapsam dışıdır (gizlilik).
 require_once 'config.php';
 require_once __DIR__ . '/lib/audit.php';
+require_once __DIR__ . '/lib/moderation-log.php';
 
 requireAdmin($db);
 $adminId = (int)getCurrentUserId();
@@ -535,6 +536,50 @@ function adminTargetUser($db, int $adminId, $rawId): array {
     return [$userId, $user];
 }
 
+// Engellenen denemeler: kim, neyi (mesaj içeriği hariç), neden, ne zaman. Karar yönetici işlemleriyle verilir.
+function adminModeration($db): void {
+    $p = adminPageParams($_GET['page'] ?? 1, $_GET['per_page'] ?? 20, 50);
+    $since = new MongoDB\BSON\UTCDateTime((time() - MODERATION_WINDOW_DAYS * 86400) * 1000);
+    $total = $db->moderation_events->countDocuments([]);
+    $events = iterator_to_array($db->moderation_events->find([], ['sort' => ['created_at' => -1], 'skip' => $p['skip'], 'limit' => $p['per_page']]), false);
+    $summary = iterator_to_array($db->moderation_events->aggregate([
+        ['$match' => ['created_at' => ['$gte' => $since]]],
+        ['$group' => ['_id' => '$user_id', 'count' => ['$sum' => 1], 'last_at' => ['$max' => '$created_at']]],
+        ['$sort' => ['count' => -1]],
+        ['$limit' => 20],
+    ]), false);
+
+    $ids = [];
+    foreach ($events as $event) {
+        $ids[] = (int) $event['user_id'];
+    }
+    foreach ($summary as $row) {
+        $ids[] = (int) $row['_id'];
+    }
+    $users = adminUsersById($db, $ids);
+
+    jsonResponse([
+        'success' => true,
+        'window_days' => MODERATION_WINDOW_DAYS,
+        'summary' => array_map(static fn ($row) => [
+            'user' => adminUserBrief($users[(int) $row['_id']] ?? null),
+            'count' => (int) $row['count'],
+            'last_at' => adminIso($row['last_at']),
+        ], $summary),
+        'events' => array_map(static fn ($event) => [
+            'id' => (int) $event['_id'],
+            'user' => adminUserBrief($users[(int) $event['user_id']] ?? null),
+            'kind' => $event['kind'],
+            'reason' => $event['reason'],
+            'text' => $event['text'] ?? null,
+            'created_at' => adminIso($event['created_at']),
+        ], $events),
+        'total' => $total,
+        'page' => $p['page'],
+        'per_page' => $p['per_page'],
+    ]);
+}
+
 if ($method === 'GET') {
     switch ($_GET['action'] ?? 'overview') {
         case 'overview':
@@ -560,6 +605,9 @@ if ($method === 'GET') {
             break;
         case 'audit':
             adminAudit($db);
+            break;
+        case 'moderation':
+            adminModeration($db);
             break;
         default:
             jsonResponse(['success' => false, 'message' => 'Bilinmeyen işlem'], 400);

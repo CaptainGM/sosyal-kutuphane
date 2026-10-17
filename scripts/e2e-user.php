@@ -83,6 +83,7 @@ if ($comments) {
 $db->comment_likes->deleteMany(['$or' => [['user_id' => ['$in' => $ids]], ['comment_id' => ['$in' => $allComments]]]]);
 $db->comment_reactions->deleteMany(['$or' => [['user_id' => ['$in' => $ids]], ['comment_id' => ['$in' => $allComments]]]]);
 $db->buddy_reads->deleteMany(['$or' => [['owner_id' => ['$in' => $ids]], ['partner_id' => ['$in' => $ids]]]]);
+$db->moderation_events->deleteMany(['user_id' => ['$in' => $ids]]);
 $db->comment_reports->deleteMany(['$or' => [['reporter_id' => ['$in' => $ids]], ['comment_id' => ['$in' => $allComments]]]]);
 $db->comment_revisions->deleteMany(['comment_id' => ['$in' => $allComments]]);
 $db->deleted_comments->deleteMany(['comment.user_id' => ['$in' => $ids]]);

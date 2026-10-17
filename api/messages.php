@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/lib/moderation-log.php';
 require_once __DIR__ . '/lib/push.php';
 require_once __DIR__ . '/lib/demo.php';
 require_once __DIR__ . '/lib/dm.php';
@@ -150,9 +151,9 @@ if ($method === 'GET') {
     }
 
     // Dolandırıcılık ve küfür taraması ile sel koruması (bkz. api/lib/dm.php). Bağlantılara izin verilir.
-    $moderationError = dmModerationError($text);
-    if ($moderationError !== null) {
-        jsonResponse(['success' => false, 'message' => $moderationError], 422);
+    $verdict = dmModerationVerdict($text);
+    if ($verdict !== null) {
+        rejectModeratedText($db, $userId, 'dm', $verdict, $text);
     }
     $rateError = dmRateError(dmRecentActivity($db, $userId, time()), $text, time());
     if ($rateError !== null) {

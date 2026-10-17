@@ -136,9 +136,14 @@ function llmModerationVerdict($db, string $text, ?callable $transport = null): ?
     return $verdict;
 }
 
-// Yorum/yanıt için kullanıcıya gösterilecek hata ya da null.
-function commentLlmModerationError($db, string $text): ?string {
+// Yorum/yanıt için karar: ['reason' => 'llm', 'message' => ...] ya da null.
+function commentLlmVerdict($db, string $text): ?array {
     return llmModerationVerdict($db, $text) === true
-        ? 'Yorumunuz küfür veya hakaret içeriyor. Lütfen saygılı bir dil kullanın.'
+        ? ['reason' => 'llm', 'message' => 'Yorumunuz küfür veya hakaret içeriyor. Lütfen saygılı bir dil kullanın.']
         : null;
+}
+
+function commentLlmModerationError($db, string $text): ?string {
+    $verdict = commentLlmVerdict($db, $text);
+    return $verdict === null ? null : $verdict['message'];
 }

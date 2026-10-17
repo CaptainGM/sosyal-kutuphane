@@ -2,6 +2,7 @@
 require_once 'config.php';
 require_once __DIR__ . '/lib/demo.php';
 require_once __DIR__ . '/lib/moderation.php';
+require_once __DIR__ . '/lib/moderation-log.php';
 require_once __DIR__ . '/lib/content-snapshot.php';
 require_once __DIR__ . '/lib/episodes.php';
 require_once __DIR__ . '/lib/audit.php';
@@ -251,9 +252,9 @@ if ($method === 'GET') {
     }
 
     // Önce hızlı kelime listesi, temizse (anahtar tanımlıysa) yapay zekâ ikinci katmanı.
-    $moderationError = commentModerationError($commentText) ?? commentLlmModerationError($db, $commentText);
-    if ($moderationError !== null) {
-        jsonResponse(['success' => false, 'message' => $moderationError], 422);
+    $verdict = commentModerationVerdict($commentText) ?? commentLlmVerdict($db, $commentText);
+    if ($verdict !== null) {
+        rejectModeratedText($db, $userId, $parentCommentId !== null && $parentCommentId !== '' ? 'reply' : 'comment', $verdict, $commentText);
     }
 
     // Çıkmamış yapımlar hakkında yorum (ve yanıt) yazılamaz.
@@ -344,9 +345,9 @@ if ($method === 'GET') {
         jsonResponse(['success' => false, 'message' => 'Yorum en fazla ' . COMMENT_MAX_LENGTH . ' karakter olabilir'], 400);
     }
     // Önce hızlı kelime listesi, temizse (anahtar tanımlıysa) yapay zekâ ikinci katmanı.
-    $moderationError = commentModerationError($commentText) ?? commentLlmModerationError($db, $commentText);
-    if ($moderationError !== null) {
-        jsonResponse(['success' => false, 'message' => $moderationError], 422);
+    $verdict = commentModerationVerdict($commentText) ?? commentLlmVerdict($db, $commentText);
+    if ($verdict !== null) {
+        rejectModeratedText($db, $userId, 'comment', $verdict, $commentText);
     }
 
     $comment = $db->comments->findOne(['_id' => (int)$commentId]);
