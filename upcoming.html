@@ -207,6 +207,11 @@
             </div>
         </header>
 
+        <section class="panel episode-calendar" id="episodeCalendar" aria-labelledby="episodeCalendarTitle" hidden>
+            <h2 id="episodeCalendarTitle" class="section-title">Takip ettiğin dizilerin yeni bölümleri</h2>
+            <div id="episodeCalendarList"></div>
+        </section>
+
         <p id="upcomingStatus" class="loading" role="status">Yükleniyor...</p>
         <div id="upcomingGrid"></div>
 
@@ -220,6 +225,33 @@
     <script src="js/escape-html.js"></script>
     <script src="js/app.js"></script>
     <script>
+        // Giriş yapmış kullanıcının takip ettiği dizilerin sonraki bölümleri (sona ermiş diziler listede yer almaz).
+        (async function loadEpisodeCalendar() {
+            await app.initPromise;
+            if (!app.currentUser) return;
+            const box = document.getElementById('episodeCalendar');
+            const list = document.getElementById('episodeCalendarList');
+            try {
+                const response = await fetch('/api/episode-calendar.php', { credentials: 'include' });
+                const data = await response.json();
+                if (!data.success || !data.items || data.items.length === 0) return;
+                const today = data.today;
+                list.innerHTML = data.items.map(item => {
+                    const when = item.air_date === today ? 'Bugün' : app.formatReleaseDate(item.air_date);
+                    const poster = item.poster || 'img/no-poster.svg';
+                    return `<a class="episode-row" href="${app.escapeHtml(item.url)}">
+                        <img src="${app.escapeHtml(poster)}" alt="" loading="lazy" decoding="async">
+                        <span class="episode-row-text"><strong>${app.escapeHtml(item.title)}</strong>
+                        <small>S${Number(item.season)} B${Number(item.episode)}${item.episode_name ? ' · ' + app.escapeHtml(item.episode_name) : ''}</small></span>
+                        <span class="episode-row-date">${app.escapeHtml(when)}</span>
+                    </a>`;
+                }).join('');
+                box.hidden = false;
+            } catch (error) {
+                // Takvim gelmezse sayfanın geri kalanı yine çalışır.
+            }
+        })();
+
         const POSTER_BASE = 'https://image.tmdb.org/t/p/w342';
         let currentPage = 1;
         let totalPages = 1;

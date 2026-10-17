@@ -1243,3 +1243,61 @@ button.timeline-item:focus-visible {
     font-weight: 700;
     min-width: 0.5em;
 }
+
+/* Bölüm takvimi (upcoming.html): takip edilen dizilerin sonraki bölümleri. */
+.episode-calendar {
+    margin-bottom: 26px;
+    padding: 18px 20px;
+}
+
+.episode-row {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 6px;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text);
+    text-decoration: none;
+}
+
+.episode-row:first-of-type {
+    border-top: none;
+}
+
+.episode-row:hover,
+.episode-row:focus-visible {
+    color: var(--color-accent);
+    outline: none;
+}
+
+.episode-row img {
+    width: 44px;
+    height: 66px;
+    border-radius: 8px;
+    object-fit: cover;
+    background: var(--color-surface-2);
+}
+
+.episode-row-text {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.episode-row-text strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.episode-row-text small {
+    color: var(--color-text-faint);
+}
+
+.episode-row-date {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-accent);
+    white-space: nowrap;
+}

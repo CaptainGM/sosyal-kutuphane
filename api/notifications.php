@@ -1,10 +1,14 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/lib/calendar.php';
 requireLogin();
 
 $userId = (int)getCurrentUserId();
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    // Takip edilen dizilerin bugün ya da yarın yayınlanacak bölümleri (bir kez) bildirime dönüşür.
+    notifyDueEpisodes($db, $userId);
+
     // Vizyon tarihi gelen hatırlatıcılar her biri için bir kez bildirime dönüşür.
     $today = (new DateTime('now', new DateTimeZone('Europe/Istanbul')))->format('Y-m-d');
     foreach ($db->release_reminders->find(['user_id' => $userId, 'notified' => false, 'release_date' => ['$lte' => $today]]) as $reminder) {
