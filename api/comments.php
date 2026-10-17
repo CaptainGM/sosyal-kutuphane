@@ -5,6 +5,8 @@ require_once __DIR__ . '/lib/content-snapshot.php';
 require_once __DIR__ . '/lib/episodes.php';
 require_once __DIR__ . '/lib/audit.php';
 require_once __DIR__ . '/lib/social.php';
+require_once __DIR__ . '/lib/tmdb.php';
+require_once __DIR__ . '/lib/llm-moderation.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 if ($method !== 'GET') {
@@ -231,9 +233,16 @@ if ($method === 'GET') {
         jsonResponse(['success' => false, 'message' => $mutedMessage], 403);
     }
 
-    $moderationError = commentModerationError($commentText);
+    // Önce hızlı kelime listesi, temizse (anahtar tanımlıysa) yapay zekâ ikinci katmanı.
+    $moderationError = commentModerationError($commentText) ?? commentLlmModerationError($db, $commentText);
     if ($moderationError !== null) {
         jsonResponse(['success' => false, 'message' => $moderationError], 422);
+    }
+
+    // Çıkmamış yapımlar hakkında yorum (ve yanıt) yazılamaz.
+    $unreleased = unreleasedContent($db, $contentType, $contentId);
+    if ($unreleased !== null) {
+        jsonResponse(['success' => false, 'message' => unreleasedMessage($unreleased, 'yorum yapabilirsin')], 403);
     }
 
     $episodeRef = null;
@@ -316,7 +325,8 @@ if ($method === 'GET') {
     if (mb_strlen($commentText, 'UTF-8') > COMMENT_MAX_LENGTH) {
         jsonResponse(['success' => false, 'message' => 'Yorum en fazla ' . COMMENT_MAX_LENGTH . ' karakter olabilir'], 400);
     }
-    $moderationError = commentModerationError($commentText);
+    // Önce hızlı kelime listesi, temizse (anahtar tanımlıysa) yapay zekâ ikinci katmanı.
+    $moderationError = commentModerationError($commentText) ?? commentLlmModerationError($db, $commentText);
     if ($moderationError !== null) {
         jsonResponse(['success' => false, 'message' => $moderationError], 422);
     }

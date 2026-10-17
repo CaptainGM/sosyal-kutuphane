@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/lib/tmdb.php';
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonResponse(['success' => false, 'message' => 'Geçersiz istek'], 405);
 }
@@ -42,6 +43,13 @@ if ($contentType === 'movie') {
 
 $contentCollection = $db->$contentCollectionName;
 $statusCollection = $db->$statusCollectionName;
+
+if (($status !== 'watchlist') || ($rating !== null && (int) $rating > 0)) {
+    $unreleased = unreleasedContent($db, $contentType, $contentId);
+    if ($unreleased !== null) {
+        jsonResponse(['success' => false, 'message' => unreleasedMessage($unreleased, 'puan verebilir ve izlediğini işaretleyebilirsin')], 403);
+    }
+}
 
 if ($contentType === 'movie' && $contentData) {
     $contentCollection->updateOne(
