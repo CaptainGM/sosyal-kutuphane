@@ -63,6 +63,51 @@ final class ModerationTest extends TestCase
         }
     }
 
+    public function testSpacedDottedMaskedAndLeetObfuscationIsBlocked(): void
+    {
+        foreach ([
+            's.i.k.t.i.r git', 's-i-k-t-i-r', 's*k*t*i*r', 's!k!t!r', 's1kt1r', 'sıkt1r', 'S İ K T İ R', 'siiiiiktir',
+            'a.m.k', 'a m k', 'o.ç gibi', 'o ç', 'oç', '0rospu', 'o r o s p u', 'f*ck this', 'f.u.c.k', 'sh1t', 'b1tch', 'a$$hole',
+            "s\u{200B}i\u{200B}k\u{200B}t\u{200B}i\u{200B}r", "\u{FF53}\u{FF49}\u{FF4B}\u{FF54}\u{FF49}\u{FF52}",
+            "\u{43E}r\u{43E}spu", "\u{430}mk",
+        ] as $text) {
+            $this->assertNotNull(commentModerationError($text), "Yazım hilesi yakalanmalı: $text");
+        }
+    }
+
+    public function testForeignLanguageProfanityIsBlocked(): void
+    {
+        foreach ([
+            'fuck off', 'go fuck yourself', 'motherfucker', 'what the fuck', 'fckin awful', 'you dumb bitch', 'wtf is this',
+            'Scheiße, was für ein Film', 'du Arschloch', 'du Hurensohn', 'Fick dich', 'Wichser',
+            'Putain de film', 'merde alors', 'va te faire enculer', 'fils de pute', 'salope',
+            'hijo de puta', 'mierda de película', 'cabrón', 'pendejo',
+            'cazzo', 'vaffanculo', 'stronzo', 'caralho', 'porra',
+            'блядь', 'сука', 'пизда', 'мудак', 'kurwa', 'klootzak', 'sharmouta',
+        ] as $text) {
+            $this->assertNotNull(commentModerationError($text), "Yabancı küfür yakalanmalı: $text");
+        }
+    }
+
+    public function testCommonWordsWithSimilarLettersPass(): void
+    {
+        foreach ([
+            'Sık sık izliyorum, çok güzel bir film.', 'Sıkıştı ama sıkıcı değildi', 'Çok sıkıldım', 'Sıkmak için bir sebep yok',
+            'Bu kitapta kuş gibi uçan bir karakter var', 'Amina ile tanıştım, güzel bir kadın', 'Dickens ve Scunthorpe üzerine',
+            'Pickup kamyonet sahnesi', 'cocktail bar sahnesi', 'pussycat çok tatlıydı', 'fickle bir karakter', 'Sokakta yürüyordu',
+            'ananas gibi tatlı', 'Ahmet bey geldi', 'götürdü onu', 'Gotik atmosfer', 'Essex kıyısında', 'bokeh efekti',
+            'The OC efsaneydi', 'Sikke koleksiyonu', 'Siklet sporu', 'assistant yönetmen', 'class ve passion', 'documentary',
+        ] as $text) {
+            $this->assertNull(commentModerationError($text), "Yanlış alarm olmamalı: $text");
+        }
+    }
+
+    public function testSelfHarmIncitementIsBlockedButReportingIsNot(): void
+    {
+        $this->assertNotNull(commentModerationError('kendini öldür, kimse seni istemiyor'));
+        $this->assertNull(commentModerationError('Karakter kendini öldürdü ve film orada bitiyor'));
+    }
+
     public function testBurstLimitBlocksFastRepeatedComments(): void
     {
         $now = 1_700_000_000;
