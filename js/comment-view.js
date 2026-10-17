@@ -7,6 +7,56 @@
     const CONTENT_LABELS = { movie: 'Film', series: 'Dizi', book: 'Kitap' };
     const NO_POSTER = 'img/no-poster.svg';
 
+    // Yorum tepkileri: her yoruma en fazla bir tepki. Sayılar ve kendi tepkisi sunucudan gelir.
+    const REACTION_TYPES = [
+        ['laugh', '😂', 'Güldüm'],
+        ['cry', '😢', 'Ağladım'],
+        ['wow', '😮', 'Şaşırdım'],
+        ['think', '🤔', 'Düşündürdü'],
+    ];
+
+    function reactionButtons(comment) {
+        if (!comment.reactions || (typeof app !== 'undefined' && app.currentUser && app.currentUser.is_demo)) return '';
+        const items = REACTION_TYPES.map(([key, emoji, label]) => {
+            const count = Number(comment.reactions[key]) || 0;
+            const mine = comment.my_reaction === key;
+            return `<button type="button" class="cv-react${mine ? ' is-on' : ''}" data-reaction-comment="${Number(comment.id)}" data-reaction-type="${key}" aria-pressed="${mine}" aria-label="${label}${count ? `, ${count}` : ''}" title="${label}"><span aria-hidden="true">${emoji}</span><span class="cv-react-count" aria-hidden="true">${count || ''}</span></button>`;
+        }).join('');
+        return `<span class="cv-reactions" role="group" aria-label="Tepkiler">${items}</span>`;
+    }
+
+    // Tepki düğmesi: aynı tepkiye ikinci basış geri alır, başka tepki öncekinin yerine geçer.
+    document.addEventListener('click', async (event) => {
+        const button = event.target.closest('[data-reaction-type]');
+        if (!button) return;
+        const commentId = Number(button.dataset.reactionComment);
+        const type = button.dataset.reactionType;
+        const removing = button.getAttribute('aria-pressed') === 'true';
+        const notify = (message) => { if (typeof app !== 'undefined') app.toast(message, 'error'); };
+        button.disabled = true;
+        try {
+            const response = await fetch('/api/comment-reaction.php', {
+                method: removing ? 'DELETE' : 'POST',
+                headers: typeof app !== 'undefined' ? app.authHeaders() : { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(removing ? { comment_id: commentId } : { comment_id: commentId, type }),
+            });
+            const data = await response.json();
+            if (!data.success) {
+                notify(data.message || 'Tepki kaydedilemedi');
+                return;
+            }
+            const group = button.closest('.cv-reactions');
+            if (group) {
+                group.outerHTML = reactionButtons({ id: commentId, reactions: data.reactions, my_reaction: data.my_reaction });
+            }
+        } catch (error) {
+            notify('Bağlantı hatası');
+        } finally {
+            button.disabled = false;
+        }
+    });
+
     // Beğeni simgesi: beğenildiğinde dolu, değilse çerçeveli. Renk düğmenin "is-liked" durumundan gelir.
     function heartIcon(liked) {
         return `<svg width="14" height="14" viewBox="0 0 24 24" fill="${liked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="${HEART_PATH}"/></svg>`;
@@ -132,5 +182,5 @@
         }
     });
 
-    global.CommentView = { body, times, card, contentLink, heartIcon, ago, absolute };
+    global.CommentView = { body, times, card, contentLink, heartIcon, reactionButtons, ago, absolute };
 })(window);
