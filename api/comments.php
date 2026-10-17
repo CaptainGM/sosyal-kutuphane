@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/lib/demo.php';
 require_once __DIR__ . '/lib/moderation.php';
 require_once __DIR__ . '/lib/content-snapshot.php';
 require_once __DIR__ . '/lib/episodes.php';
@@ -211,6 +212,7 @@ if ($method === 'GET') {
     jsonResponse(['success' => true, 'locked' => false, 'comments' => $comments]);
 
 } elseif ($method === 'POST') {
+    requireNotDemo();
     requireCsrf();
     $contentType = commentContentType($input['content_type'] ?? null);
     $contentId = $contentType ? commentContentId($contentType, $input['content_id'] ?? null) : null;
@@ -314,6 +316,7 @@ if ($method === 'GET') {
     jsonResponse(['success' => true, 'comment' => $newComment, 'id' => $commentId]);
 
 } elseif ($method === 'PUT') {
+    requireNotDemo();
     requireCsrf();
     $commentId = filter_var($input['comment_id'] ?? null, FILTER_VALIDATE_INT);
     $commentText = $input['comment_text'] ?? null;
@@ -356,6 +359,7 @@ if ($method === 'GET') {
     jsonResponse(['success' => true, 'message' => 'Yorum düzenlendi', 'updated_at' => commentIso($updatedAt)]);
 
 } elseif ($method === 'DELETE') {
+    requireNotDemo();
     requireCsrf();
     $commentId = filter_var($input['comment_id'] ?? null, FILTER_VALIDATE_INT);
 

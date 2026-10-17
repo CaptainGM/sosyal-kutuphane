@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/lib/demo.php';
 require_once __DIR__ . '/lib/tmdb.php';
 requireLogin();
 requireCsrf();
@@ -125,6 +126,9 @@ if ($method === 'GET') {
     jsonResponse(['success' => true, 'data' => $response]);
 
 } elseif ($method === 'POST') {
+    if ($rating !== null && $rating > 0) {
+        requireNotDemo();
+    }
     // Çıkmamış yapım yalnızca izlenecekler listesine eklenebilir; puan ve "izledim/izliyorum" çıkış tarihinden sonra açılır.
     if (($status && $status !== 'watchlist') || ($rating !== null && $rating > 0)) {
         $unreleased = unreleasedContent($db, $contentType, $contentId);

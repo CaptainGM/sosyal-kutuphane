@@ -1173,3 +1173,25 @@ button.timeline-item:focus-visible {
     outline: none;
     transform: translateY(-2px);
 }
+
+/* Demo hesap bilgi şeridi (app.js: showDemoNotice). Sayfa içeriğini kapatmaz. */
+.demo-notice {
+    position: fixed;
+    left: 50%;
+    bottom: 14px;
+    z-index: 60;
+    width: max-content;
+    max-width: calc(100% - 32px);
+    transform: translateX(-50%);
+    padding: 9px 16px;
+    border: 1px solid rgba(var(--color-accent-rgb), 0.45);
+    border-radius: var(--radius-pill);
+    background: var(--navbar-bg);
+    color: var(--color-text);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    font-size: 12.5px;
+    font-weight: 600;
+    text-align: center;
+}

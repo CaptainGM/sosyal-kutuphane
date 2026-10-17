@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/lib/demo.php';
 require_once __DIR__ . '/lib/tmdb.php';
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonResponse(['success' => false, 'message' => 'Geçersiz istek'], 405);
@@ -13,6 +14,9 @@ $contentType = $input['content_type'] ?? null;
 $contentId = $input['content_id'] ?? null;
 $status = $input['status'] ?? 'watched';
 $rating = $input['rating'] ?? null;
+if ($rating !== null && (int) $rating > 0) {
+    requireNotDemo();
+}
 $contentData = $input['content_data'] ?? null;
 
 if (!$contentType || !$contentId) {

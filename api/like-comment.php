@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/lib/demo.php';
 requireLogin();
 requireCsrf();
 
@@ -13,6 +14,7 @@ if (!$commentId) {
 }
 
 if ($method === 'POST') {
+    requireNotDemo();
     $existingLike = $db->comment_likes->findOne(['user_id' => $currentUserId, 'comment_id' => $commentId]);
 
     if ($existingLike) {
@@ -33,6 +35,7 @@ if ($method === 'POST') {
     jsonResponse(['success' => true, 'likes_count' => $likesCount, 'liked' => $liked]);
 
 } elseif ($method === 'DELETE') {
+    requireNotDemo();
     $db->comment_likes->deleteOne(['user_id' => $currentUserId, 'comment_id' => $commentId]);
 
     $likesCount = $db->comment_likes->countDocuments(['comment_id' => $commentId]);
