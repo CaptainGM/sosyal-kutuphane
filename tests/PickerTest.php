@@ -86,4 +86,53 @@ final class PickerTest extends TestCase
         $this->assertSame('22 dk bölüm · 8.2 puan · Eğlenceli / Aile', pickerReason($params, ['vote_average' => 8.2], 22));
         $this->assertSame('Popüler ve beğenilen bir yapım', pickerReason(pickerNormalizeParams([]), [], null));
     }
+
+    public function testEraDefaultsToModernAndNeverRecommendsUnreleased(): void
+    {
+        $params = pickerNormalizeParams([]);
+        $this->assertSame('modern', $params['era']);
+        $this->assertSame(0, $params['rating']);
+        $this->assertSame('', $params['lang']);
+
+        $movie = pickerDiscoverQuery($params, 1, '2026-10-17')['query'];
+        $this->assertSame('2000-01-01', $movie['primary_release_date.gte']);
+        $this->assertSame('2026-10-17', $movie['primary_release_date.lte']);
+
+        $series = pickerDiscoverQuery(pickerNormalizeParams(['kind' => 'series']), 1, '2026-10-17')['query'];
+        $this->assertSame('2000-01-01', $series['first_air_date.gte']);
+        $this->assertSame('2026-10-17', $series['first_air_date.lte']);
+    }
+
+    public function testEraRecentClassicAndAny(): void
+    {
+        $recent = pickerDiscoverQuery(pickerNormalizeParams(['era' => 'recent']), 1, '2026-10-17')['query'];
+        $this->assertSame('2021-01-01', $recent['primary_release_date.gte']);
+
+        $classic = pickerDiscoverQuery(pickerNormalizeParams(['era' => 'classic']), 1, '2026-10-17')['query'];
+        $this->assertArrayNotHasKey('primary_release_date.gte', $classic);
+        $this->assertSame('1999-12-31', $classic['primary_release_date.lte']);
+
+        $any = pickerDiscoverQuery(pickerNormalizeParams(['era' => 'any']), 1, '2026-10-17')['query'];
+        $this->assertArrayNotHasKey('primary_release_date.gte', $any);
+        $this->assertSame('2026-10-17', $any['primary_release_date.lte'], 'Dönem fark etmese de çıkmamış yapım önerilmez');
+
+        $this->assertSame('modern', pickerNormalizeParams(['era' => 'prehistoric'])['era']);
+    }
+
+    public function testRatingAndLanguageFiltersAreWhitelisted(): void
+    {
+        $query = pickerDiscoverQuery(pickerNormalizeParams(['rating' => '8', 'lang' => 'tr']), 1, '2026-10-17')['query'];
+        $this->assertSame(8.0, $query['vote_average.gte']);
+        $this->assertSame('tr', $query['with_original_language']);
+        $this->assertSame('', pickerNormalizeParams(['lang' => 'ko'])['lang'], 'Desteklenmeyen dil yok sayılır');
+
+        // Taban eşikten düşük istek tabanı gevşetmez; tanımsız değerler yok sayılır.
+        $series = pickerDiscoverQuery(pickerNormalizeParams(['kind' => 'series', 'rating' => '7']), 1, '2026-10-17')['query'];
+        $this->assertSame(7.0, $series['vote_average.gte']);
+
+        $bad = pickerNormalizeParams(['rating' => '3', 'lang' => 'xx;drop']);
+        $this->assertSame(0, $bad['rating']);
+        $this->assertSame('', $bad['lang']);
+        $this->assertArrayNotHasKey('with_original_language', pickerDiscoverQuery($bad, 1, '2026-10-17')['query']);
+    }
 }

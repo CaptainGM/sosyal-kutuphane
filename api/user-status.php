@@ -1,5 +1,7 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/lib/demo.php';
+require_once __DIR__ . '/lib/tmdb.php';
 requireLogin();
 requireCsrf();
 
@@ -105,6 +107,10 @@ $content = $contentCollection->findOne([$contentDbIdCol => $contentId]);
 $dbContentId = $content->_id ?? null;
 
 if (!$dbContentId) {
+    // Hiç kimse bu içeriği listesine eklememişse kayıt yoktur; okuma isteği hata değil "durum yok" döner.
+    if ($method === 'GET') {
+        jsonResponse(['success' => true, 'data' => ['status' => null, 'rating' => null]]);
+    }
     jsonResponse(['success' => false, 'message' => 'İçerik veritabanında bulunamadı.'], 404);
 }
 
@@ -120,6 +126,16 @@ if ($method === 'GET') {
     jsonResponse(['success' => true, 'data' => $response]);
 
 } elseif ($method === 'POST') {
+    if ($rating !== null && $rating > 0) {
+        requireNotDemo();
+    }
+    // Çıkmamış yapım yalnızca izlenecekler listesine eklenebilir; puan ve "izledim/izliyorum" çıkış tarihinden sonra açılır.
+    if (($status && $status !== 'watchlist') || ($rating !== null && $rating > 0)) {
+        $unreleased = unreleasedContent($db, $contentType, $contentId);
+        if ($unreleased !== null) {
+            jsonResponse(['success' => false, 'message' => unreleasedMessage($unreleased, 'puan verebilir ve izlediğini işaretleyebilirsin')], 403);
+        }
+    }
     if ($status && $rating !== null && $rating > 0) {
         $statusCollection->deleteOne(['user_id' => $currentUserId, $contentIdCol => $dbContentId]);
 

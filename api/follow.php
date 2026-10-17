@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/lib/demo.php';
 requireLogin();
 requireCsrf();
 
@@ -17,6 +18,7 @@ if ($currentUserId === $targetUserId) {
 }
 
 if ($method === 'POST') {
+    requireNotDemo();
     $blocked = $db->blocks->findOne(['$or' => [
         ['blocker_id' => $currentUserId, 'blocked_id' => $targetUserId],
         ['blocker_id' => $targetUserId, 'blocked_id' => $currentUserId],
@@ -49,6 +51,7 @@ if ($method === 'POST') {
 
     jsonResponse(['success' => true, 'message' => 'Kullanıcı takip edildi']);
 } elseif ($method === 'DELETE') {
+    requireNotDemo();
     $db->follows->deleteOne(['follower_id' => $currentUserId, 'following_id' => $targetUserId]);
 
     jsonResponse(['success' => true, 'message' => 'Takip kaldırıldı']);

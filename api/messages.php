@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/lib/demo.php';
 require_once __DIR__ . '/lib/dm.php';
 requireLogin();
 
@@ -94,6 +95,7 @@ if ($method === 'GET') {
     }
 
 } elseif ($method === 'POST') {
+    requireNotDemo();
     requireCsrf();
     $input = json_decode(file_get_contents('php://input'), true);
     $text = trim($input['text'] ?? '');

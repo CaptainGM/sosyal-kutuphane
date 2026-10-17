@@ -137,8 +137,13 @@
             background: var(--poster);
             color: #ffffff;
             box-shadow: 0 30px 60px -22px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.35);
-            transform: rotateY(calc(var(--i) * 51.4286deg)) translateZ(300px);
+            transform: rotateY(calc(var(--i) * 360deg / var(--count, 7))) translateZ(var(--ring-radius, 300px));
             backface-visibility: hidden;
+        }
+
+        /* Halkada 7'den fazla afiş olabilir; azaltılmış yelpazede yalnızca ilk 7'si gösterilir. */
+        :root[data-motion="reduced"] .poster[data-extra] {
+            display: none;
         }
 
         .poster::after {
@@ -244,14 +249,9 @@
             line-height: 1.45;
         }
 
-        :root[data-motion="full"] .motion-cta {
-            padding: 7px 14px;
-            border-color: var(--color-border);
-            background: var(--color-surface);
-            color: var(--color-text-muted);
-            font-size: 12.5px;
-            font-weight: 700;
-            box-shadow: none;
+        /* Animasyonlar zaten açıkken durdurma düğmesi gösterilmez (yalnızca "aç" düğmesi vardır). */
+        :root[data-motion="full"] .motion-row {
+            display: none;
         }
 
         /* --- Sağ: cam giriş kartı --- */
@@ -597,6 +597,18 @@
             transform: translateX(3px);
         }
 
+        /* Halkanın kenara taşan afişleri (özellikle dar ekranda) sayfayı yatay kaydırmasın. */
+        html, body {
+            overflow-x: clip;
+        }
+
+        .auth-corner {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 20;
+        }
+
         /* 3D arka plan canvas'ı: tam ekran, içeriğin altında, tıklamaları geçirir. */
         #scene3d {
             position: fixed;
@@ -647,6 +659,10 @@
 </head>
 
 <body>
+    <!-- Sağ üst köşe: tema seçimi (js/app.js tema düğmelerini kendisi bağlar). Hareket düğmesi bu köşede istenmez. -->
+    <div class="auth-corner" data-no-motion-toggle>
+        <button type="button" class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir" title="Tema değiştir"><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
+    </div>
     <main class="auth-shell">
         <section class="auth-hero">
             <span class="eyebrow reveal"><span class="dot"></span>Film · Dizi · Kitap</span>
@@ -1199,23 +1215,50 @@
                 showError('forgotError', 'Bağlantı hatası: ' + error.message);
             }
         }
-        // Giriş ekranındaki 3D halka: gerçek popüler film ve dizi afişleri (TMDB). Alınamazsa tasarımdaki gradyan posterler kalır.
+        // Giriş ekranındaki 3D halka: gerçek popüler film ve dizi afişleri (TMDB). Her ziyarette popüler listelerin
+        // farklı sayfalarından karışık seçilir; alınamazsa tasarımdaki gradyan posterler kalır.
+        const RING_SIZE = 10;
+        const shuffled = (list) => {
+            const copy = list.slice();
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
+        };
+
+        function ensureRingSlots(count) {
+            const ring = document.querySelector('.ring');
+            if (!ring) return;
+            const template = ring.querySelector('.poster');
+            ring.style.setProperty('--count', String(count));
+            for (let i = ring.querySelectorAll('.poster').length; i < count; i++) {
+                const extra = template.cloneNode(true);
+                extra.style.cssText = '--i: ' + i + ';';
+                extra.setAttribute('data-extra', '');
+                ring.appendChild(extra);
+            }
+        }
+
         async function loadRingPosters() {
             try {
-                const fetchList = (type) => fetch('/api/tmdb-proxy.php?endpoint=list&type=' + type + '&list=popular&page=1', { credentials: 'include' })
+                const fetchList = (type) => fetch('/api/tmdb-proxy.php?endpoint=list&type=' + type + '&list=popular&page=' + (1 + Math.floor(Math.random() * 5)), { credentials: 'include' })
                     .then(res => res.json())
-                    .then(data => (data.results || []).filter(item => item.poster_path));
+                    .then(data => shuffled((data.results || []).filter(item => item.poster_path)));
                 const [movies, series] = await Promise.all([fetchList('movie'), fetchList('series')]);
-                // Film ve dizi sırayla karışır: 4 film + 3 dizi.
+                // Film ve dizi sırayla karışır; sıra da her ziyarette değişir.
                 const picks = [];
-                for (let i = 0; picks.length < 7 && (i < movies.length || i < series.length); i++) {
+                for (let i = 0; picks.length < RING_SIZE && (i < movies.length || i < series.length); i++) {
                     if (movies[i]) picks.push({ item: movies[i], kind: 'Film' });
-                    if (picks.length < 7 && series[i]) picks.push({ item: series[i], kind: 'Dizi' });
+                    if (picks.length < RING_SIZE && series[i]) picks.push({ item: series[i], kind: 'Dizi' });
                 }
+                if (picks.length < 7) return;
+                ensureRingSlots(Math.min(RING_SIZE, picks.length));
                 document.querySelectorAll('.ring .poster').forEach((el, index) => {
                     const pick = picks[index];
                     if (!pick) return;
-                    const poster = "url('https://image.tmdb.org/t/p/w342" + pick.item.poster_path + "')";
+                    // w500: halkanın önündeki afiş ekranda ~210 px genişliğe çıkar; w342 yüksek çözünürlüklü ekranlarda bulanık kalıyordu.
+                    const poster = "url('https://image.tmdb.org/t/p/w500" + pick.item.poster_path + "')";
                     el.style.setProperty('--poster', 'linear-gradient(180deg, rgba(5, 6, 11, 0) 35%, rgba(5, 6, 11, 0.85) 100%), ' + poster + ' center / cover no-repeat');
                     el.querySelector('.poster-kind').textContent = pick.kind;
                     el.querySelector('strong').textContent = pick.item.title || pick.item.name;
@@ -1227,7 +1270,7 @@
         }
         loadRingPosters();
 
-        // Hareket denetimi: azaltılmış modda belirgin bir "Animasyonları aç" düğmesi, tam harekette sessiz bir "durdur" düğmesi.
+        // Hareket denetimi: yalnızca azaltılmış modda "Animasyonları aç" düğmesi görünür (tam harekette satır gizlidir).
         (function wireMotionControl() {
             const button = document.getElementById('motionCta');
             const note = document.getElementById('motionNote');
@@ -1240,9 +1283,6 @@
                 note.textContent = motion.systemReduced && !motion.userChoice
                     ? 'Windows\'ta "Animasyon efektleri" kapalı olduğu için sayfa durağan gösteriliyor.'
                     : 'Animasyonları siz kapattınız.';
-            } else {
-                button.textContent = 'Animasyonları durdur';
-                note.textContent = '';
             }
             button.addEventListener('click', () => motion.toggle());
         })();

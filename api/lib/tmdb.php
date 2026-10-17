@@ -48,3 +48,30 @@ function tmdbImageUrl(?string $path, string $size = 'w342'): ?string {
     }
     return "https://image.tmdb.org/t/p/$size$path";
 }
+
+// Henüz yayınlanmamış bir film/dizi mi? Öyleyse ['date' => 'YYYY-MM-DD'|null] (tarih belli değilse null) döner;
+// yayınlanmışsa, kitapsa ya da TMDB'ye ulaşılamıyorsa null (engel konmaz). Sonuç 1 saat önbelleğe alınır;
+// çıkış tarihi gelince yorum, puan ve "izledim" kendiliğinden açılır.
+function unreleasedContent($db, string $type, $contentId): ?array {
+    if (($type !== 'movie' && $type !== 'series') || !is_numeric($contentId)) {
+        return null;
+    }
+    $data = tmdbGet($db, ($type === 'series' ? 'tv/' : 'movie/') . (int) $contentId, [], 3600);
+    return $data === null ? null : unreleasedFromTmdb($data, $type, date('Y-m-d'));
+}
+
+// Saf karar: TMDB detay yanıtı + bugünün tarihi -> yayınlanmamışsa ['date' => ...]. (tests/UnreleasedTest.php)
+function unreleasedFromTmdb(array $data, string $type, string $today): ?array {
+    $date = (string) ($data[$type === 'series' ? 'first_air_date' : 'release_date'] ?? '');
+    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+        return $date > $today ? ['date' => $date] : null;
+    }
+    // Tarihi olmayan yapım, henüz üretim aşamasındaysa yayınlanmamış sayılır.
+    $status = (string) ($data['status'] ?? '');
+    return in_array($status, ['Rumored', 'Planned', 'In Production', 'Post Production'], true) ? ['date' => null] : null;
+}
+
+function unreleasedMessage(array $info, string $what): string {
+    $when = $info['date'] !== null ? ' (' . date('d.m.Y', strtotime($info['date'])) . ')' : '';
+    return "Bu yapım henüz yayınlanmadı$when. Çıkış tarihinden sonra $what.";
+}

@@ -1,4 +1,4 @@
-// Giriş ekranının 3D arka planı: parçacık alanı ve dönen tel kafes (Three.js).
+// Giriş ekranının 3D arka planı: yavaşça dönen parçacık alanı (Three.js).
 // Tema değişince (themechange olayı) renkler ve karışım modu yeniden uygulanır:
 // koyu temada parlayan (toplamalı) noktalar, açık temada koyu ve doygun noktalar.
 // WebGL yoksa, CDN erişilemezse ya da hareket azaltılmışsa (data-motion="reduced") sessizce atlanır.
@@ -10,14 +10,10 @@
     const PALETTES = {
         dark: {
             points: ['#818cf8', '#c084fc', '#f472b6', '#22d3ee'],
-            knot: 0x8b8dff, knotOpacity: 0.38,
-            shell: 0xc084fc, shellOpacity: 0.16,
             pointOpacity: 1,
         },
         light: {
             points: ['#4f46e5', '#9333ea', '#db2777', '#0e7490'],
-            knot: 0x4f46e5, knotOpacity: 0.5,
-            shell: 0x9333ea, shellOpacity: 0.22,
             pointOpacity: 0.75,
         },
     };
@@ -96,18 +92,6 @@
         const points = new THREE.Points(pointsGeometry, pointsMaterial);
         scene.add(points);
 
-        // Tel kafes düğüm ve dış kabuk: arka planda derinlik hissi veren 3D odak noktası.
-        const focusPosition = new THREE.Vector3(-6.6, -3.6, -6);
-        const knotMaterial = new THREE.MeshBasicMaterial({ wireframe: true, transparent: true });
-        const knot = new THREE.Mesh(new THREE.TorusKnotGeometry(1.15, 0.34, 220, 28), knotMaterial);
-        knot.position.copy(focusPosition);
-        scene.add(knot);
-
-        const shellMaterial = new THREE.MeshBasicMaterial({ wireframe: true, transparent: true });
-        const shell = new THREE.Mesh(new THREE.IcosahedronGeometry(2.4, 1), shellMaterial);
-        shell.position.copy(focusPosition);
-        scene.add(shell);
-
         // Tema renkleri ve karışım modu: ilk açılışta ve her tema değişiminde.
         function applyTheme() {
             const name = currentTheme();
@@ -125,13 +109,7 @@
             pointsMaterial.opacity = config.pointOpacity;
             pointsMaterial.needsUpdate = true;
 
-            knotMaterial.color.setHex(config.knot);
-            knotMaterial.opacity = config.knotOpacity;
-            knotMaterial.needsUpdate = true;
 
-            shellMaterial.color.setHex(config.shell);
-            shellMaterial.opacity = config.shellOpacity;
-            shellMaterial.needsUpdate = true;
         }
         applyTheme();
         window.addEventListener('themechange', applyTheme);
@@ -159,10 +137,6 @@
             const t = clock.getElapsedTime();
             points.rotation.y = t * 0.02 + pointerX * 0.25;
             points.rotation.x = pointerY * 0.15;
-            knot.rotation.x = t * 0.18;
-            knot.rotation.y = t * 0.12;
-            shell.rotation.x = -t * 0.08;
-            shell.rotation.y = t * 0.1;
 
             camera.position.x += (pointerX * 1.2 - camera.position.x) * 0.04;
             camera.position.y += (-pointerY * 0.8 - camera.position.y) * 0.04;

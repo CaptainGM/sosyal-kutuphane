@@ -5,7 +5,7 @@ if (isLoggedIn()) {
     $userId = $_SESSION['user_id'];
     $user = $db->users->findOne(
         ['_id' => $userId],
-        ['projection' => ['username' => 1, 'email' => 1, 'bio' => 1, 'avatar_url' => 1, 'totp_enabled' => 1, 'is_admin' => 1, 'status' => 1]]
+        ['projection' => ['username' => 1, 'email' => 1, 'bio' => 1, 'avatar_url' => 1, 'totp_enabled' => 1, 'is_admin' => 1, 'status' => 1, 'is_demo' => 1]]
     );
 
     // Askıya alınan hesabın oturumu kapanır; arayüz giriş ekranına döner.
@@ -26,6 +26,7 @@ if (isLoggedIn()) {
                 'avatar_url' => $user->avatar_url ?? null,
                 'totp_enabled' => $user->totp_enabled ?? false,
                 'is_admin' => $user->is_admin ?? false,
+                'is_demo' => !empty($user->is_demo),
             ],
             'csrf_token' => csrfToken()
         ]);

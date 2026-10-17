@@ -1,10 +1,13 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/lib/demo.php';
 require_once __DIR__ . '/lib/moderation.php';
 require_once __DIR__ . '/lib/content-snapshot.php';
 require_once __DIR__ . '/lib/episodes.php';
 require_once __DIR__ . '/lib/audit.php';
 require_once __DIR__ . '/lib/social.php';
+require_once __DIR__ . '/lib/tmdb.php';
+require_once __DIR__ . '/lib/llm-moderation.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 if ($method !== 'GET') {
@@ -209,6 +212,7 @@ if ($method === 'GET') {
     jsonResponse(['success' => true, 'locked' => false, 'comments' => $comments]);
 
 } elseif ($method === 'POST') {
+    requireNotDemo();
     requireCsrf();
     $contentType = commentContentType($input['content_type'] ?? null);
     $contentId = $contentType ? commentContentId($contentType, $input['content_id'] ?? null) : null;
@@ -231,9 +235,16 @@ if ($method === 'GET') {
         jsonResponse(['success' => false, 'message' => $mutedMessage], 403);
     }
 
-    $moderationError = commentModerationError($commentText);
+    // Önce hızlı kelime listesi, temizse (anahtar tanımlıysa) yapay zekâ ikinci katmanı.
+    $moderationError = commentModerationError($commentText) ?? commentLlmModerationError($db, $commentText);
     if ($moderationError !== null) {
         jsonResponse(['success' => false, 'message' => $moderationError], 422);
+    }
+
+    // Çıkmamış yapımlar hakkında yorum (ve yanıt) yazılamaz.
+    $unreleased = unreleasedContent($db, $contentType, $contentId);
+    if ($unreleased !== null) {
+        jsonResponse(['success' => false, 'message' => unreleasedMessage($unreleased, 'yorum yapabilirsin')], 403);
     }
 
     $episodeRef = null;
@@ -305,6 +316,7 @@ if ($method === 'GET') {
     jsonResponse(['success' => true, 'comment' => $newComment, 'id' => $commentId]);
 
 } elseif ($method === 'PUT') {
+    requireNotDemo();
     requireCsrf();
     $commentId = filter_var($input['comment_id'] ?? null, FILTER_VALIDATE_INT);
     $commentText = $input['comment_text'] ?? null;
@@ -316,7 +328,8 @@ if ($method === 'GET') {
     if (mb_strlen($commentText, 'UTF-8') > COMMENT_MAX_LENGTH) {
         jsonResponse(['success' => false, 'message' => 'Yorum en fazla ' . COMMENT_MAX_LENGTH . ' karakter olabilir'], 400);
     }
-    $moderationError = commentModerationError($commentText);
+    // Önce hızlı kelime listesi, temizse (anahtar tanımlıysa) yapay zekâ ikinci katmanı.
+    $moderationError = commentModerationError($commentText) ?? commentLlmModerationError($db, $commentText);
     if ($moderationError !== null) {
         jsonResponse(['success' => false, 'message' => $moderationError], 422);
     }
@@ -346,6 +359,7 @@ if ($method === 'GET') {
     jsonResponse(['success' => true, 'message' => 'Yorum düzenlendi', 'updated_at' => commentIso($updatedAt)]);
 
 } elseif ($method === 'DELETE') {
+    requireNotDemo();
     requireCsrf();
     $commentId = filter_var($input['comment_id'] ?? null, FILTER_VALIDATE_INT);
 

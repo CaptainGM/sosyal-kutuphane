@@ -10,6 +10,26 @@ test.describe('giriş ekranı', () => {
         await expect(page.locator('.demo-chip', { hasText: 'Ahmet' })).toHaveCount(1);
     });
 
+    test('sağ üstteki tema düğmesi temayı değiştirir ve hatırlar; hareket düğmesi eklenmez', async ({ page }) => {
+        await page.goto('/index.html');
+        const html = page.locator('html');
+        const before = await html.evaluate(el => el.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+        await page.click('.auth-corner .theme-toggle-btn');
+        const expected = before === 'dark' ? 'light' : 'dark';
+        await expect(html).toHaveAttribute('data-theme', expected);
+        await page.reload();
+        await expect(html).toHaveAttribute('data-theme', expected);
+        await expect(page.locator('.auth-corner .motion-toggle-btn')).toHaveCount(0);
+    });
+
+    test('dar ekranda sayfa yatay kaymaz', async ({ page }) => {
+        await page.setViewportSize({ width: 390, height: 800 });
+        await page.goto('/index.html');
+        await page.waitForSelector('.ring .poster');
+        await page.waitForTimeout(800);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+    });
+
 
     test.describe('hareket azaltma tercihi açıkken', () => {
         test.use({ reducedMotion: 'reduce' });

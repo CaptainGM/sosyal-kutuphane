@@ -271,10 +271,16 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
         }
 
         .detail-hero .action-btn.active,
-        .detail-hero .action-btn.active:hover,
-        .detail-hero .action-btn.btn-shimmer {
+        .detail-hero .action-btn.active:hover {
             border-color: transparent;
             background: var(--color-accent-gradient);
+        }
+
+        .detail-hero .action-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         /* --- Ana alan --- */
@@ -803,7 +809,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/><line x1="12" x2="12" y1="11" y2="17"/><line x1="9" x2="15" y1="14" y2="14"/></svg>
                                 <span class="btn-label">Özel Listeye Ekle</span>
                             </button>
-                            <button type="button" id="watchTrailerBtn" class="action-btn btn-shimmer" onclick="handleWatchTrailerClick()" style="display: none;">
+                            <button type="button" id="watchTrailerBtn" class="action-btn" onclick="handleWatchTrailerClick()" style="display: none;">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
                                 <span class="btn-label">Fragmanı İzle</span>
                             </button>
@@ -1151,15 +1157,30 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             renderStoryCardCanvas();
         }
 
+        // Afişi tuvale CORS izniyle yükler. Sayfadaki <img> CORS'suz yüklendiği için onu çizmek tuvali "kirletir"
+        // ve toDataURL/toBlob sessizce hata verirdi (indir/paylaş çalışmazdı). Yüklenemezse null döner, kart afişsiz çizilir.
+        function loadStoryPoster() {
+            const source = document.getElementById('contentPoster')?.src;
+            if (!source) return Promise.resolve(null);
+            return new Promise((resolve) => {
+                const image = new Image();
+                image.crossOrigin = 'anonymous';
+                image.onload = () => resolve(image);
+                image.onerror = () => resolve(null);
+                image.src = source;
+            });
+        }
+
         function closeStoryModal(e) {
             if (e && e.target && e.target.classList.contains('story-modal-box')) return;
             const modal = document.getElementById('storyModal');
             modal.classList.remove('active');
         }
 
-        function renderStoryCardCanvas() {
+        async function renderStoryCardCanvas() {
             const canvas = document.getElementById('storyCanvas');
             if (!canvas) return;
+            const posterImg = await loadStoryPoster();
             const ctx = canvas.getContext('2d');
             const W = canvas.width;  // 720
             const H = canvas.height; // 1280
@@ -1184,7 +1205,6 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             ctx.fillText(typeLabel, W / 2, 118);
 
             // Poster çizimi
-            const posterImg = document.getElementById('contentPoster');
             const posterW = 320;
             const posterH = 480;
             const posterX = (W - posterW) / 2;
@@ -1201,7 +1221,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             ctx.fill();
             ctx.restore();
 
-            if (posterImg && posterImg.complete && posterImg.naturalWidth > 0) {
+            if (posterImg && posterImg.naturalWidth > 0) {
                 ctx.save();
                 ctx.beginPath();
                 ctx.roundRect(posterX, posterY, posterW, posterH, 18);
@@ -1237,7 +1257,8 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             const ratingBoxY = titleY + 45;
             const userRatingEl = document.getElementById('userRatingDisplay');
             const userRatingText = (userRatingEl && userRatingEl.style.display !== 'none') ? userRatingEl.textContent.trim() : '';
-            const platformRatingText = document.getElementById('ratingScore')?.textContent?.trim() || '8.5/10';
+            const rawPlatformRating = document.getElementById('ratingScore')?.textContent?.trim() || '';
+            const platformRatingText = /\d/.test(rawPlatformRating) ? rawPlatformRating : '';
 
             ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
@@ -1250,11 +1271,12 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             const username = (typeof app !== 'undefined' && app.currentUser) ? app.currentUser.username : 'Kitapkurdu';
             ctx.fillStyle = '#fbbf24';
             ctx.font = 'bold 30px Plus Jakarta Sans, sans-serif';
-            ctx.fillText(userRatingText ? `⭐ ${userRatingText}` : `⭐ TMDb ${platformRatingText}`, W / 2, ratingBoxY + 48);
+            const ratingLine = userRatingText ? `⭐ ${userRatingText}` : (platformRatingText ? `⭐ TMDb ${platformRatingText}` : (isUnreleasedContent ? '⏳ Çok yakında' : '⭐ Sosyal Kütüphane'));
+            ctx.fillText(ratingLine, W / 2, ratingBoxY + 48);
 
             ctx.fillStyle = '#cbd5e1';
             ctx.font = '600 16px Plus Jakarta Sans, sans-serif';
-            ctx.fillText(`@${username} tarafından puanlandı`, W / 2, ratingBoxY + 84);
+            ctx.fillText(userRatingText ? `@${username} tarafından puanlandı` : `@${username} ile keşfedildi`, W / 2, ratingBoxY + 84);
 
             // Alt Bilgi
             ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
@@ -1262,39 +1284,77 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             ctx.fillText('sosyalkutuphane.com • Birlikte Keşfet', W / 2, H - 55);
         }
 
-        function downloadStoryCard() {
-            const canvas = document.getElementById('storyCanvas');
-            if (!canvas) return;
-            const link = document.createElement('a');
+        function storyFileName() {
             const title = (document.getElementById('contentTitle')?.textContent || 'icerik')
-                .toLowerCase().replace(/[^a-z0-9]/g, '-');
-            link.download = `sosyal-kutuphane-${title}.png`;
-            link.href = canvas.toDataURL('image/png');
+                .toLocaleLowerCase('tr')
+                .replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ş/g, 's').replace(/ü/g, 'u')
+                .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'icerik';
+            return `sosyal-kutuphane-${title}.png`;
+        }
+
+        // Tuvali PNG dosyasına çevirir; tuval kirlenmişse (afiş CORS'suz geldiyse) null döner.
+        function storyBlob() {
+            const canvas = document.getElementById('storyCanvas');
+            return new Promise((resolve) => {
+                try {
+                    canvas.toBlob((blob) => resolve(blob), 'image/png');
+                } catch (error) {
+                    console.error('Hikaye kartı dışa aktarılamadı:', error);
+                    resolve(null);
+                }
+            });
+        }
+
+        function saveBlob(blob, fileName) {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.download = fileName;
+            link.href = url;
+            document.body.appendChild(link);
             link.click();
-            if (typeof app !== 'undefined') app.toast('Hikaye kartı başarıyla indirildi!', 'success');
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 2000);
+        }
+
+        async function downloadStoryCard() {
+            const blob = await storyBlob();
+            if (!blob) {
+                app.toast('Kart görseli oluşturulamadı. Sayfayı yenileyip tekrar dene.', 'error');
+                return;
+            }
+            saveBlob(blob, storyFileName());
+            app.toast('Hikaye kartı indirildi!', 'success');
         }
 
         async function shareStoryCard() {
-            const canvas = document.getElementById('storyCanvas');
-            if (!canvas) return;
-            try {
-                canvas.toBlob(async (blob) => {
-                    if (!blob) return;
-                    const file = new File([blob], 'hikaye-karti.png', { type: 'image/png' });
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        await navigator.share({
-                            files: [file],
-                            title: document.getElementById('contentTitle')?.textContent || 'Sosyal Kütüphane',
-                            text: 'Sosyal Kütüphane profilimde inceledim! 🎬📚'
-                        });
-                    } else {
-                        downloadStoryCard();
-                    }
-                });
-            } catch (e) {
-                console.error('Paylaşım hatası:', e);
-                downloadStoryCard();
+            const blob = await storyBlob();
+            if (!blob) {
+                app.toast('Kart görseli oluşturulamadı. Sayfayı yenileyip tekrar dene.', 'error');
+                return;
             }
+            const title = document.getElementById('contentTitle')?.textContent || 'Sosyal Kütüphane';
+            const file = new File([blob], storyFileName(), { type: 'image/png' });
+            try {
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file], title, text: `${title} - Sosyal Kütüphane` });
+                    return;
+                }
+                // Dosya paylaşımı desteklenmiyorsa (masaüstü tarayıcılar) sayfa bağlantısını paylaşmayı dene.
+                if (navigator.share) {
+                    await navigator.share({ title, text: `${title} - Sosyal Kütüphane`, url: window.location.href });
+                    return;
+                }
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(window.location.href);
+                    app.toast('Bağlantı panoya kopyalandı. Görseli indirip birlikte paylaşabilirsin.', 'success');
+                    return;
+                }
+            } catch (error) {
+                if (error && error.name === 'AbortError') return; // kullanıcı paylaşım penceresini kapattı
+                console.error('Paylaşım hatası:', error);
+            }
+            saveBlob(blob, storyFileName());
+            app.toast('Paylaşım bu cihazda desteklenmiyor; görsel indirildi.', 'info');
         }
 
         document.addEventListener('DOMContentLoaded', async function () {
@@ -1307,7 +1367,22 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             }
             loadContentDetail();
             setupStarRating();
+            if (app?.currentUser?.is_demo) applyDemoRestrictions();
         });
+
+        // Demo hesap: yorum ve puan yapılamaz. Form yerine açıklama gösterilir (sunucu da reddeder).
+        function applyDemoRestrictions() {
+            const form = document.querySelector('#commentsPane .comment-form');
+            if (form) {
+                form.hidden = true;
+                form.insertAdjacentHTML('beforebegin', '<div class="notice" role="note" style="margin-bottom: 22px;"><span>Demo hesapta yorum yazılamaz. Kendi hesabını oluşturarak yorum yapabilirsin.</span></div>');
+            }
+            const rateBtn = document.getElementById('rateBtn');
+            if (rateBtn) {
+                rateBtn.disabled = true;
+                rateBtn.title = 'Demo hesapta puan verilemez';
+            }
+        }
 
         function getUrlParams() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -1434,6 +1509,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             }
 
             setupActionButtons(type);
+            applyUnreleasedState(type);
 
             // Sezon sohbeti yalnızca dizilerde vardır; ?tab=season bağlantısı doğrudan o sekmeyi açar.
             const seasonTab = document.getElementById('seasonTabBtn');
@@ -1442,6 +1518,34 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 if (new URLSearchParams(window.location.search).get('tab') === 'season') {
                     selectDiscussPane('season');
                 }
+            }
+            if (isUnreleasedContent) {
+                if (seasonTab) seasonTab.hidden = true;
+                selectDiscussPane('comments');
+            }
+        }
+
+        // Çıkmamış yapım: puan, "izledim" ve yorum kapalıdır (sunucu da reddeder); izlenecekler listesi açık kalır.
+        let isUnreleasedContent = false;
+        function applyUnreleasedState(type) {
+            isUnreleasedContent = type !== 'book' && !!currentContent && app.isUnreleased(currentContent.release_date);
+            if (!isUnreleasedContent) return;
+            const when = app.formatReleaseDate(currentContent.release_date);
+            const hint = `Henüz yayınlanmadı (${when}); çıkış tarihinden sonra açılır.`;
+            document.getElementById('contentMeta').insertAdjacentHTML('afterbegin', metaChips([`Yakında · ${when}`]));
+            ['rateBtn', 'watchBtn'].forEach((id) => {
+                const button = document.getElementById(id);
+                if (!button) return;
+                button.disabled = true;
+                button.title = hint;
+            });
+            const form = document.querySelector('#commentsPane .comment-form');
+            if (form) {
+                form.hidden = true;
+                form.insertAdjacentHTML('beforebegin', `<div class="notice" id="unreleasedNotice" role="note" style="margin-bottom: 22px;">
+                    <svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span>Bu yapım henüz yayınlanmadı (${escapeHtml(when)}). Çıkış tarihinden sonra yorum yapabilir, puan verebilir ve izlediğini işaretleyebilirsin. Şimdilik izlenecekler listene ekleyebilirsin.</span>
+                </div>`);
             }
         }
 
@@ -1767,6 +1871,11 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 const apiStatus = listType === 'readinglist'
                     ? 'to_read'
                     : (currentContentType === 'series' && listType === 'watched' ? 'watching' : listType);
+                // Aynı listeye ikinci kez basmak seçimi geri alır.
+                if (currentListStatus && currentListStatus === (apiStatus === 'to_read' ? 'readinglist' : apiStatus)) {
+                    await removeFromList(apiStatus);
+                    return;
+                }
                 const isScreenContent = currentContentType === 'movie' || currentContentType === 'series';
                 let contentData = {
                     title: currentContent?.title || currentContent?.volumeInfo?.title,
@@ -1812,8 +1921,39 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             }
         }
 
+        // Kullanıcının bu içerikteki mevcut liste durumu ve puanı (düğmelerin geri alınması için).
+        let currentListStatus = null;
+        let currentUserRating = null;
+
+        async function removeFromList(apiStatus) {
+            const isWatchLike = apiStatus === 'watched' || apiStatus === 'watching' || apiStatus === 'read';
+            if (isWatchLike && currentUserRating && !confirm('Listeden çıkarırsan verdiğin puan da silinir. Devam edilsin mi?')) {
+                return;
+            }
+            try {
+                const response = await fetch('/api/user-status.php', {
+                    method: 'DELETE',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ content_type: currentContentType, content_id: currentContentId })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    app.toast('Listeden çıkarıldı.', 'success');
+                    loadUserInteractions();
+                    loadPlatformUserRating();
+                } else {
+                    app.toast('Hata: ' + (data.message || 'Bilinmeyen hata'), 'error');
+                }
+            } catch (error) {
+                console.error('Listeden çıkarma hatası:', error);
+                app.toast('Bağlantı hatası!', 'error');
+            }
+        }
+
         function updateListButtons(status) {
             if (status === 'to_read') status = 'readinglist';
+            currentListStatus = status || null;
 
             const watchKey = currentContentType === 'series' ? 'watching' : 'watched';
             const watchLabel = currentContentType === 'series' ? 'İzliyorum' : 'İzledim';
@@ -1853,6 +1993,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 if (statusData.success && statusData.data) {
                     const listStatus = statusData.data.status;
                     const userRating = statusData.data.rating;
+                    currentUserRating = userRating || null;
 
                     updateListButtons(listStatus);
 

@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/lib/demo.php';
 require_once __DIR__ . '/lib/audit.php';
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonResponse(['success' => false, 'message' => 'Geçersiz istek'], 405);
@@ -41,6 +42,9 @@ if ($user->totp_enabled ?? false) {
     ], 200);
 }
 
+if (!empty($user->is_demo)) {
+    resetDemoAccount($db, (int) $user->_id);
+}
 $_SESSION['user_id'] = $user->_id;
 $_SESSION['username'] = $user->username;
 $_SESSION['email'] = $user->email;

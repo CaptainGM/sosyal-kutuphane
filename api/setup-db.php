@@ -8,6 +8,7 @@ if (PHP_SAPI !== 'cli' && getenv('ALLOW_WEB_SETUP') !== '1') {
 
 require_once 'config.php';
 require_once __DIR__ . '/lib/demo-seed.php';
+require_once __DIR__ . '/lib/demo.php';
 
 header('Content-Type: text/html; charset=utf-8');
 echo "<h2>📋 MongoDB İndeksleri Oluşturuluyor...</h2>";
@@ -167,11 +168,15 @@ foreach ($demoUsers as [$username, $email, $bio]) {
         'bio' => $bio,
         'avatar_url' => null,
         'is_admin' => false,
+        'is_demo' => true,
         'created_at' => new MongoDB\BSON\UTCDateTime(),
         'updated_at' => new MongoDB\BSON\UTCDateTime(),
     ]);
     echo "✅ Kullanıcı eklendi: $username (şifre: 123456)<br>";
 }
+
+// Önceki kurulumlardan kalan demo hesaplar da işaretlenir.
+$db->users->updateMany(['email' => ['$in' => DEMO_EMAILS]], ['$set' => ['is_demo' => true]]);
 
 $seeded = seedDemoLibraries($db);
 if ($seeded > 0) {

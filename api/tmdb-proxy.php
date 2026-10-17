@@ -144,7 +144,7 @@ if ($endpoint === 'search') {
     if ($list === 'top_rated') {
         if ($type === 'series') {
             // TMDB tv/top_rated az oy alan veya çıkmamış dizileri öne çıkardığı için güvenilir filtreli discover kullanılır
-            $url = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=tr-TR&sort_by=vote_average.desc&vote_count.gte=1500&first_air_date.lte=2026-01-01&page=$page";
+            $url = "https://api.themoviedb.org/3/discover/tv?api_key=$apiKey&language=tr-TR&sort_by=vote_average.desc&vote_count.gte=1500&first_air_date.lte=" . date('Y-m-d') . "&page=$page";
         } else {
             // Filmlerde de sahte/düşük oylu içerikleri eleyip kült başyapıtları (Esaretin Bedeli, Baba, Kara Şövalye vb.) listeler
             $url = "https://api.themoviedb.org/3/discover/movie?api_key=$apiKey&language=tr-TR&sort_by=vote_average.desc&vote_count.gte=2000&page=$page";
