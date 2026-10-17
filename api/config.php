@@ -28,7 +28,17 @@ ini_set('session.cookie_secure', $isHttps ? '1' : '0');
 ini_set('session.cookie_httponly', '1');
 ini_set('session.use_strict_mode', '1');
 
-session_start();
+// Oturum dosyası istek boyunca kilitlenmesin: sayfa açılırken gelen onlarca okuma isteği birbirini beklemesin.
+// Yalnızca oturumu değiştiren istekler (giriş, çıkış, CSRF belirteci ve tüm POST/PUT/DELETE) yazabilir.
+// Herkese açık uçlar (SK_NO_SESSION) oturum hiç açmaz; böylece yanıtlarında oturum çerezi ve önbellek engeli olmaz.
+if (!defined('SK_NO_SESSION')) {
+    $scriptName = basename($_SERVER['SCRIPT_NAME'] ?? '');
+    $writesSession = ($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET' || in_array($scriptName, ['auth-status.php', 'logout.php'], true);
+    session_cache_limiter('');
+    session_start($writesSession ? [] : ['read_and_close' => true]);
+    // Oturuma bağlı yanıtlar önbelleğe alınmasın (herkese açık uçlar bunu kendi başlığıyla değiştirir).
+    header('Cache-Control: no-store, no-cache, must-revalidate');
+}
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
@@ -55,17 +65,36 @@ define('MONGO_DB_NAME', getenv('MONGO_DB') ?: 'social_library');
 try {
     $client = new Client(MONGO_URI);
     $db = $client->selectDatabase(MONGO_DB_NAME);
-    $db->command(['ping' => 1]);
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Veritabanı bağlantı hatası']);
     exit;
 }
 
+// Yakalanmayan hatalarda da JSON yanıtı: veritabanı hatası ayrı mesajla, diğerleri genel mesajla döner.
+set_exception_handler(static function (Throwable $e): void {
+    error_log('İşlenmeyen hata: ' . $e->getMessage());
+    if (!headers_sent()) {
+        http_response_code(500);
+        header('Content-Type: application/json; charset=utf-8');
+        header('Cache-Control: no-store, no-cache, must-revalidate');
+    }
+    $message = $e instanceof MongoDB\Driver\Exception\Exception ? 'Veritabanı bağlantı hatası' : 'Sunucu hatası';
+    echo json_encode(['success' => false, 'message' => $message]);
+});
+
 function jsonResponse($data, $statusCode = 200) {
     http_response_code($statusCode);
+    if ($statusCode >= 400) {
+        header('Cache-Control: no-store, no-cache, must-revalidate');
+    }
     echo json_encode($data);
     exit;
+}
+
+// Herkese açık ve kullanıcıya özel olmayan yanıtlar (TMDB listeleri, sıralamalar) tarayıcıda ve CDN'de bir süre tutulur.
+function publicCache(int $maxAgeSeconds = 300): void {
+    header("Cache-Control: public, max-age=$maxAgeSeconds, stale-while-revalidate=3600");
 }
 
 function requireLogin() {

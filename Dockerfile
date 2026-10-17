@@ -4,6 +4,8 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends $PHPIZE_DEPS libssl-dev unzip git \
     && pecl install mongodb \
     && docker-php-ext-enable mongodb \
+    && docker-php-ext-enable opcache \
+    && echo "opcache.enable_cli=1" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
     && apt-get remove -y --auto-remove $PHPIZE_DEPS \
     && rm -rf /var/lib/apt/lists/*
 
@@ -20,4 +22,4 @@ ENV PHP_CLI_SERVER_WORKERS=4
 ENV ENABLE_SSE=0
 
 EXPOSE 8000
-CMD php api/setup-db.php && php -S 0.0.0.0:${PORT:-8000}
+CMD php api/setup-db.php && php -S 0.0.0.0:${PORT:-8000} router.php

@@ -161,5 +161,10 @@
         render();
     }
 
-    init();
+    // 3B sahne sayfa yüklendikten sonra başlar: Three.js (CDN) giriş formunu ve posterleri geciktirmez.
+    if (document.readyState === 'complete') {
+        init();
+    } else {
+        window.addEventListener('load', init, { once: true });
+    }
 })();

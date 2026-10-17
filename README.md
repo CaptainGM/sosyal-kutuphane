@@ -71,7 +71,7 @@ Render'da yeni bir Blueprint oluşturup bu depoyu bağla; `render.yaml` servisi 
 
 ```bash
 # PHPUnit: çalışan bir sunucu ve izole bir test veritabanı gerektirir
-MONGO_DB=social_library_test php -S 127.0.0.1:8001 -t . &
+MONGO_DB=social_library_test php -S 127.0.0.1:8001 -t . router.php &
 MONGO_DB=social_library_test php api/setup-db.php
 TEST_BASE_URL=http://127.0.0.1:8001 TEST_MONGO_DB=social_library_test vendor/bin/phpunit
 

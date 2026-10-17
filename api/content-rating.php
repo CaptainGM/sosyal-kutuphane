@@ -1,5 +1,8 @@
 <?php
+// Herkese açık ve oturumsuz bir uç: oturum açılmaz, yanıt önbelleğe alınabilir.
+define('SK_NO_SESSION', true);
 require_once 'config.php';
+publicCache();
 
 
 $contentType = $_GET['content_type'] ?? null;
