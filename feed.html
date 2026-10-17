@@ -338,7 +338,8 @@
             const actions = `
                 <button type="button" class="cv-action${comment.liked_by_me ? ' is-liked' : ''}" onclick="likeComment(${Number(comment.id)})" aria-label="Beğen">
                     ${CommentView.heartIcon(comment.liked_by_me)} <span>${Number(comment.likes_count) || 0}</span>
-                </button>`;
+                </button>
+                ${CommentView.reactionButtons(comment)}`;
             return CommentView.card(comment, { viewerId, actions, withContent: true });
         }
 

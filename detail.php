@@ -2083,6 +2083,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                         ${heartIcon(comment.liked_by_me)} <span id="like-count-${comment.id}">${comment.likes_count || 0}</span>
                     </button>
                     <button type="button" class="cv-action" onclick="showReplyForm(${comment.id})">${REPLY_ICON}<span>Yanıtla</span></button>
+                    ${CommentView.reactionButtons(comment)}
                     ${ownActions}`;
                 const below = replyFormHtml(comment) + repliesHtml(comment, viewerId);
                 return CommentView.card(comment, { viewerId, actions, below });
