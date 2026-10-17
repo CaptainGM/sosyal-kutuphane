@@ -426,10 +426,6 @@
                     <span class="section-badge" style="--badge-bg: rgba(245, 158, 11, 0.15); --badge-color: #f59e0b; --badge-border: rgba(245, 158, 11, 0.35);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
                     <span class="section-label">En Yüksek Puanlı Filmler</span>
                 </h2>
-                <button type="button" class="btn-glass btn-sm showcase-shuffle" data-showcase-shuffle="topRated">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="16 3 21 3 21 8"/><line x1="4" x2="21" y1="20" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" x2="21" y1="15" y2="21"/><line x1="4" x2="9" y1="4" y2="9"/></svg>
-                    <span>Karıştır</span>
-                </button>
             </div>
             <div id="topRatedMovies"><div class="loading">En iyi filmler yükleniyor...</div></div>
         </section>
@@ -440,10 +436,6 @@
                     <span class="section-badge" style="--badge-bg: rgba(239, 68, 68, 0.15); --badge-color: #ef4444; --badge-border: rgba(239, 68, 68, 0.35);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></span>
                     <span class="section-label">En Popüler Filmler</span>
                 </h2>
-                <button type="button" class="btn-glass btn-sm showcase-shuffle" data-showcase-shuffle="popular">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="16 3 21 3 21 8"/><line x1="4" x2="21" y1="20" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" x2="21" y1="15" y2="21"/><line x1="4" x2="9" y1="4" y2="9"/></svg>
-                    <span>Karıştır</span>
-                </button>
             </div>
             <div id="popularMovies"><div class="loading">Popüler filmler yükleniyor...</div></div>
         </section>
@@ -1426,21 +1418,21 @@
             }
         });
 
-        // Vitrin şeritleri (js/strips.js): her satır 5 sayfalık havuzdan bir seçki alır. Seçki saat dilimine göre sabittir
-        // (aynı saatte tüm hesaplarda aynı, saat değişince değişir); "Karıştır" anında yeni bir seçki gösterir.
-        // "En popüler" satırı TMDB'nin popülerlik puanından gelir (oylamadan bağımsızdır); düşük puanlı yapımlar elenir.
-        const SHOWCASE_PICK_COUNT = 16;
+        // Vitrin şeritleri (js/strips.js): TMDB'nin gerçek "en yüksek puanlı" ve "en popüler" listeleri, TMDB'nin verdiği
+        // sırayla gösterilir; hesaptan, saatten ve ziyaretten bağımsız olarak herkese aynıdır. Liste sunucuda 6 saat
+        // önbelleğe alınır, bu yüzden TMDB'ye eklenen yeni yapımlar en geç birkaç saat içinde kendiliğinden listeye girer.
+        const SHOWCASE_PAGES = [1, 2];
         const SHOWCASE_ROWS = {
-            topRated: { containerId: 'topRatedMovies', list: 'top_rated', reverse: false, minRating: 0, label: 'En yüksek puanlı' },
-            popular: { containerId: 'popularMovies', list: 'popular', reverse: true, minRating: 6, label: 'En popüler' },
+            topRated: { containerId: 'topRatedMovies', list: 'top_rated', label: 'En yüksek puanlı' },
+            popular: { containerId: 'popularMovies', list: 'popular', label: 'En popüler' },
         };
         const showcasePools = {};
         let showcaseType = 'movie';
 
-        async function fetchShowcasePool(type, list, minRating) {
+        async function fetchShowcasePool(type, list) {
             const key = `${type}:${list}`;
             if (!showcasePools[key]) {
-                const responses = await Promise.all([1, 2, 3, 4, 5].map(page =>
+                const responses = await Promise.all(SHOWCASE_PAGES.map(page =>
                     fetch(`${TMDB_PROXY_URL}?endpoint=list&type=${type}&list=${list}&page=${page}`)
                         .then(response => (response.ok ? response.json() : { results: [] }))
                         .catch(() => ({ results: [] }))
@@ -1450,7 +1442,6 @@
                     .flatMap(data => data.results || [])
                     .filter(item => {
                         if (!item.poster_path || seen.has(item.id)) return false;
-                        if (minRating > 0 && !(item.vote_average >= minRating && item.vote_count >= 100)) return false;
                         seen.add(item.id);
                         return true;
                     });
@@ -1460,33 +1451,29 @@
 
         function showcaseItem(item, type) {
             const title = item.title || item.name || '';
-            const year = (item.release_date || item.first_air_date || '').split('-')[0] || 'Bilinmiyor';
+            const date = item.release_date || item.first_air_date || '';
+            const year = date.split('-')[0] || 'Bilinmiyor';
+            // Henüz çıkmamış yapımlarda "★ 0.0" yerine çıkış tarihi gösterilir.
+            const unreleased = app.isUnreleased(date);
+            let subtitle = `${year} · ★ ${Number(item.vote_average || 0).toFixed(1)}`;
+            if (unreleased) subtitle = `Yakında · ${app.formatReleaseDate(date)}`;
+            else if (!(item.vote_count > 0)) subtitle = year;
             return {
                 href: `detail.php?type=${type}&id=${Number(item.id)}`,
                 image: `https://image.tmdb.org/t/p/w342${item.poster_path}`,
                 title,
-                subtitle: `${year} · ★ ${Number(item.vote_average || 0).toFixed(1)}`,
+                subtitle,
             };
         }
 
-        async function showShowcaseRow(rowKey, shuffle = false) {
+        async function showShowcaseRow(rowKey) {
             const row = SHOWCASE_ROWS[rowKey];
-            const pool = await fetchShowcasePool(showcaseType, row.list, row.minRating);
-            const seed = shuffle ? Math.floor(Math.random() * 2147483647) : SKStrip.windowSeed(`${showcaseType}:${row.list}`);
-            const items = SKStrip.seededShuffle(pool, seed).slice(0, SHOWCASE_PICK_COUNT).map(item => showcaseItem(item, showcaseType));
-            SKStrip.render(document.getElementById(row.containerId), items, {
-                reverse: row.reverse,
+            const pool = await fetchShowcasePool(showcaseType, row.list);
+            SKStrip.render(document.getElementById(row.containerId), pool.map(item => showcaseItem(item, showcaseType)), {
                 label: `${row.label} ${showcaseType === 'series' ? 'diziler' : 'filmler'}`,
                 emptyText: showcaseType === 'series' ? 'Dizi bulunamadı' : 'Film bulunamadı',
             });
         }
-
-        document.addEventListener('click', (event) => {
-            const button = event.target.closest('[data-showcase-shuffle]');
-            if (button) {
-                showShowcaseRow(button.dataset.showcaseShuffle, true);
-            }
-        });
 
         async function loadShowcaseMovies() {
             try {

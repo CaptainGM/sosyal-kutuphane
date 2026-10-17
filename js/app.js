@@ -1108,9 +1108,23 @@ class SocialLibraryApp {
     // Renk kodlu puan rozeti: 7+ yeşil, 5-7 turuncu, altı kırmızı.
     ratingPillHtml(score) {
         const n = parseFloat(score);
-        if (isNaN(n)) return '<span class="rating-pill">☆ N/A</span>';
+        if (isNaN(n) || n <= 0) return '<span class="rating-pill">☆ Puan yok</span>';
         const cls = n >= 7 ? 'rating-high' : n >= 5 ? 'rating-mid' : 'rating-low';
         return `<span class="rating-pill ${cls}">⭐ ${n.toFixed(1)}</span>`;
+    }
+
+    // Çıkış tarihi (YYYY-MM-DD) bugünden sonra mı? Tarihi olmayan yapım "çıkmamış" sayılmaz.
+    isUnreleased(dateText) {
+        if (!dateText || !/^\d{4}-\d{2}-\d{2}/.test(dateText)) return false;
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        return dateText.slice(0, 10) > today;
+    }
+
+    formatReleaseDate(dateText) {
+        const date = new Date(`${String(dateText).slice(0, 10)}T12:00:00`);
+        if (isNaN(date.getTime())) return String(dateText);
+        return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
     }
 
     // 1-10 arası puan dağılımını basit bir CSS bar grafiğine çevirir.
@@ -1269,7 +1283,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // PWA service worker kaydı — bkz. sw.js.
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch(err => {
+        navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch(err => {
             console.error('Service worker kayıt hatası:', err);
         });
     });

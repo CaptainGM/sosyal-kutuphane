@@ -1,7 +1,7 @@
 // Statik varlıklar (CSS/JS/ikon) ağ öncelikli: çevrimiçiyken her zaman en güncel sürüm gelir,
 // ağ yoksa önbellekteki kopya kullanılır. /api/* ve GET dışı istekler asla önbelleğe girmez.
 // Sayfalar ağ öncelikli, çevrimdışıyken offline.html'e düşer.
-const CACHE_NAME = 'sosyal-kutuphane-v7';
+const CACHE_NAME = 'sosyal-kutuphane-v8';
 const STATIC_ASSETS = [
     'css/style.css',
     'css/ui.css',
@@ -55,6 +55,21 @@ async function networkFirst(request) {
     }
 }
 
+// Tek bir başarısız deneme "çevrimdışı" demek değildir (sunucu o an meşgul ya da yeniden başlıyor olabilir):
+// bir kez daha dener, ikisi de olmazsa çevrimdışı sayfasını gösterir.
+async function navigate(request) {
+    try {
+        return await fetch(request);
+    } catch (firstError) {
+        await new Promise((resolve) => setTimeout(resolve, 600));
+        try {
+            return await fetch(request);
+        } catch (secondError) {
+            return (await caches.match('offline.html')) || Response.error();
+        }
+    }
+}
+
 self.addEventListener('fetch', (event) => {
     const { request } = event;
     if (request.method !== 'GET') {
@@ -73,8 +88,6 @@ self.addEventListener('fetch', (event) => {
     }
 
     if (request.mode === 'navigate') {
-        event.respondWith(
-            fetch(request).catch(() => caches.match('offline.html'))
-        );
+        event.respondWith(navigate(request));
     }
 });
