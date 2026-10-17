@@ -1,6 +1,7 @@
 <?php
 require_once 'config.php';
 require_once __DIR__ . '/lib/search.php';
+require_once __DIR__ . '/lib/providers.php';
 
 // TMDB istekleri tarayıcıdan değil buradan geçer: ortak önbellek + gizli API anahtarı.
 $endpoint = $_GET['endpoint'] ?? null;
@@ -197,6 +198,9 @@ if ($endpoint === 'search') {
     if ($genre !== '') {
         $params['with_genres'] = $genre;
     }
+
+    // Yayın platformu filtresi (yalnızca abonelikle izlenebilenler)
+    $params += streamingProviderParams($_GET['provider'] ?? '');
 
     // Minimum puan filtresi
     if ($minRating > 0) {
