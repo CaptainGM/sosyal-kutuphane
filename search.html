@@ -2,6 +2,7 @@
 <html lang="tr">
 
 <head>
+    <link rel="preconnect" href="https://image.tmdb.org" crossorigin>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="manifest.json">
@@ -1504,9 +1505,11 @@
         }
 
         async function loadPlatformPopularContent(type) {
+            // Üç sıralama aynı anda istenir; sırayla beklemek sayfayı üç gidiş-dönüş kadar yavaşlatıyordu.
+            const fetchSort = (sort) => fetch(`/api/popular-content.php?type=${type}&sort=${sort}&limit=10`, { credentials: 'include' })
+                .then(response => response.json());
             try {
-                const commentsRes = await fetch(`/api/popular-content.php?type=${type}&sort=comments&limit=10`, { credentials: 'include' });
-                const commentsData = await commentsRes.json();
+                const [commentsData, listsData, ratingsData] = await Promise.all([fetchSort('comments'), fetchSort('lists'), fetchSort('ratings')]);
                 if (commentsData.success && commentsData.data && commentsData.data.length > 0) {
                     displayPlatformResults(commentsData.data, 'mostCommentedContent', type, 'comment_count', '<svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>');
                     document.getElementById('mostCommentedSection').style.display = 'block';
@@ -1514,8 +1517,6 @@
                     document.getElementById('mostCommentedSection').style.display = 'none';
                 }
 
-                const listsRes = await fetch(`/api/popular-content.php?type=${type}&sort=lists&limit=10`, { credentials: 'include' });
-                const listsData = await listsRes.json();
                 if (listsData.success && listsData.data && listsData.data.length > 0) {
                     displayPlatformResults(listsData.data, 'mostAddedContent', type, 'list_count', '<svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>');
                     document.getElementById('mostAddedSection').style.display = 'block';
@@ -1523,8 +1524,6 @@
                     document.getElementById('mostAddedSection').style.display = 'none';
                 }
 
-                const ratingsRes = await fetch(`/api/popular-content.php?type=${type}&sort=ratings&limit=10`, { credentials: 'include' });
-                const ratingsData = await ratingsRes.json();
                 if (ratingsData.success && ratingsData.data && ratingsData.data.length > 0) {
                     displayPlatformResults(ratingsData.data, 'topUserRatedContent', type, 'avg_rating', '<svg class="ui-i is-fill" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>');
                     document.getElementById('topUserRatedSection').style.display = 'block';

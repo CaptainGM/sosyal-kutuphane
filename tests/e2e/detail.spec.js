@@ -4,6 +4,10 @@
 const { test, expect } = require('@playwright/test');
 const { createUser, deleteUsers, loginAs } = require('./helpers');
 
+// Bu dosya TMDB yanıtlarını page.route ile taklit eder. Servis çalışanı bu istekleri kendisi yakalayıp önbelleğe
+// alabildiği için (herkese açık API önbelleği) test sırasında kapalıdır; gerçek davranış ayrı testlerle denetlenir.
+test.use({ serviceWorkers: 'block' });
+
 function fakeMovie(overrides = {}) {
     return {
         id: 987001,

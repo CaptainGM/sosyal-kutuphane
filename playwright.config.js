@@ -25,7 +25,7 @@ module.exports = defineConfig({
         { name: 'chromium-azaltilmis-hareket', use: { ...devices['Desktop Chrome'], reducedMotion: 'reduce' } },
     ],
     webServer: process.env.E2E_BASE_URL ? undefined : {
-        command: 'php -S 127.0.0.1:8000 -t .',
+        command: 'php -S 127.0.0.1:8000 -t . router.php',
         url: baseURL,
         reuseExistingServer: true,
         timeout: 20000,

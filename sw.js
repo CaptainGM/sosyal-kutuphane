@@ -1,7 +1,16 @@
-// Statik varlıklar (CSS/JS/ikon) ağ öncelikli: çevrimiçiyken her zaman en güncel sürüm gelir,
-// ağ yoksa önbellekteki kopya kullanılır. /api/* ve GET dışı istekler asla önbelleğe girmez.
-// Sayfalar ağ öncelikli, çevrimdışıyken offline.html'e düşer.
-const CACHE_NAME = 'sosyal-kutuphane-v9';
+// Statik varlıklar (CSS/JS/ikon) ve herkese açık API yanıtları (TMDB listeleri vb.) "önce önbellek, arkada yenile":
+// sayfa hemen açılır, güncel sürüm arka planda alınıp bir sonraki açılışta kullanılır. Kullanıcıya özel API yanıtları
+// (oturum, kütüphane, yorumlar) asla önbelleğe girmez. Sayfalar ağ öncelikli, çevrimdışıyken offline.html'e düşer.
+const CACHE_NAME = 'sosyal-kutuphane-v10';
+const API_CACHE = 'sk-api-v10';
+const API_CACHE_LIMIT = 200;
+const PUBLIC_API = [
+    '/api/tmdb-proxy.php',
+    '/api/books-proxy.php',
+    '/api/popular-content.php',
+    '/api/upcoming.php',
+    '/api/content-rating.php',
+];
 const STATIC_ASSETS = [
     'css/style.css',
     'css/ui.css',
@@ -34,26 +43,34 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys()
-            .then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))))
+            .then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME && k !== API_CACHE).map((k) => caches.delete(k))))
             .then(() => self.clients.claim())
     );
 });
 
-async function networkFirst(request) {
-    const cache = await caches.open(CACHE_NAME);
-    try {
-        const response = await fetch(request, { cache: 'no-cache' });
-        if (response.ok) {
-            cache.put(request, response.clone());
+// Önbellekteki kopya varsa hemen döner; ağdan gelen yanıt arka planda önbelleğe yazılır (bir sonraki açılış için).
+function staleWhileRevalidate(event, cacheName, limit = Infinity) {
+    const { request } = event;
+    const cachePromise = caches.open(cacheName);
+    const networkPromise = cachePromise.then(async (cache) => {
+        try {
+            const response = await fetch(request);
+            if (response.ok) {
+                await cache.put(request, response.clone());
+                if (Number.isFinite(limit)) {
+                    const keys = await cache.keys();
+                    await Promise.all(keys.slice(0, Math.max(0, keys.length - limit)).map((key) => cache.delete(key)));
+                }
+            }
+            return response;
+        } catch (error) {
+            return null;
         }
-        return response;
-    } catch (error) {
-        const cached = await cache.match(request);
-        if (cached) {
-            return cached;
-        }
-        throw error;
-    }
+    });
+    event.waitUntil(networkPromise);
+    return cachePromise
+        .then((cache) => cache.match(request))
+        .then((cached) => cached || networkPromise.then((response) => response || Response.error()));
 }
 
 // Tek bir başarısız deneme "çevrimdışı" demek değildir (sunucu o an meşgul ya da yeniden başlıyor olabilir):
@@ -78,13 +95,20 @@ self.addEventListener('fetch', (event) => {
     }
 
     const url = new URL(request.url);
-    if (url.origin !== self.location.origin || url.pathname.startsWith('/api/')) {
+    if (url.origin !== self.location.origin) {
+        return;
+    }
+    if (PUBLIC_API.includes(url.pathname)) {
+        event.respondWith(staleWhileRevalidate(event, API_CACHE, API_CACHE_LIMIT));
+        return;
+    }
+    if (url.pathname.startsWith('/api/')) {
         return;
     }
 
     const isStaticAsset = STATIC_ASSETS.some((asset) => url.pathname === '/' + asset);
     if (isStaticAsset) {
-        event.respondWith(networkFirst(request));
+        event.respondWith(staleWhileRevalidate(event, CACHE_NAME));
         return;
     }
 

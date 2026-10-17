@@ -27,7 +27,7 @@ echo Çıkmak için Ctrl+C tuşlarına basın
 echo ======================================
 echo.
 
-php -S localhost:8000
+php -S localhost:8000 router.php
 
 echo.
 echo Server kapatıldı.

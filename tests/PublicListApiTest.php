@@ -19,7 +19,7 @@ final class PublicListApiTest extends TestCase
     public function testPrivateListIsNotVisibleAndPublicListCarriesPostersAndOwner(): void
     {
         [$owner, $ownerId, , $ownerName] = $this->newUser('phpunit_pub_o');
-        $movieId = 770000 + random_int(1, 99999);
+        $movieId = 900000000 + random_int(1, 99999999);
         $owner->post('/api/user-status.php', ['content_type' => 'movie', 'content_id' => $movieId, 'status' => 'watched',
             'content_data' => ['title' => 'Liste Filmi', 'poster_path' => '/liste.jpg']]);
 

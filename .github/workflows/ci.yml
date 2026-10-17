@@ -45,7 +45,7 @@ jobs:
           MONGO_DB: social_library
         run: |
           # Canlı akış (SSE) açık ve çok süreçli sunucu: akış testi, sayfa isteklerinin bloklanmadığını doğrular.
-          ENABLE_SSE=1 PHP_CLI_SERVER_WORKERS=4 php -S localhost:8000 &
+          ENABLE_SSE=1 PHP_CLI_SERVER_WORKERS=4 php -S localhost:8000 router.php &
           sleep 2
           php api/setup-db.php > /dev/null
 
