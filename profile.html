@@ -412,19 +412,20 @@
                 <section class="panel csv-import-card">
                     <h3>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
-                        Letterboxd ve Goodreads'ten Aktar
+                        Letterboxd, IMDb ve Goodreads'ten Aktar
                     </h3>
-                    <p>Letterboxd'ın <strong>watched.csv</strong>, <strong>ratings.csv</strong> veya <strong>watchlist.csv</strong> dosyasını ya da Goodreads'in CSV dışa aktarımını yükle. Filmler TMDB'de, kitaplar Google Books'ta aranır; eşleşmeyen yapımlar bildirilir.</p>
+                    <p>Letterboxd'ın <strong>watched.csv</strong>, <strong>ratings.csv</strong> veya <strong>watchlist.csv</strong> dosyasını, IMDb'nin <strong>ratings.csv</strong> dışa aktarımını ya da Goodreads'in CSV dosyasını yükle. Filmler ve diziler TMDB'de (IMDb'de kimlikle birebir), kitaplar Google Books'ta aranır; eşleşmeyen yapımlar bildirilir.</p>
                     <div class="csv-controls">
                         <div>
                             <label class="form-label" for="csvSource">Kaynak</label>
                             <select id="csvSource" class="form-control">
                                 <option value="letterboxd">Letterboxd</option>
+                                <option value="imdb">IMDb</option>
                                 <option value="goodreads">Goodreads</option>
                             </select>
                         </div>
                         <div>
-                            <label class="form-label" for="csvList">Letterboxd listesi</label>
+                            <label class="form-label" for="csvList">Liste</label>
                             <select id="csvList" class="form-control">
                                 <option value="watched">İzlediklerim (watched / ratings)</option>
                                 <option value="watchlist">İzleyeceklerim (watchlist)</option>

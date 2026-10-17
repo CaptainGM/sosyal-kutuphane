@@ -36,6 +36,7 @@ function csvImportParse(string $content, string $source, string $list = 'watched
     return match ($source) {
         'letterboxd' => csvNormalizeLetterboxd($rows, $list),
         'goodreads' => csvNormalizeGoodreads($rows),
+        'imdb' => csvNormalizeImdb($rows, $list),
         default => throw new InvalidArgumentException('Desteklenmeyen kaynak: ' . $source),
     };
 }
@@ -63,6 +64,44 @@ function csvNormalizeLetterboxd(array $rows, string $list): array {
         ];
     }
     return $result;
+}
+
+// IMDb: ratings.csv (Your Rating, 1-10 tam sayı) ve watchlist.csv. Başlık türü film ya da dizi belirler;
+// kısa film, bölüm gibi türler atlanır. Const (tt...) kimliği TMDB'de birebir eşleşme için saklanır.
+function csvNormalizeImdb(array $rows, string $list): array {
+    $watchlist = $list === 'watchlist';
+    $result = [];
+    foreach ($rows as $row) {
+        $title = trim((string) ($row['Title'] ?? ''));
+        $kind = match (trim((string) ($row['Title Type'] ?? ''))) {
+            'movie', 'tvMovie' => 'movie',
+            'tvSeries', 'tvMiniSeries' => 'series',
+            default => null,
+        };
+        if ($title === '' || $kind === null) {
+            continue;
+        }
+        $year = trim((string) ($row['Year'] ?? ''));
+        $const = trim((string) ($row['Const'] ?? ''));
+
+        $result[] = [
+            'kind' => $kind,
+            'title' => $title,
+            'year' => ctype_digit($year) ? (int) $year : null,
+            'author' => null,
+            'isbn' => null,
+            'imdb_id' => preg_match('/^tt\d{7,9}$/', $const) ? $const : null,
+            'status' => $kind === 'movie' ? ($watchlist ? 'watchlist' : 'watched') : ($watchlist ? 'watchlist' : 'watching'),
+            'rating' => $watchlist ? null : csvImdbRating((string) ($row['Your Rating'] ?? '')),
+        ];
+    }
+    return $result;
+}
+
+// IMDb puanı zaten 1-10 tam sayıdır; geçersiz ya da boş değer puansız sayılır.
+function csvImdbRating(string $raw): ?int {
+    $raw = trim($raw);
+    return ctype_digit($raw) && (int) $raw >= 1 && (int) $raw <= 10 ? (int) $raw : null;
 }
 
 // Goodreads: Exclusive Shelf değeri durumu belirler (read, to-read, currently-reading).
@@ -115,7 +154,7 @@ function csvSanitizeRow($row): ?array {
     if (!is_array($row)) {
         return null;
     }
-    $allowedStatuses = ['movie' => ['watched', 'watchlist'], 'book' => ['read', 'readinglist']];
+    $allowedStatuses = ['movie' => ['watched', 'watchlist'], 'series' => ['watching', 'watchlist'], 'book' => ['read', 'readinglist']];
     $kind = $row['kind'] ?? null;
     $status = $row['status'] ?? null;
     if (!isset($allowedStatuses[$kind]) || !in_array($status, $allowedStatuses[$kind], true)) {
@@ -144,12 +183,15 @@ function csvSanitizeRow($row): ?array {
         ? strtoupper($row['isbn'])
         : null;
 
+    $imdbId = is_string($row['imdb_id'] ?? null) && preg_match('/^tt\d{7,9}$/', $row['imdb_id']) ? $row['imdb_id'] : null;
+
     return [
         'kind' => $kind,
         'title' => $title,
         'year' => $year,
         'author' => $author !== '' ? $author : null,
         'isbn' => $isbn,
+        'imdb_id' => $imdbId,
         'status' => $status,
         'rating' => $rating,
     ];

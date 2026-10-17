@@ -816,6 +816,7 @@ class SocialLibraryApp {
                 page: page,
                 year: filters.year || '',
                 genre: filters.genre || '',
+                provider: filters.provider || '',
                 min_rating: filters.min_rating || '',
                 sort_by: filters.sort_by || 'popularity'
             }).toString();
@@ -835,6 +836,7 @@ class SocialLibraryApp {
                 page: page,
                 year: filters.year || '',
                 genre: filters.genre || '',
+                provider: filters.provider || '',
                 min_rating: filters.min_rating || '',
                 sort_by: filters.sort_by || 'popularity'
             }).toString();

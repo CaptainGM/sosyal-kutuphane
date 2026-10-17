@@ -2,6 +2,8 @@
 // Akşam seçici: süre ve ruh haline göre TMDB discover sorgusu kurar ve adaylardan bir öneri seçer.
 // Her şey saf fonksiyondur (ağ ve veritabanı yok): tests/PickerTest.php doğrudan çağırır.
 
+require_once __DIR__ . '/providers.php';
+
 // Ruh hali -> TMDB tür kimlikleri (film ve dizi türleri TMDB'de ayrı listelenir).
 const PICKER_MOODS = [
     'heyecan' => ['label' => 'Heyecanlı', 'movie' => [28, 12], 'tv' => [10759]],
@@ -72,9 +74,15 @@ function pickerNormalizeParams(array $input): array {
     $language = isset($input['lang']) && is_string($input['lang']) && in_array($input['lang'], PICKER_LANGUAGES, true)
         ? $input['lang'] : '';
 
+    $provider = is_numeric($input['provider'] ?? null) ? (int) $input['provider'] : 0;
+    if (!isset(STREAMING_PROVIDERS[$provider])) {
+        $provider = 0;
+    }
+
     return [
         'kind' => $kind,
         'duration' => $duration,
+        'provider' => $provider,
         'era' => $era,
         'rating' => $rating,
         'lang' => $language,
@@ -133,6 +141,7 @@ function pickerDiscoverQuery(array $params, int $page = 1, ?string $today = null
     if (($params['lang'] ?? '') !== '') {
         $query['with_original_language'] = $params['lang'];
     }
+    $query += streamingProviderParams($params['provider'] ?? 0);
 
     [$min, $max] = PICKER_DURATIONS[$params['duration']][$typeKey];
     if ($min !== null) {

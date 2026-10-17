@@ -46,9 +46,11 @@ if ($action === 'import') {
         if ($row === null) {
             continue;
         }
-        $matched = $row['kind'] === 'movie'
-            ? csvImportMovie($db, $userId, $row)
-            : csvImportBook($db, $userId, $row);
+        $matched = match ($row['kind']) {
+            'movie' => csvImportMovie($db, $userId, $row),
+            'series' => csvImportSeries($db, $userId, $row),
+            default => csvImportBook($db, $userId, $row),
+        };
         if ($matched) {
             $imported++;
         } else {
@@ -73,19 +75,42 @@ function csvFetchJson(string $url): ?array {
     return is_array($data) ? $data : null;
 }
 
-function csvImportMovie($db, int $userId, array $row): bool {
+// TMDB'de eşleşme: IMDb kimliği varsa birebir (/find), yoksa başlık ve yılla arama. 30 gün önbelleğe alınır.
+function csvFindTmdb($db, string $kind, array $row): ?array {
     $apiKey = getenv('TMDB_API_KEY');
     if (!$apiKey) {
-        return false;
+        return null;
+    }
+    $cacheKey = 'csv:find:v1:' . md5(json_encode([$kind, $row['imdb_id'] ?? null, $row['title'], $row['year'] ?? null]));
+    $cached = cacheGet($db, $cacheKey);
+    if (is_array($cached)) {
+        return $cached === [] ? null : $cached;
     }
 
-    $query = ['api_key' => $apiKey, 'language' => 'tr-TR', 'query' => $row['title'], 'include_adult' => 'false'];
-    if ($row['year'] !== null) {
-        $query['year'] = $row['year'];
+    $hit = null;
+    if (!empty($row['imdb_id'])) {
+        $data = csvFetchJson('https://api.themoviedb.org/3/find/' . $row['imdb_id'] . '?' . http_build_query([
+            'api_key' => $apiKey, 'external_source' => 'imdb_id', 'language' => 'tr-TR',
+        ]));
+        $hit = $data[$kind === 'series' ? 'tv_results' : 'movie_results'][0] ?? null;
     }
-    $data = csvFetchJson('https://api.themoviedb.org/3/search/movie?' . http_build_query($query));
-    $hit = $data['results'][0] ?? null;
-    if (!is_array($hit) || empty($hit['id'])) {
+    if (!is_array($hit)) {
+        $query = ['api_key' => $apiKey, 'language' => 'tr-TR', 'query' => $row['title'], 'include_adult' => 'false'];
+        if ($row['year'] !== null) {
+            $query[$kind === 'series' ? 'first_air_date_year' : 'year'] = $row['year'];
+        }
+        $data = csvFetchJson('https://api.themoviedb.org/3/search/' . ($kind === 'series' ? 'tv' : 'movie') . '?' . http_build_query($query));
+        $hit = $data['results'][0] ?? null;
+    }
+
+    $hit = is_array($hit) && !empty($hit['id']) ? $hit : null;
+    cacheSet($db, $cacheKey, $hit ?? [], 30 * 86400);
+    return $hit;
+}
+
+function csvImportMovie($db, int $userId, array $row): bool {
+    $hit = csvFindTmdb($db, 'movie', $row);
+    if ($hit === null) {
         return false;
     }
     $tmdbId = (int) $hit['id'];
@@ -112,6 +137,37 @@ function csvImportMovie($db, int $userId, array $row): bool {
         return false;
     }
     csvSaveStatus($db, $userId, 'user_movie_status', 'movie_id', $movie->_id, $row);
+    return true;
+}
+
+function csvImportSeries($db, int $userId, array $row): bool {
+    $hit = csvFindTmdb($db, 'series', $row);
+    if ($hit === null) {
+        return false;
+    }
+    $tmdbId = (int) $hit['id'];
+
+    // Alan adları save-content-status.php ile aynıdır.
+    $db->series->updateOne(
+        ['tmdb_id' => $tmdbId],
+        ['$setOnInsert' => [
+            '_id' => nextSequence($db, 'series'),
+            'tmdb_id' => $tmdbId,
+            'title' => $hit['name'] ?? $row['title'],
+            'poster_path' => $hit['poster_path'] ?? null,
+            'overview' => $hit['overview'] ?? null,
+            'first_air_date' => $hit['first_air_date'] ?? null,
+            'genres' => null,
+            'created_at' => new MongoDB\BSON\UTCDateTime(),
+        ]],
+        ['upsert' => true]
+    );
+
+    $series = $db->series->findOne(['tmdb_id' => $tmdbId]);
+    if (!$series) {
+        return false;
+    }
+    csvSaveStatus($db, $userId, 'user_series_status', 'series_id', $series->_id, $row);
     return true;
 }
 
