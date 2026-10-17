@@ -1,6 +1,7 @@
 <?php
 require_once 'config.php';
 require_once __DIR__ . '/lib/calendar.php';
+require_once __DIR__ . '/lib/push.php';
 requireLogin();
 
 $userId = (int)getCurrentUserId();
@@ -23,6 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'is_read' => false,
             'created_at' => new MongoDB\BSON\UTCDateTime(),
         ]);
+        pushNotifyUser($db, $userId, ($reminder->title ?? 'Bir yapım') . ' vizyona girdi', 'detail.php?type=movie&id=' . (int) $reminder->tmdb_id);
         $db->release_reminders->updateOne(['_id' => $reminder->_id], ['$set' => ['notified' => true]]);
     }
 

@@ -3,6 +3,8 @@
 // Veri TMDB'nin next_episode_to_air alanından gelir (tmdbGet önbelleğiyle). Bildirimler, bildirim listesi açıldığında
 // bir kez üretilir (release_reminders ile aynı desen); ayrı bir zamanlayıcı gerektirmez.
 
+require_once __DIR__ . '/push.php';
+
 const CALENDAR_MAX_SERIES = 40;
 
 // Bugünün tarihi (Türkiye saatine göre) ve yarın, YYYY-MM-DD.
@@ -67,6 +69,7 @@ function notifyDueEpisodes($db, int $userId): void {
             continue;
         }
         $name = (string) ($tv['name'] ?? $doc['title'] ?? '');
+        $title = $name . ' · S' . $entry['season'] . ' B' . $entry['episode'] . ' — ' . $label;
         $db->notifications->insertOne([
             '_id' => nextSequence($db, 'notifications'),
             'user_id' => $userId,
@@ -74,9 +77,10 @@ function notifyDueEpisodes($db, int $userId): void {
             'type' => 'episode',
             'content_type' => 'series',
             'content_id' => (int) $doc['tmdb_id'],
-            'content_title' => $name . ' · S' . $entry['season'] . ' B' . $entry['episode'] . ' — ' . $label,
+            'content_title' => $title,
             'is_read' => false,
             'created_at' => new MongoDB\BSON\UTCDateTime(),
         ]);
+        pushNotifyUser($db, $userId, $title, 'detail.php?type=series&id=' . (int) $doc['tmdb_id'] . '&tab=season');
     }
 }

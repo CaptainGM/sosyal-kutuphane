@@ -44,8 +44,9 @@ Docker ile: `docker compose up`
 | `GOOGLE_BOOKS_API_KEY` | Hayır | Kitap verisi için; yoksa anonim kota kullanılır |
 | `SMTP_*` | Hayır | Şifre sıfırlama e-postası; boşsa bağlantı sunucu loguna yazılır |
 | `LLM_MODERATION_PROVIDER`, `LLM_MODERATION_API_KEY` | Hayır | Yorumlar için yapay zekâ ile ek küfür/hakaret taraması (`gemini` veya `deepseek`) |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | Hayır | Tarayıcı bildirimleri. `php scripts/make-vapid.php` ile üretilir; boşsa bildirimler kapalıdır |
 
-Anahtarlar yalnızca `.env` veya ortam değişkenlerinde tutulur, depoya girmez.
+Anahtarlar yalnızca `.env` veya ortam değişkenlerinde tutulur, depoya girmez. Bildirim anahtarı üretmek için `php scripts/make-vapid.php` çalıştırıp çıktıyı Render'a ekleyin.
 
 ## Yönetici yetkisi
 

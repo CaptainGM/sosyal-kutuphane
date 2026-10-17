@@ -6,7 +6,8 @@
         "php": ">=8.1",
         "ext-mongodb": "*",
         "mongodb/mongodb": "^2.0",
-        "phpmailer/phpmailer": "^6.9"
+        "phpmailer/phpmailer": "^6.9",
+        "minishlink/web-push": "^9"
     },
     "config": {
         "optimize-autoloader": true
