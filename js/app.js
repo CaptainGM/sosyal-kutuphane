@@ -711,6 +711,7 @@ class SocialLibraryApp {
         const reduced = motion.isReduced();
         const label = reduced ? 'Animasyonları aç' : 'Animasyonları durdur';
         document.querySelectorAll('.theme-toggle-btn').forEach((themeBtn) => {
+            if (themeBtn.closest('[data-no-motion-toggle]')) return;
             if (themeBtn.parentElement.querySelector('.motion-toggle-btn')) return;
             const button = document.createElement('button');
             button.type = 'button';

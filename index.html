@@ -597,6 +597,18 @@
             transform: translateX(3px);
         }
 
+        /* Halkanın kenara taşan afişleri (özellikle dar ekranda) sayfayı yatay kaydırmasın. */
+        html, body {
+            overflow-x: clip;
+        }
+
+        .auth-corner {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 20;
+        }
+
         /* 3D arka plan canvas'ı: tam ekran, içeriğin altında, tıklamaları geçirir. */
         #scene3d {
             position: fixed;
@@ -647,6 +659,10 @@
 </head>
 
 <body>
+    <!-- Sağ üst köşe: tema seçimi (js/app.js tema düğmelerini kendisi bağlar). Hareket düğmesi bu köşede istenmez. -->
+    <div class="auth-corner" data-no-motion-toggle>
+        <button type="button" class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir" title="Tema değiştir"><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
+    </div>
     <main class="auth-shell">
         <section class="auth-hero">
             <span class="eyebrow reveal"><span class="dot"></span>Film · Dizi · Kitap</span>

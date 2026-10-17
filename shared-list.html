@@ -24,6 +24,13 @@
             display: inline-flex;
         }
 
+        /* Dar ekranda logo yazısı gizlenir; düğmeler (tema, hareket, giriş) yan yana sığar. */
+        @media (max-width: 520px) {
+            .navbar .logo > span:last-child {
+                display: none;
+            }
+        }
+
         .list-hero {
             display: grid;
             gap: 14px;
