@@ -14,6 +14,11 @@ Film, dizi ve kitapları arayıp izlediklerini ve okuduklarını takip edebildi�
 - İzlediklerim, izleyeceklerim, okuduklarım ve 1-10 puanlama
 - Yorum, yanıt, beğeni; spoiler gizleme; dizilerde bölüm bazlı sohbet
 - "Ne izlesem?" akşam seçici (süre, ruh hali, dönem ve dile göre öneri)
+- Yayın platformuna göre filtre (Netflix, Prime Video, Disney+ ve diğerleri), "Ne izlesem?" dahil
+- Letterboxd, IMDb ve Goodreads dışa aktarımlarını içe aktarma
+- Yorumlara tepki (güldüm, ağladım, şaşırdım, düşündürdü)
+- Takip edilen dizilerin yeni bölüm takvimi ve tarayıcı bildirimleri
+- Karşılıklı takip eden arkadaşlarla ortak okuma / izleme
 - Takip, akış, iki kullanıcının zevk eşleşmesi, yıllık özet
 - Özel mesajlaşma, paylaşılabilir listeler, Instagram hikaye kartı
 - Yönetim konsolu (`admin.html`): kullanıcılar, yorumlar, şikâyetler, işlem günlüğü

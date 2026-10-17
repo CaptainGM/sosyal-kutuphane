@@ -107,6 +107,11 @@ $indexPlans = [
     'episode_notifications' => [
         ['key' => ['user_id' => 1, 'tmdb_id' => 1, 'season' => 1, 'episode' => 1], 'unique' => true],
     ],
+    // Ortak okuma: katılımcıya göre davetler ve aktif ortak okumalar.
+    'buddy_reads' => [
+        ['key' => ['owner_id' => 1, 'status' => 1]],
+        ['key' => ['partner_id' => 1, 'status' => 1]],
+    ],
     // Yorum tepkileri: bir kullanıcı bir yoruma en fazla bir tepki verir.
     'comment_reactions' => [
         ['key' => ['comment_id' => 1, 'user_id' => 1], 'unique' => true],
