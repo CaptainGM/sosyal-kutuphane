@@ -6,7 +6,7 @@
 // Ortam değişkenleri (yoksa katman tamamen kapalıdır, hiçbir şey dışarı gönderilmez):
 //   LLM_MODERATION_PROVIDER = gemini | deepseek
 //   LLM_MODERATION_API_KEY  = sağlayıcının anahtarı (asla depoya yazılmaz, yalnızca .env / ortam)
-//   LLM_MODERATION_MODEL    = isteğe bağlı model adı (varsayılan: gemini-2.5-flash / deepseek-chat)
+//   LLM_MODERATION_MODEL    = isteğe bağlı model adı (varsayılan: gemini-3.1-flash-lite / deepseek-chat)
 //   LLM_MODERATION_TIMEOUT  = saniye (varsayılan 4)
 //
 // Tasarım kararları:
@@ -15,7 +15,7 @@
 //  - Özel mesajlar (DM) bu katmana ASLA gönderilmez; yalnızca herkese açık yorumlar ve yanıtlar.
 //  - Model çıktısı katı JSON olarak okunur; yorum metni talimat değil veri olarak, ayrı bir alanda iletilir.
 
-const LLM_MODERATION_DEFAULT_MODELS = ['gemini' => 'gemini-2.5-flash', 'deepseek' => 'deepseek-chat'];
+const LLM_MODERATION_DEFAULT_MODELS = ['gemini' => 'gemini-3.1-flash-lite', 'deepseek' => 'deepseek-chat'];
 const LLM_MODERATION_MAX_CHARS = 1200;
 
 const LLM_MODERATION_INSTRUCTION = 'You are a strict but fair content moderator for a Turkish movie/book social site. '
@@ -53,7 +53,8 @@ function llmModerationRequest(array $config, string $text): array {
                 'contents' => [['role' => 'user', 'parts' => [['text' => $text]]]],
                 'generationConfig' => [
                     'temperature' => 0,
-                    'maxOutputTokens' => 20,
+                    // 20 belirteçte yanıt yarıda kesiliyordu (finishReason MAX_TOKENS); kısa JSON için güvenli pay.
+                    'maxOutputTokens' => 256,
                     'responseMimeType' => 'application/json',
                     'thinkingConfig' => ['thinkingBudget' => 0],
                 ],
@@ -66,7 +67,7 @@ function llmModerationRequest(array $config, string $text): array {
         'body' => json_encode([
             'model' => $config['model'],
             'temperature' => 0,
-            'max_tokens' => 20,
+            'max_tokens' => 256,
             'response_format' => ['type' => 'json_object'],
             'messages' => [
                 ['role' => 'system', 'content' => LLM_MODERATION_INSTRUCTION],
