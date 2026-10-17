@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/lib/push.php';
 require_once __DIR__ . '/lib/demo.php';
 require_once __DIR__ . '/lib/dm.php';
 requireLogin();
@@ -188,6 +189,8 @@ if ($method === 'GET') {
             'is_read' => false,
             'created_at' => $now,
         ]);
+        // Gizlilik: bildirimde mesaj içeriği yer almaz; yalnızca yeni mesaj olduğu söylenir.
+        pushNotifyUser($db, $toUserId, 'Yeni bir mesajın var', 'messages.html?conversation_id=' . $conversationId);
     }
 
     jsonResponse([

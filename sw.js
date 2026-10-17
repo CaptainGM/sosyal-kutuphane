@@ -1,7 +1,7 @@
 // Statik varlıklar (CSS/JS/ikon) ağ öncelikli: çevrimiçiyken her zaman en güncel sürüm gelir,
 // ağ yoksa önbellekteki kopya kullanılır. /api/* ve GET dışı istekler asla önbelleğe girmez.
 // Sayfalar ağ öncelikli, çevrimdışıyken offline.html'e düşer.
-const CACHE_NAME = 'sosyal-kutuphane-v8';
+const CACHE_NAME = 'sosyal-kutuphane-v9';
 const STATIC_ASSETS = [
     'css/style.css',
     'css/ui.css',
@@ -11,6 +11,7 @@ const STATIC_ASSETS = [
     'js/comment-view.js',
     'js/motion.js',
     'js/strips.js',
+    'js/push.js',
     'js/profile-view.js',
     'js/password-rules.js',
     'manifest.json',
@@ -90,4 +91,36 @@ self.addEventListener('fetch', (event) => {
     if (request.mode === 'navigate') {
         event.respondWith(navigate(request));
     }
+});
+
+// Tarayıcı bildirimi geldiğinde gösterilir. Metin sunucudan gelir ve mesaj içeriği taşımaz.
+self.addEventListener('push', (event) => {
+    let data = { title: 'Sosyal Kütüphane', body: 'Yeni bir bildirimin var', url: 'search.html' };
+    try {
+        data = { ...data, ...(event.data ? event.data.json() : {}) };
+    } catch (error) {
+        // Bozuk yük varsayılan metinle gösterilir.
+    }
+    event.waitUntil(self.registration.showNotification(data.title, {
+        body: data.body,
+        icon: 'icons/icon-192.png',
+        badge: 'icons/icon-192.png',
+        data: { url: data.url },
+    }));
+});
+
+// Bildirime tıklayınca açık sekme öne gelir; yoksa uygulama yeni sekmede açılır.
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    const url = (event.notification.data && event.notification.data.url) || 'search.html';
+    event.waitUntil(
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windows) => {
+            const existing = windows.find((client) => 'focus' in client);
+            if (existing) {
+                existing.navigate(url).catch(() => { });
+                return existing.focus();
+            }
+            return self.clients.openWindow(url);
+        })
+    );
 });
