@@ -15,14 +15,19 @@ const DM_DUPLICATE_LIMIT = 3;      // aynı metin 10 dakikada en fazla 3 kez
 const DM_HISTORY_WINDOW = 86400;
 
 // Döndürdüğü metin doğrudan kullanıcıya gösterilir; null ise mesaja izin verilir.
-function dmModerationError(string $text): ?string {
+function dmModerationVerdict(string $text): ?array {
     if (commentIbanFound($text)) {
-        return 'Mesajlarda IBAN veya banka hesap bilgisi paylaşılamaz.';
+        return ['reason' => 'iban', 'message' => 'Mesajlarda IBAN veya banka hesap bilgisi paylaşılamaz.'];
     }
     if (commentProfanityFound($text)) {
-        return 'Mesajın küfür veya hakaret içeriyor. Lütfen saygılı bir dil kullan.';
+        return ['reason' => 'profanity', 'message' => 'Mesajın küfür veya hakaret içeriyor. Lütfen saygılı bir dil kullan.'];
     }
     return null;
+}
+
+function dmModerationError(string $text): ?string {
+    $verdict = dmModerationVerdict($text);
+    return $verdict === null ? null : $verdict['message'];
 }
 
 // $recent: göndericinin son 24 saatteki mesajları [['at' => unix, 'text' => string], ...].

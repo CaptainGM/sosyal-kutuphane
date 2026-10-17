@@ -46,13 +46,14 @@ final class LlmModerationTest extends TestCase
     {
         $this->enable('gemini');
         $request = llmModerationRequest(llmModerationConfig(), 'Bu film harikaydı');
-        $this->assertStringStartsWith('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', $request['url']);
+        $this->assertStringStartsWith('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent', $request['url']);
         $this->assertStringNotContainsString('test-key-not-real', $request['url']);
         $this->assertContains('x-goog-api-key: test-key-not-real', $request['headers']);
         $body = json_decode($request['body'], true);
         $this->assertSame('Bu film harikaydı', $body['contents'][0]['parts'][0]['text']);
         $this->assertSame('application/json', $body['generationConfig']['responseMimeType']);
         $this->assertSame(0, $body['generationConfig']['temperature']);
+        $this->assertGreaterThanOrEqual(128, $body['generationConfig']['maxOutputTokens'], 'Düşük çıktı sınırı JSON yanıtını yarıda keser');
     }
 
     public function testDeepseekRequestShape(): void
@@ -73,7 +74,7 @@ final class LlmModerationTest extends TestCase
         $this->enable('gemini');
         putenv('LLM_MODERATION_MODEL=../../evil?x=1');
         $config = llmModerationConfig();
-        $this->assertSame('gemini-2.5-flash', $config['model'], 'Geçersiz model adı varsayılana düşmeli');
+        $this->assertSame('gemini-3.1-flash-lite', $config['model'], 'Geçersiz model adı varsayılana düşmeli');
         $body = json_decode(llmModerationRequest($config, str_repeat('ş', 5000))['body'], true);
         $this->assertSame(LLM_MODERATION_MAX_CHARS, mb_strlen($body['contents'][0]['parts'][0]['text'], 'UTF-8'));
     }
