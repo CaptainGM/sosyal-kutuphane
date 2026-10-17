@@ -126,4 +126,17 @@ test.describe('detay sayfası düğmeleri', () => {
         await expect(page.locator('#toastContainer .toast').last()).toBeVisible();
         expect(errors).toEqual([]);
     });
+
+    test('demo hesap: bilgi şeridi görünür, yorum formu ve puan verme kapalı', async ({ page }) => {
+        await page.goto('/index.html');
+        await page.fill('#loginEmail', 'ahmet@test.com');
+        await page.fill('#loginPassword', '123456');
+        await page.click('#loginSubmitBtn');
+        await page.waitForURL('**/search.html');
+        await mockDetail(page, fakeMovie());
+        await page.goto('/detail.php?type=movie&id=987001');
+        await expect(page.locator('.demo-notice')).toBeVisible();
+        await expect(page.locator('#commentsPane .comment-form')).toBeHidden();
+        await expect(page.locator('#rateBtn')).toBeDisabled();
+    });
 });

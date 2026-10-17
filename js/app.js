@@ -27,6 +27,16 @@ class SocialLibraryApp {
         this.initPromise = this.init();
     }
 
+    // Demo hesaplar başkalarını etkileyen işlemleri yapamaz; sunucu zaten reddeder, burada bunu baştan söylüyoruz.
+    showDemoNotice() {
+        if (document.querySelector('.demo-notice')) return;
+        const notice = document.createElement('div');
+        notice.className = 'demo-notice';
+        notice.setAttribute('role', 'note');
+        notice.textContent = 'Demo hesaptasın: kütüphaneyi deneyebilirsin. Yorum, puan ve beğeni yapılamaz; her girişte kütüphane sıfırlanır.';
+        document.body.appendChild(notice);
+    }
+
     async init() {
         try {
             const response = await fetch(`${API_BASE_URL}/auth-status.php`, {
@@ -38,6 +48,7 @@ class SocialLibraryApp {
             if (data.success && data.user) {
                 this.currentUser = data.user;
                 this.csrfToken = data.csrf_token || null;
+                if (data.user.is_demo) this.showDemoNotice();
             } else {
                 this.currentUser = null;
                 this.csrfToken = null;

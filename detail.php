@@ -1367,7 +1367,22 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             }
             loadContentDetail();
             setupStarRating();
+            if (app?.currentUser?.is_demo) applyDemoRestrictions();
         });
+
+        // Demo hesap: yorum ve puan yapılamaz. Form yerine açıklama gösterilir (sunucu da reddeder).
+        function applyDemoRestrictions() {
+            const form = document.querySelector('#commentsPane .comment-form');
+            if (form) {
+                form.hidden = true;
+                form.insertAdjacentHTML('beforebegin', '<div class="notice" role="note" style="margin-bottom: 22px;"><span>Demo hesapta yorum yazılamaz. Kendi hesabını oluşturarak yorum yapabilirsin.</span></div>');
+            }
+            const rateBtn = document.getElementById('rateBtn');
+            if (rateBtn) {
+                rateBtn.disabled = true;
+                rateBtn.title = 'Demo hesapta puan verilemez';
+            }
+        }
 
         function getUrlParams() {
             const urlParams = new URLSearchParams(window.location.search);

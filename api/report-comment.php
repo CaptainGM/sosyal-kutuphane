@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/lib/demo.php';
 require_once __DIR__ . '/lib/audit.php';
 requireLogin();
 
@@ -7,6 +8,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 $userId = (int) getCurrentUserId();
 
 if ($method === 'POST') {
+    requireNotDemo();
     requireCsrf();
     $input = json_decode(file_get_contents('php://input'), true);
     $commentId = isset($input['comment_id']) ? (int) $input['comment_id'] : null;

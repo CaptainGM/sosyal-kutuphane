@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/lib/demo.php';
 requireLogin();
 
 $userId = (int) getCurrentUserId();
@@ -34,6 +35,7 @@ if ($method === 'GET') {
     jsonResponse(['success' => true, 'blocked' => $rows]);
 
 } elseif ($method === 'POST') {
+    requireNotDemo();
     requireCsrf();
     $input = json_decode(file_get_contents('php://input'), true);
     $targetUserId = isset($input['target_user_id']) ? (int) $input['target_user_id'] : null;
@@ -60,6 +62,7 @@ if ($method === 'GET') {
     jsonResponse(['success' => true, 'message' => 'Kullanıcı engellendi']);
 
 } elseif ($method === 'DELETE') {
+    requireNotDemo();
     requireCsrf();
     $input = json_decode(file_get_contents('php://input'), true);
     $targetUserId = isset($input['target_user_id']) ? (int) $input['target_user_id'] : null;
