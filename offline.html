@@ -74,7 +74,7 @@
         <section class="panel offline-card" aria-labelledby="offlineTitle">
             <div class="offline-icon"><svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h.01M8.5 16.4a5 5 0 0 1 7 0M5 12.86a10 10 0 0 1 5.17-2.7M19 12.86a10 10 0 0 0-2.17-1.6M2 8.82a15 15 0 0 1 4.17-2.65M22 8.82a15 15 0 0 0-11.29-3.76M2 2l20 20"/></svg></div>
             <h1 id="offlineTitle" class="offline-title">Çevrimdışısın</h1>
-            <p class="page-sub" style="margin: 0;">İnternet bağlantısı bulunamadı. Bağlantı geri gelince bu sayfa kendiliğinden yenilenir.</p>
+            <p class="page-sub" id="offlineText" style="margin: 0;">İnternet bağlantısı bulunamadı. Bağlantı geri gelince bu sayfa kendiliğinden yenilenir.</p>
             <button type="button" class="btn btn-primary" id="retryBtn">Tekrar dene</button>
             <p class="offline-status" id="offlineStatus" role="status"></p>
             <p class="offline-tip">Daha önce açtığın bazı sayfalar çevrimdışıyken de görünebilir.</p>
@@ -82,18 +82,51 @@
     </main>
 
     <script>
-        document.getElementById('retryBtn').addEventListener('click', function () {
-            var status = document.getElementById('offlineStatus');
-            status.style.color = 'var(--color-text-muted)';
-            status.textContent = navigator.onLine ? 'Yenileniyor...' : 'Hâlâ bağlantı yok.';
-            if (navigator.onLine) location.reload();
-        });
-        window.addEventListener('online', function () {
-            var status = document.getElementById('offlineStatus');
-            status.style.color = 'var(--color-success)';
-            status.textContent = 'Bağlantı geri geldi, yenileniyor...';
-            setTimeout(function () { location.reload(); }, 600);
-        });
+        var statusEl = document.getElementById('offlineStatus');
+
+        // Tarayıcı "çevrimiçi" diyorsa sorun interneti değil, sitenin sunucusudur (ör. yerel sunucu kapanmıştır).
+        function describeState() {
+            var title = document.getElementById('offlineTitle');
+            var text = document.getElementById('offlineText');
+            if (navigator.onLine) {
+                title.textContent = 'Sunucuya ulaşılamıyor';
+                text.textContent = 'İnternetin açık görünüyor ama site sunucusu yanıt vermedi. Sunucu kapalı ya da yeniden başlıyor olabilir; geri gelince bu sayfa kendiliğinden yenilenir.';
+            } else {
+                title.textContent = 'Çevrimdışısın';
+                text.textContent = 'İnternet bağlantısı bulunamadı. Bağlantı geri gelince bu sayfa kendiliğinden yenilenir.';
+            }
+        }
+
+        // Sunucuya gerçekten ulaşılabiliyor mu? Ulaşılıyorsa sayfayı yenile.
+        function probe() {
+            // sw.js statik varlık listesinde değil: servis çalışanı önbellekten cevap vermez, gerçek sunucuya gider.
+            return fetch('sw.js?probe=' + Date.now(), { cache: 'no-store' }).then(function (res) { return res.ok; }).catch(function () { return false; });
+        }
+
+        function tryReload(manual) {
+            if (manual) {
+                statusEl.style.color = 'var(--color-text-muted)';
+                statusEl.textContent = 'Kontrol ediliyor...';
+            }
+            probe().then(function (ok) {
+                describeState();
+                if (ok) {
+                    statusEl.style.color = 'var(--color-success)';
+                    statusEl.textContent = 'Bağlantı geri geldi, yenileniyor...';
+                    // Servis çalışanı bu sayfayı istenen adresin yerine sunar; yenilemek asıl sayfayı getirir.
+                    setTimeout(function () { location.reload(); }, 400);
+                } else if (manual) {
+                    statusEl.style.color = 'var(--color-text-muted)';
+                    statusEl.textContent = 'Hâlâ ulaşılamıyor.';
+                }
+            });
+        }
+
+        describeState();
+        document.getElementById('retryBtn').addEventListener('click', function () { tryReload(true); });
+        window.addEventListener('online', function () { tryReload(false); });
+        window.addEventListener('offline', describeState);
+        setInterval(function () { tryReload(false); }, 8000);
     </script>
 </body>
 

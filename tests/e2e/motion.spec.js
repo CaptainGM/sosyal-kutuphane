@@ -39,12 +39,28 @@ test.describe('tam hareket (sistem tercihi yok)', () => {
         }
     });
 
-    test('arama: vitrin şeritleri kayıyor ve ok düğmeleri gizli', async ({ page }) => {
+    test('arama: vitrin şeritleri elle kaydırılır (iki yanda ok, sürükleme), kendiliğinden hareket etmez', async ({ page }) => {
         await page.goto('/search.html');
         const strip = page.locator('#topRatedMovies .strip-card').first();
         test.skip(!(await strip.waitFor({ timeout: 30000 }).then(() => true).catch(() => false)), 'TMDB yanıt vermedi (anahtar yok)');
-        expect(await moves(page, '#topRatedMovies .strip-track')).toBe(true);
-        await expect(page.locator('#topRatedMovies .strip-arrow').first()).toBeHidden();
+        const viewport = page.locator('#topRatedMovies .strip-viewport');
+        await page.waitForTimeout(1500);
+        expect(await viewport.evaluate(el => el.scrollLeft)).toBe(0);
+        await expect(page.locator('#topRatedMovies .strip-arrow--next')).toBeVisible();
+        await expect(page.locator('#topRatedMovies .strip-arrow--prev')).toBeDisabled();
+        await page.click('#topRatedMovies .strip-arrow--next');
+        await expect.poll(() => viewport.evaluate(el => el.scrollLeft)).toBeGreaterThan(100);
+        await expect(page.locator('#topRatedMovies .strip-arrow--prev')).toBeEnabled();
+
+        // Fareyle sürükleme: sola çekince içerik ilerler ve bırakılan fare afişe tıklama sayılmaz.
+        const before = await viewport.evaluate(el => el.scrollLeft);
+        const box = await viewport.boundingBox();
+        await page.mouse.move(box.x + box.width / 2, box.y + 120);
+        await page.mouse.down();
+        await page.mouse.move(box.x + box.width / 2 - 200, box.y + 120, { steps: 8 });
+        await page.mouse.up();
+        expect(await viewport.evaluate(el => el.scrollLeft)).toBeGreaterThan(before + 100);
+        expect(page.url()).toContain('search.html');
     });
 
     test('sayfalar yatay taşmıyor (giriş ve arama)', async ({ page }) => {
@@ -107,12 +123,12 @@ test.describe('azaltılmış hareket (işletim sistemi tercihi)', () => {
         await expect(page.locator('html')).toHaveAttribute('data-motion', 'reduced');
     });
 
-    test('arama: şeritler durağan, ok düğmeleri görünür ve kaydırma tutamağı çalışır', async ({ page }) => {
+    test('arama: şeritler durağan, ok düğmeleri görünür', async ({ page }) => {
         await page.goto('/search.html');
         const strip = page.locator('#topRatedMovies .strip-card').first();
         test.skip(!(await strip.waitFor({ timeout: 30000 }).then(() => true).catch(() => false)), 'TMDB yanıt vermedi (anahtar yok)');
         expect(await moves(page, '#topRatedMovies .strip-track')).toBe(false);
-        await expect(page.locator('#topRatedMovies .strip-arrow').first()).toBeVisible();
+        await expect(page.locator('#topRatedMovies .strip-arrow--next')).toBeVisible();
     });
 });
 

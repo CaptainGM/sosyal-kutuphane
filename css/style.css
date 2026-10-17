@@ -2116,8 +2116,8 @@ html {
 }
 
 /* ==========================================================================
-   ŞERİT (js/strips.js): sonsuz kayan afiş şeridi, ekranın iki kenarına kadar uzanır.
-   Azaltılmış modda aynı kartlar oklu, tam görünen bir kaydırma satırı olur (kenar maskesi yok).
+   ŞERİT (js/strips.js): elle kaydırılan afiş satırı, ekranın iki kenarına kadar uzanır.
+   Fare sürüklemesi, dokunmatik kaydırma, klavye (oklar) ve iki yandaki ok düğmeleri.
    ========================================================================== */
 
 .strip {
@@ -2127,29 +2127,34 @@ html {
 }
 
 .strip-viewport {
-    overflow: hidden;
-    padding: 8px 0 18px;
-    -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
-    mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+    overflow-x: auto;
+    padding: 8px max(var(--gutter), calc((100vw - var(--page-w)) / 2 + var(--gutter))) 18px;
+    scrollbar-width: none;
+    cursor: grab;
+    overscroll-behavior-x: contain;
+}
+
+.strip-viewport::-webkit-scrollbar {
+    display: none;
+}
+
+.strip-viewport:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 3px rgba(var(--color-accent-rgb), 0.45);
+}
+
+.strip-viewport.is-dragging {
+    cursor: grabbing;
+    user-select: none;
+}
+
+.strip-viewport.is-dragging .strip-card {
+    pointer-events: none;
 }
 
 .strip-track {
     display: flex;
     width: max-content;
-    animation: strip-slide var(--strip-duration, 70s) linear infinite;
-}
-
-.strip--reverse .strip-track {
-    animation-direction: reverse;
-}
-
-.strip:hover .strip-track,
-.strip:focus-within .strip-track {
-    animation-play-state: paused;
-}
-
-.strip-set {
-    display: flex;
 }
 
 .strip-card {
@@ -2163,6 +2168,7 @@ html {
     box-shadow: var(--shadow-sm);
     color: var(--color-text);
     text-decoration: none;
+    -webkit-user-drag: none;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -2183,6 +2189,8 @@ html {
     aspect-ratio: 2 / 3;
     object-fit: cover;
     background: var(--color-surface-2);
+    -webkit-user-drag: none;
+    user-select: none;
 }
 
 .strip-card-meta {
@@ -2208,7 +2216,7 @@ html {
     position: absolute;
     top: calc(50% - 44px);
     z-index: 3;
-    display: none;
+    display: grid;
     place-items: center;
     width: 46px;
     height: 46px;
@@ -2220,17 +2228,23 @@ html {
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     cursor: pointer;
-    transition: border-color 0.2s ease, color 0.2s ease;
+    transition: border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
 }
 
-.strip-arrow:hover {
+.strip-arrow:hover:not(:disabled) {
     border-color: var(--color-accent);
     color: var(--color-accent);
+    transform: scale(1.06);
 }
 
 .strip-arrow:focus-visible {
     outline: none;
     box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb), 0.5);
+}
+
+.strip-arrow:disabled {
+    opacity: 0;
+    pointer-events: none;
 }
 
 .strip-arrow--prev {
@@ -2252,35 +2266,19 @@ html {
     text-align: center;
 }
 
-@keyframes strip-slide {
-    from { transform: translate3d(0, 0, 0); }
-    to { transform: translate3d(-50%, 0, 0); }
-}
+@media (max-width: 640px) {
+    .strip-arrow {
+        width: 40px;
+        height: 40px;
+    }
 
-:root[data-motion="reduced"] .strip-viewport {
-    overflow-x: auto;
-    padding-inline: max(var(--gutter), calc((100vw - var(--page-w)) / 2 + var(--gutter)));
-    scroll-snap-type: x proximity;
-    scroll-padding-inline: max(var(--gutter), calc((100vw - var(--page-w)) / 2 + var(--gutter)));
-    scrollbar-width: thin;
-    -webkit-mask-image: none;
-    mask-image: none;
-}
+    .strip-arrow--prev {
+        left: 6px;
+    }
 
-:root[data-motion="reduced"] .strip-track {
-    animation: none !important;
-}
-
-:root[data-motion="reduced"] .strip-set[aria-hidden="true"] {
-    display: none;
-}
-
-:root[data-motion="reduced"] .strip-card {
-    scroll-snap-align: start;
-}
-
-:root[data-motion="reduced"] .strip-arrow {
-    display: grid;
+    .strip-arrow--next {
+        right: 6px;
+    }
 }
 
 /* ==========================================================================
@@ -2288,17 +2286,27 @@ html {
    Satırlar zıt yönlerde, farklı hızlarda soldan sağdan kayar; azaltılmış modda durağan kolaj olur.
    ========================================================================== */
 
+/* Açık temada kareler beyaza yakın zemine karıştığı için daha opak ve daha az örtülü; koyu temada tersi. */
 :root {
-    --atmo-opacity: 0.18;
+    --atmo-opacity: 0.42;
+    --atmo-veil-mid: 10%;
+    --atmo-veil-edge: 48%;
+    --atmo-saturate: 1.15;
 }
 
 :root[data-theme="dark"] {
     --atmo-opacity: 0.3;
+    --atmo-veil-mid: 25%;
+    --atmo-veil-edge: 62%;
+    --atmo-saturate: 1;
 }
 
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
         --atmo-opacity: 0.3;
+        --atmo-veil-mid: 25%;
+        --atmo-veil-edge: 62%;
+        --atmo-saturate: 1;
     }
 }
 
@@ -2314,7 +2322,7 @@ html {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(ellipse at 50% 35%, color-mix(in srgb, var(--color-bg) 25%, transparent) 0%, color-mix(in srgb, var(--color-bg) 62%, transparent) 55%, var(--color-bg) 100%);
+    background: radial-gradient(ellipse at 50% 35%, color-mix(in srgb, var(--color-bg) var(--atmo-veil-mid), transparent) 0%, color-mix(in srgb, var(--color-bg) var(--atmo-veil-edge), transparent) 55%, var(--color-bg) 100%);
 }
 
 .atmo-rows {
@@ -2325,6 +2333,7 @@ html {
     justify-content: center;
     gap: 14px;
     opacity: var(--atmo-opacity);
+    filter: saturate(var(--atmo-saturate));
     transform: rotate(-7deg) scale(1.06);
 }
 
@@ -2478,30 +2487,4 @@ html {
 
 .spoiler-wrap.spoiler-revealed .spoiler-hide-btn {
     display: inline-flex;
-}
-
-.showcase-shuffle {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-pill);
-    background: var(--color-surface);
-    color: var(--color-text);
-    font: inherit;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.showcase-shuffle:hover {
-    border-color: var(--color-accent);
-    color: var(--color-accent);
-}
-
-.showcase-shuffle:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb), 0.45);
 }

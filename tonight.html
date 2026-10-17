@@ -396,11 +396,26 @@
                     <div class="chip-group" id="moodGroup" role="group" aria-labelledby="moodLabel"></div>
                 </div>
 
+                <div class="control-group">
+                    <span class="control-label" id="eraLabel">Hangi dönemden?</span>
+                    <div class="chip-group" id="eraGroup" role="group" aria-labelledby="eraLabel"></div>
+                </div>
+
+                <div class="control-group">
+                    <span class="control-label" id="ratingLabel">En az kaç puan?</span>
+                    <div class="chip-group" id="ratingGroup" role="group" aria-labelledby="ratingLabel"></div>
+                </div>
+
+                <div class="control-group">
+                    <span class="control-label" id="langLabel">Orijinal dil</span>
+                    <div class="chip-group" id="langGroup" role="group" aria-labelledby="langLabel"></div>
+                </div>
+
                 <button type="button" class="roll-btn" id="rollBtn">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg>
                     <span id="rollLabel">Çevir</span>
                 </button>
-                <p class="controls-note" id="controlsNote">Seçim yapmak zorunda değilsin: boş bırakırsan popüler ve beğenilen yapımlardan seçeriz.</p>
+                <p class="controls-note" id="controlsNote">Seçim yapmak zorunda değilsin: boş bırakırsan 2000 sonrası popüler ve beğenilen yapımlardan seçeriz.</p>
             </section>
 
             <section class="picker-stage" id="pickerStage" aria-live="polite" aria-label="Öneri">
@@ -426,13 +441,29 @@
         ];
         const MAX_MOODS = 3;
         const REEL_ITEM_STEP = 134; // 120px afiş + 14px boşluk
-        const state = { kind: 'movie', duration: 'any', moods: new Set(), busy: false, history: [] };
+        // Tek seçimli süzgeçler: [anahtar, etiket, ipucu]. Varsayılan dönem "2000 ve sonrası": çok eski filmler çıkmasın.
+        const FILTERS = {
+            era: { group: 'eraGroup', fallback: 'modern', options: [['any', 'Hepsi'], ['recent', 'Son 5 yıl'], ['modern', '2000 ve sonrası'], ['classic', 'Klasikler']] },
+            rating: { group: 'ratingGroup', fallback: '0', options: [['0', 'Fark etmez'], ['7', '7+'], ['8', '8+']] },
+            lang: { group: 'langGroup', fallback: '', options: [['', 'Hepsi'], ['tr', 'Türkçe'], ['en', 'İngilizce'], ['ko', 'Korece']] },
+        };
+        const state = { kind: 'movie', duration: 'any', moods: new Set(), era: 'modern', rating: '0', lang: '', busy: false, history: [] };
+
+        function renderFilter(name) {
+            const filter = FILTERS[name];
+            document.getElementById(filter.group).innerHTML = filter.options.map(([key, label]) =>
+                `<button type="button" class="chip" data-filter="${name}" data-value="${key}" aria-pressed="${state[name] === key}">${label}</button>`
+            ).join('');
+        }
 
         function syncUrl() {
             const params = new URLSearchParams();
             if (state.kind !== 'movie') params.set('kind', state.kind);
             if (state.duration !== 'any') params.set('duration', state.duration);
             if (state.moods.size) params.set('moods', [...state.moods].join(','));
+            Object.keys(FILTERS).forEach((name) => {
+                if (state[name] !== FILTERS[name].fallback) params.set(name, state[name]);
+            });
             const query = params.toString();
             history.replaceState(null, '', query ? `?${query}` : window.location.pathname);
         }
@@ -464,7 +495,12 @@
             const kindBtn = event.target.closest('[data-kind]');
             const durationBtn = event.target.closest('[data-duration]');
             const moodBtn = event.target.closest('[data-mood]');
-            if (kindBtn) {
+            const filterBtn = event.target.closest('[data-filter]');
+            if (filterBtn) {
+                state[filterBtn.dataset.filter] = filterBtn.dataset.value;
+                renderFilter(filterBtn.dataset.filter);
+                syncUrl();
+            } else if (kindBtn) {
                 setKind(kindBtn.dataset.kind);
             } else if (durationBtn) {
                 state.duration = durationBtn.dataset.duration;
@@ -614,6 +650,9 @@
                 kind: state.kind,
                 duration: state.duration,
                 moods: [...state.moods].join(','),
+                era: state.era,
+                rating: state.rating,
+                lang: state.lang,
                 seed: String(1 + Math.floor(Math.random() * 2147483000)),
                 exclude: state.history.map(item => item.id).slice(-40).join(','),
             });
@@ -640,13 +679,18 @@
 
         document.getElementById('rollBtn').addEventListener('click', roll);
 
-        // Paylaşılan bağlantı: ?kind=series&duration=short&moods=gerilim,komedi seçimi geri yükler.
+        // Paylaşılan bağlantı: ?kind=series&duration=short&moods=gerilim,komedi&era=recent&rating=7&lang=ko seçimi geri yükler.
         (function restoreFromUrl() {
             const params = new URLSearchParams(window.location.search);
             if (params.get('kind') === 'series') state.kind = 'series';
             if (DURATIONS[state.kind].some(([key]) => key === params.get('duration'))) state.duration = params.get('duration');
             (params.get('moods') || '').split(',').forEach((mood) => {
                 if (MOODS.some(([key]) => key === mood) && state.moods.size < MAX_MOODS) state.moods.add(mood);
+            });
+            Object.entries(FILTERS).forEach(([name, filter]) => {
+                const value = params.get(name);
+                if (value !== null && filter.options.some(([key]) => key === value)) state[name] = value;
+                renderFilter(name);
             });
             setKind(state.kind);
             renderMoods();
