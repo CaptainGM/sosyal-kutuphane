@@ -485,6 +485,7 @@
             { id: 'comments', label: 'Yorumlar', icon: 'message' },
             { id: 'deleted', label: 'Silinenler', icon: 'trash' },
             { id: 'reports', label: 'Şikâyetler', icon: 'flag' },
+            { id: 'moderation', label: 'Engellenen denemeler', icon: 'shield' },
             { id: 'audit', label: 'İşlem günlüğü', icon: 'history' }
         ];
 
@@ -508,6 +509,7 @@
             comments: { page: 1, q: '', filter: 'all', userId: null, userName: '' },
             deleted: { page: 1 },
             reports: { status: 'pending', page: 1 },
+            moderation: { page: 1 },
             audit: { page: 1, target: '' }
         };
         let searchTimer = null;
@@ -610,7 +612,7 @@
                 button.classList.toggle('active', active);
                 button.setAttribute('aria-current', active ? 'page' : 'false');
             });
-            const renderers = { overview: renderOverview, users: renderUsers, comments: renderComments, deleted: renderDeleted, reports: renderReports, audit: renderAudit };
+            const renderers = { overview: renderOverview, users: renderUsers, comments: renderComments, deleted: renderDeleted, reports: renderReports, moderation: renderModeration, audit: renderAudit };
             renderers[name](options);
             refreshCounts();
         }
@@ -999,6 +1001,53 @@
         // =========================================================
         // Şikâyetler
         // =========================================================
+        const MODERATION_KIND = { comment: 'Yorum', reply: 'Yanıt', bio: 'Biyografi', dm: 'Mesaj' };
+        const MODERATION_REASON = { profanity: 'Küfür veya hakaret', iban: 'IBAN', link: 'Bağlantı veya iletişim', llm: 'Hakaret (yapay zekâ)' };
+
+        function renderModeration() {
+            const main = document.getElementById('adminMain');
+            main.innerHTML = head('Engellenen denemeler', 'Küfür, hakaret, IBAN veya bağlantı içeren ve engellenen yorum, yanıt, biyografi ve mesaj denemeleri. Mesaj içerikleri gizlidir; yalnızca olay kaydı görünür.') + `
+                <div id="listArea">${loadingBlock()}</div>`;
+            loadModeration();
+        }
+
+        async function loadModeration() {
+            const s = state.moderation;
+            const area = document.getElementById('listArea');
+            if (!area) return;
+            const token = ++listToken;
+            try {
+                const data = await adminGet({ action: 'moderation', page: s.page });
+                if (token !== listToken) return;
+                if (!data.events.length) {
+                    area.innerHTML = emptyBlock('check', 'Engellenen deneme yok', 'Henüz kimse küfür ya da hakaret içeren bir şey denemedi.');
+                    return;
+                }
+                const summary = data.summary.length
+                    ? `<div class="table-wrap"><table class="table">
+                        <thead><tr><th>Kullanıcı</th><th>Son ${Number(data.window_days)} gün</th><th>Son deneme</th><th></th></tr></thead>
+                        <tbody>${data.summary.map(row => `<tr>
+                            <td>${row.user ? userCell(row.user) : '<span class="faint">Silinmiş kullanıcı</span>'}</td>
+                            <td><strong>${Number(row.count)}</strong> engel</td>
+                            <td class="nowrap">${esc(fmtDate(row.last_at))}</td>
+                            <td>${row.user ? `<button type="button" class="btn-glass btn-sm" data-act="open-user" data-id="${Number(row.user.id)}">Kullanıcıyı aç</button>` : ''}</td>
+                        </tr>`).join('')}</tbody></table></div>`
+                    : '<p class="muted">Bu dönemde engellenen deneme yok.</p>';
+                const events = `<div class="table-wrap"><table class="table">
+                    <thead><tr><th>Zaman</th><th>Kullanıcı</th><th>Nerede</th><th>Neden</th><th>Metin</th></tr></thead>
+                    <tbody>${data.events.map(event => `<tr>
+                        <td class="nowrap">${esc(fmtDate(event.created_at))}</td>
+                        <td>${event.user ? userCell(event.user) : '<span class="faint">Silinmiş kullanıcı</span>'}</td>
+                        <td>${esc(MODERATION_KIND[event.kind] || event.kind)}</td>
+                        <td><span class="chip">${esc(MODERATION_REASON[event.reason] || event.reason)}</span></td>
+                        <td>${event.text === null ? '<span class="faint">Gizli (mesaj)</span>' : `<span class="muted">${esc(event.text)}</span>`}</td>
+                    </tr>`).join('')}</tbody></table></div>`;
+                area.innerHTML = `<h3>Son ${Number(data.window_days)} gün özeti</h3>${summary}<h3>Tüm denemeler</h3>${events}` + pagerHtml('moderation', data.page, data.per_page, data.total);
+            } catch (error) {
+                area.innerHTML = errorBlock(error.message);
+            }
+        }
+
         function renderReports() {
             const s = state.reports;
             const main = document.getElementById('adminMain');
@@ -1196,7 +1245,7 @@
                 case 'page': {
                     const key = el.dataset.key;
                     state[key].page = Math.max(1, Number(el.dataset.page));
-                    ({ users: loadUsers, comments: loadComments, deleted: loadDeleted, reports: loadReports, audit: loadAudit })[key]();
+                    ({ users: loadUsers, comments: loadComments, deleted: loadDeleted, reports: loadReports, moderation: loadModeration, audit: loadAudit })[key]();
                     window.scrollTo({ top: 0, behavior: motionReduced() ? 'auto' : 'smooth' });
                     break;
                 }

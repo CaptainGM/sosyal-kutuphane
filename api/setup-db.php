@@ -112,6 +112,11 @@ $indexPlans = [
         ['key' => ['owner_id' => 1, 'status' => 1]],
         ['key' => ['partner_id' => 1, 'status' => 1]],
     ],
+    // Engellenen denemeler: yönetici listesi (kullanıcı ve tarih) ve kullanıcı bazında özet.
+    'moderation_events' => [
+        ['key' => ['created_at' => -1]],
+        ['key' => ['user_id' => 1, 'created_at' => -1]],
+    ],
     // Yorum tepkileri: bir kullanıcı bir yoruma en fazla bir tepki verir.
     'comment_reactions' => [
         ['key' => ['comment_id' => 1, 'user_id' => 1], 'unique' => true],

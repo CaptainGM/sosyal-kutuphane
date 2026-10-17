@@ -33,17 +33,23 @@ const MODERATION_PREFIX_STEMS = [
 ];
 
 // Metin kuralları: önce IBAN, sonra bağlantı/iletişim, en sonda küfür/hakaret.
-function commentModerationError(string $text): ?string {
+// Döner: ['reason' => iban|link|profanity, 'message' => kullanıcıya gösterilecek metin] ya da null.
+function commentModerationVerdict(string $text): ?array {
     if (commentIbanFound($text)) {
-        return 'IBAN veya banka hesap bilgisi paylaşılamaz.';
+        return ['reason' => 'iban', 'message' => 'IBAN veya banka hesap bilgisi paylaşılamaz.'];
     }
     if (commentLinkOrContactFound($text)) {
-        return 'Yorumlarda harici bağlantı veya iletişim bilgisi paylaşılamaz.';
+        return ['reason' => 'link', 'message' => 'Yorumlarda harici bağlantı veya iletişim bilgisi paylaşılamaz.'];
     }
     if (commentProfanityFound($text)) {
-        return 'Yorumunuz küfür veya hakaret içeriyor. Lütfen saygılı bir dil kullanın.';
+        return ['reason' => 'profanity', 'message' => 'Yorumunuz küfür veya hakaret içeriyor. Lütfen saygılı bir dil kullanın.'];
     }
     return null;
+}
+
+function commentModerationError(string $text): ?string {
+    $verdict = commentModerationVerdict($text);
+    return $verdict === null ? null : $verdict['message'];
 }
 
 function commentIbanFound(string $text): bool {

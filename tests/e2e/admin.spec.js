@@ -116,6 +116,15 @@ test('yorumlar: spoiler tam metin, düzenleme geçmişi, silme (gerekçeyle), ar
     await page.context().close();
 });
 
+test('engellenen denemeler: sekme açılır, özet ve kayıt listesi görünür (mesaj içeriği gizli)', async ({ browser }) => {
+    const page = await adminPage(browser);
+    await page.goto('/admin.html#moderation');
+    await expect(page.locator('#adminMain h2')).toContainText('Engellenen denemeler');
+    await expect(page.locator('#listArea')).toBeVisible();
+    await expect(page.locator('#listArea')).not.toContainText('undefined');
+    await page.context().close();
+});
+
 test('şikâyetler: silme otomatik çözer, kalan şikâyet reddedilince çözülenlere geçer', async ({ browser }) => {
     const page = await adminPage(browser);
     await page.goto('/admin.html#reports');

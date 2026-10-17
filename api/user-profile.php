@@ -1,6 +1,7 @@
 <?php
 require_once 'config.php';
 require_once __DIR__ . '/lib/profile.php';
+require_once __DIR__ . '/lib/moderation-log.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 if ($method === 'POST') {
@@ -23,6 +24,10 @@ if ($method === 'POST') {
         $bio = trim($input['bio']);
         $bioError = profileBioError($bio);
         if ($bioError !== null) {
+            $verdict = commentModerationVerdict($bio);
+            if ($verdict !== null) {
+                rejectModeratedText($db, $userId, 'bio', ['reason' => $verdict['reason'], 'message' => $bioError], $bio);
+            }
             jsonResponse(['success' => false, 'message' => $bioError], 422);
         }
         $set['bio'] = $bio;
