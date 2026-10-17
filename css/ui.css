@@ -1301,3 +1301,114 @@ button.timeline-item:focus-visible {
     color: var(--color-accent);
     white-space: nowrap;
 }
+
+/* Ortak okuma / izleme (buddy.js). Detay sayfasındaki davet kutusu ve profildeki kart. */
+.buddy-box {
+    margin: 0 auto 22px;
+    max-width: var(--page-w, 1240px);
+    padding: 0 var(--gutter);
+}
+
+.buddy-box-inner {
+    display: grid;
+    gap: 10px;
+    padding: 16px 18px;
+    border: 1px solid rgba(var(--color-accent-rgb), 0.35);
+    border-radius: var(--radius);
+    background: rgba(var(--color-accent-rgb), 0.08);
+}
+
+.buddy-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.buddy-row select {
+    min-width: 180px;
+    padding: 8px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+}
+
+.buddy-hint {
+    margin: 0;
+    color: var(--color-text-faint);
+    font-size: 12.5px;
+}
+
+.buddy-list {
+    display: grid;
+    gap: 14px;
+}
+
+.buddy-item {
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+}
+
+.buddy-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.buddy-head img {
+    width: 40px;
+    height: 60px;
+    border-radius: 8px;
+    object-fit: cover;
+    background: var(--color-surface-2);
+}
+
+.buddy-head small {
+    display: block;
+    color: var(--color-text-faint);
+}
+
+.buddy-item p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.buddy-them {
+    color: var(--color-text-muted);
+}
+
+.buddy-progress {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.buddy-progress input {
+    width: 96px;
+    padding: 6px 8px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-2);
+    color: var(--color-text);
+    font: inherit;
+}
+
+.buddy-done {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+}
+
+.buddy-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
