@@ -586,6 +586,8 @@ class SocialLibraryApp {
                 return `<strong>${this.escapeHtml(n.content_title || 'Bir yapım')}</strong> vizyona girdi`;
             case 'episode':
                 return `<strong>${this.escapeHtml(n.content_title || 'Bir dizi')}</strong>`;
+            case 'buddy':
+                return `<strong>${this.escapeHtml(n.content_title || 'Ortak okuma')}</strong>`;
             default:
                 return `<strong>${username}</strong> bir bildirim gönderdi`;
         }
@@ -624,6 +626,8 @@ class SocialLibraryApp {
                     window.location.href = `messages.html?conversation_id=${contentId}`;
                 } else if (type === 'release' && contentId) {
                     window.location.href = `detail.php?type=movie&id=${contentId}`;
+                } else if (type === 'buddy') {
+                    window.location.href = 'profile.html#buddyCard';
                 } else if (type === 'episode' && contentId) {
                     window.location.href = `detail.php?type=series&id=${contentId}&tab=season`;
                 }

@@ -825,6 +825,17 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
     </header>
 
     <main id="main" class="page detail-main">
+        <section class="buddy-box" id="buddyBox" aria-labelledby="buddyBoxTitle" hidden>
+            <div class="buddy-box-inner">
+                <strong id="buddyBoxTitle">Arkadaşınla birlikte ilerle</strong>
+                <div class="buddy-row">
+                    <select id="buddyFriend" aria-label="Arkadaş seç"></select>
+                    <button type="button" class="btn btn-primary" id="buddyInviteBtn">Ortak okumaya davet et</button>
+                </div>
+                <p class="buddy-hint">Yalnızca karşılıklı takip ettiğin biri davet edilebilir. İlerlemeniz ancak davet kabul edilince görünür.</p>
+            </div>
+        </section>
+
         <div class="split">
             <div class="stack">
                 <section class="panel discuss-panel" id="discussPanel" aria-label="Tartışma">
@@ -993,6 +1004,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
     <script src="js/escape-html.js"></script>
     <script src="js/app.js"></script>
     <script src="js/comment-view.js"></script>
+    <script src="js/buddy.js"></script>
     <script>
         let currentContent = null;
         let currentRating = 0;
