@@ -1,5 +1,8 @@
 <?php
+// Herkese açık ve oturumsuz bir uç: oturum açılmaz, yanıt önbelleğe alınabilir.
+define('SK_NO_SESSION', true);
 require_once 'config.php';
+publicCache();
 
 // Yakında vizyona girecek filmler (TMDB, Türkiye). Sonuçlar 6 saat önbelleklenir;
 // hatalı yanıtlar önbelleğe yazılmaz, böylece geçici bir hata uzun süre görünmez.

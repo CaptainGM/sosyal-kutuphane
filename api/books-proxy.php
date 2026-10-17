@@ -1,5 +1,8 @@
 <?php
+// Herkese açık ve oturumsuz bir uç: oturum açılmaz, yanıt önbelleğe alınabilir.
+define('SK_NO_SESSION', true);
 require_once 'config.php';
+publicCache();
 
 // tmdb-proxy.php ile aynı mantık: Google Books istekleri buradan geçip önbelleklenir.
 $action = $_GET['action'] ?? null;

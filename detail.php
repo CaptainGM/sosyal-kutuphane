@@ -1370,6 +1370,10 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
         }
 
         document.addEventListener('DOMContentLoaded', async function () {
+            // İçerik oturum bilgisini beklemeden yüklenir (oturum isteği yavaş olabilir); kullanıcıya özel
+            // parçalar (izledim, puan, yorum düzenleme) kendi işlevlerinde oturum bilgisini bekler.
+            loadContentDetail();
+            setupStarRating();
             if (typeof app !== 'undefined' && app.initPromise) {
                 try {
                     await app.initPromise;
@@ -1377,8 +1381,6 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                     console.error('App init error:', e);
                 }
             }
-            loadContentDetail();
-            setupStarRating();
             if (app?.currentUser?.is_demo) applyDemoRestrictions();
         });
 
@@ -1993,6 +1995,7 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             }
         }
         async function loadUserInteractions() {
+            if (typeof app !== 'undefined' && app.initPromise) await app.initPromise.catch(() => { });
             if (typeof app === 'undefined' || !app.currentUser) return;
 
             try {
@@ -2104,6 +2107,8 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
         }
 
         async function loadComments() {
+            // Yorum kartlarında "kendi yorumun" düzenleme ve silme düğmeleri oturum bilgisine bağlıdır.
+            if (typeof app !== 'undefined' && app.initPromise) await app.initPromise.catch(() => { });
             try {
                 const response = await fetch(
                     `/api/comments.php?content_type=${currentContentType}&content_id=${currentContentId}`,

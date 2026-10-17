@@ -1,5 +1,8 @@
 <?php
+// Herkese açık ve oturumsuz bir uç: oturum açılmaz, yanıt önbelleğe alınabilir.
+define('SK_NO_SESSION', true);
 require_once 'config.php';
+publicCache();
 require_once __DIR__ . '/lib/search.php';
 require_once __DIR__ . '/lib/providers.php';
 
