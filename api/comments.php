@@ -8,6 +8,7 @@ require_once __DIR__ . '/lib/audit.php';
 require_once __DIR__ . '/lib/social.php';
 require_once __DIR__ . '/lib/tmdb.php';
 require_once __DIR__ . '/lib/llm-moderation.php';
+require_once __DIR__ . '/lib/reactions.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 if ($method !== 'GET') {
@@ -44,7 +45,7 @@ function commentIsEdited($comment): bool {
     return (int)(string)$updated - (int)(string)$created >= 1000;
 }
 
-function commentPayload($comment, array $usersById, array $likeCounts, array $likedByMe): array {
+function commentPayload($comment, array $usersById, array $likeCounts, array $likedByMe, array $reactionCounts = [], array $myReactions = []): array {
     $id = $comment['_id'];
     $user = $usersById[$comment['user_id']] ?? null;
     $updated = $comment['updated_at'] ?? $comment['created_at'];
@@ -64,6 +65,8 @@ function commentPayload($comment, array $usersById, array $likeCounts, array $li
         'avatar_url' => $user['avatar_url'] ?? null,
         'likes_count' => $likeCounts[$id] ?? 0,
         'liked_by_me' => isset($likedByMe[$id]) ? 1 : 0,
+        'reactions' => commentReactionView($reactionCounts[$id] ?? []),
+        'my_reaction' => $myReactions[$id] ?? null,
         'has_spoiler' => !empty($comment['has_spoiler']),
     ];
 }
@@ -191,14 +194,26 @@ if ($method === 'GET') {
         }
     }
 
+    $reactionCounts = [];
+    $myReactions = [];
+    if ($commentIds) {
+        foreach ($db->comment_reactions->find(['comment_id' => ['$in' => $commentIds]]) as $reaction) {
+            $cid = $reaction['comment_id'];
+            $reactionCounts[$cid][$reaction['type']] = ($reactionCounts[$cid][$reaction['type']] ?? 0) + 1;
+            if ($reaction['user_id'] === $userId) {
+                $myReactions[$cid] = $reaction['type'];
+            }
+        }
+    }
+
     $repliesByParent = [];
     foreach ($replies as $r) {
-        $repliesByParent[$r['parent_comment_id']][] = commentPayload($r, $usersById, $likeCounts, $likedByMe);
+        $repliesByParent[$r['parent_comment_id']][] = commentPayload($r, $usersById, $likeCounts, $likedByMe, $reactionCounts, $myReactions);
     }
 
     $comments = [];
     foreach ($topComments as $c) {
-        $row = commentPayload($c, $usersById, $likeCounts, $likedByMe);
+        $row = commentPayload($c, $usersById, $likeCounts, $likedByMe, $reactionCounts, $myReactions);
         if ($withContent) {
             $snapshot = $snapshots[$c['_id']] ?? ['title' => null, 'poster' => null];
             $row['content_title'] = $snapshot['title'];

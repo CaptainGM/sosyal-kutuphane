@@ -589,7 +589,8 @@
                 genre: document.getElementById('genreFilter')?.value || '',
                 year: document.getElementById('yearFilter')?.value || '',
                 rating: document.getElementById('ratingFilter')?.value || '',
-                category: document.getElementById('categoryFilter')?.value || ''
+                category: document.getElementById('categoryFilter')?.value || '',
+                provider: document.getElementById('providerFilter')?.value || ''
             };
         }
 
@@ -625,6 +626,9 @@
                 <option value="6">6+ ve üzeri</option>`;
         }
 
+        // Yayın platformları (TMDB sağlayıcı kimlikleri; sunucudaki STREAMING_PROVIDERS ile aynı).
+        const STREAMING_OPTIONS = [[8, 'Netflix'], [119, 'Prime Video'], [337, 'Disney+'], [2, 'Apple TV'], [11, 'MUBI'], [342, 'puhutv']];
+
         function screenFiltersHtml(genres) {
             return `
                 <div class="filter-group">
@@ -645,6 +649,13 @@
                     <label for="ratingFilter">Minimum Puan</label>
                     <select id="ratingFilter" onchange="updateFilters()">
                         ${ratingOptionsHtml()}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="providerFilter">Platform (abonelik)</label>
+                    <select id="providerFilter" onchange="updateFilters()">
+                        <option value="">Tümü</option>
+                        ${STREAMING_OPTIONS.map(([id, name]) => `<option value="${id}">${name}</option>`).join('')}
                     </select>
                 </div>`;
         }
@@ -964,6 +975,7 @@
                 const data = await app.discoverMovies({
                     year: currentFilters.year || '',
                     genre: currentFilters.genre || '',
+                    provider: currentFilters.provider || '',
                     min_rating: currentFilters.rating || '',
                     sort_by: currentSortBy || 'popularity'
                 }, page);
@@ -1010,6 +1022,7 @@
                 const data = await app.discoverSeries({
                     year: currentFilters.year || '',
                     genre: currentFilters.genre || '',
+                    provider: currentFilters.provider || '',
                     min_rating: currentFilters.rating || '',
                     sort_by: currentSortBy || 'popularity'
                 }, page);
@@ -1109,6 +1122,7 @@
             if (document.getElementById('yearFilter')) document.getElementById('yearFilter').value = '';
             if (document.getElementById('ratingFilter')) document.getElementById('ratingFilter').value = '';
             if (document.getElementById('categoryFilter')) document.getElementById('categoryFilter').value = '';
+            if (document.getElementById('providerFilter')) document.getElementById('providerFilter').value = '';
             isFiltering = false;
             currentSortBy = 'relevance';
             document.querySelectorAll('.sort-btn').forEach((btn, idx) => {

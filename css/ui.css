@@ -1195,3 +1195,109 @@ button.timeline-item:focus-visible {
     font-weight: 600;
     text-align: center;
 }
+
+/* Yorum tepkileri (comment-view.js: reactionButtons). Beğeni düğmesinin yanında, küçük ve yuvarlak. */
+.cv-reactions {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.cv-react {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 9px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    font: inherit;
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.cv-react:hover {
+    border-color: rgba(var(--color-accent-rgb), 0.5);
+    color: var(--color-accent);
+}
+
+.cv-react.is-on {
+    border-color: transparent;
+    background: var(--color-accent-gradient);
+    color: #ffffff;
+}
+
+.cv-react:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb), 0.45);
+}
+
+.cv-react:disabled {
+    opacity: 0.6;
+    cursor: progress;
+}
+
+.cv-react-count {
+    font-weight: 700;
+    min-width: 0.5em;
+}
+
+/* Bölüm takvimi (upcoming.html): takip edilen dizilerin sonraki bölümleri. */
+.episode-calendar {
+    margin-bottom: 26px;
+    padding: 18px 20px;
+}
+
+.episode-row {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 6px;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text);
+    text-decoration: none;
+}
+
+.episode-row:first-of-type {
+    border-top: none;
+}
+
+.episode-row:hover,
+.episode-row:focus-visible {
+    color: var(--color-accent);
+    outline: none;
+}
+
+.episode-row img {
+    width: 44px;
+    height: 66px;
+    border-radius: 8px;
+    object-fit: cover;
+    background: var(--color-surface-2);
+}
+
+.episode-row-text {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.episode-row-text strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.episode-row-text small {
+    color: var(--color-text-faint);
+}
+
+.episode-row-date {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-accent);
+    white-space: nowrap;
+}

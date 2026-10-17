@@ -103,6 +103,15 @@ $indexPlans = [
     'user_episode_progress' => [
         ['key' => ['user_id' => 1, 'series_id' => 1, 'season' => 1, 'episode' => 1], 'unique' => true],
     ],
+    // Bölüm bildirimleri: aynı bölüm kullanıcıya bir kez bildirilir.
+    'episode_notifications' => [
+        ['key' => ['user_id' => 1, 'tmdb_id' => 1, 'season' => 1, 'episode' => 1], 'unique' => true],
+    ],
+    // Yorum tepkileri: bir kullanıcı bir yoruma en fazla bir tepki verir.
+    'comment_reactions' => [
+        ['key' => ['comment_id' => 1, 'user_id' => 1], 'unique' => true],
+        ['key' => ['user_id' => 1]],
+    ],
     // Yönetici geçmişi: düzenleme sürümleri, silinen yorum arşivi, işlem günlüğü ve giriş geçmişi.
     'comment_revisions' => [
         ['key' => ['comment_id' => 1, 'created_at' => 1]],

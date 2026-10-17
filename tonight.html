@@ -450,6 +450,11 @@
                     <div class="chip-group" id="langGroup" role="group" aria-labelledby="langLabel"></div>
                 </div>
 
+                <div class="control-group">
+                    <span class="control-label" id="providerLabel">Hangi platformda?</span>
+                    <div class="chip-group" id="providerGroup" role="group" aria-labelledby="providerLabel"></div>
+                </div>
+
                 <button type="button" class="roll-btn" id="rollBtn">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg>
                     <span id="rollLabel">Çevir</span>
@@ -486,8 +491,9 @@
             era: { group: 'eraGroup', fallback: 'modern', options: [['any', 'Hepsi'], ['recent', 'Son 5 yıl'], ['modern', '2000 ve sonrası'], ['classic', 'Klasikler']] },
             rating: { group: 'ratingGroup', fallback: '0', options: [['0', 'Fark etmez'], ['7', '7+'], ['8', '8+']] },
             lang: { group: 'langGroup', fallback: '', options: [['', 'Hepsi'], ['tr', 'Türkçe'], ['en', 'İngilizce']] },
+            provider: { group: 'providerGroup', fallback: '0', options: [['0', 'Fark etmez'], ['8', 'Netflix'], ['119', 'Prime Video'], ['337', 'Disney+'], ['2', 'Apple TV'], ['11', 'MUBI'], ['342', 'puhutv']] },
         };
-        const state = { kind: 'movie', duration: 'any', moods: new Set(), era: 'modern', rating: '0', lang: '', busy: false, history: [] };
+        const state = { kind: 'movie', duration: 'any', moods: new Set(), era: 'modern', rating: '0', lang: '', provider: '0', busy: false, history: [] };
 
         function renderFilter(name) {
             const filter = FILTERS[name];
@@ -762,6 +768,7 @@
                 era: state.era,
                 rating: state.rating,
                 lang: state.lang,
+                provider: state.provider,
                 seed: String(1 + Math.floor(Math.random() * 2147483000)),
                 exclude: state.history.map(item => item.id).slice(-40).join(','),
             });

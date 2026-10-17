@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/lib/push.php';
 require_once __DIR__ . '/lib/demo.php';
 requireLogin();
 requireCsrf();
@@ -48,6 +49,7 @@ if ($method === 'POST') {
         'is_read' => false,
         'created_at' => new MongoDB\BSON\UTCDateTime(),
     ]);
+    pushNotifyUser($db, $targetUserId, ($_SESSION['username'] ?? 'Birisi') . ' seni takip etmeye başladı', 'user-profile.html?id=' . $currentUserId);
 
     jsonResponse(['success' => true, 'message' => 'Kullanıcı takip edildi']);
 } elseif ($method === 'DELETE') {
