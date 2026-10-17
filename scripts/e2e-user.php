@@ -121,5 +121,10 @@ if (is_string($avatar) && preg_match('~^/uploads/avatars/[a-f0-9]{32}\.(?:jpg|pn
     @unlink(__DIR__ . '/..' . $avatar);
 }
 
+// Tarayıcı testleri 987000-987999 aralığındaki uydurma TMDB kimlikleriyle içerik kaydı açabilir; bunlar da temizlenir.
+foreach (['movies', 'series'] as $collection) {
+    $db->$collection->deleteMany(['tmdb_id' => ['$gte' => 987000, '$lt' => 988000]]);
+}
+
 $db->users->deleteOne(['_id' => $user['_id']]);
 echo "silindi: $username\n";

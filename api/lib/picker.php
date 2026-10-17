@@ -22,6 +22,18 @@ const PICKER_DURATIONS = [
     'any' => ['label' => 'Fark etmez', 'movie' => [null, null], 'tv' => [null, null]],
 ];
 
+// Çıkış dönemi: çok eski yapımları ayıklamak için. Varsayılan "2000 ve sonrası"dır; "classic" 2000 öncesini ister.
+const PICKER_ERAS = [
+    'any' => 'Hepsi',
+    'recent' => 'Son 5 yıl',
+    'modern' => '2000 ve sonrası',
+    'classic' => 'Klasikler',
+];
+const PICKER_DEFAULT_ERA = 'modern';
+// En düşük TMDB puanı (0 = türün taban eşiği). Orijinal dil: boş = fark etmez.
+const PICKER_RATINGS = [0, 7, 8];
+const PICKER_LANGUAGES = ['tr', 'en', 'ko'];
+
 // İstemciden gelen değerleri doğrular ve güvenli bir parametre dizisine çevirir. Bilinmeyen ruh halleri atılır.
 function pickerNormalizeParams(array $input): array {
     $kind = ($input['kind'] ?? 'movie') === 'series' ? 'series' : 'movie';
@@ -54,9 +66,18 @@ function pickerNormalizeParams(array $input): array {
         }
     }
 
+    $era = isset($input['era']) && is_string($input['era']) && isset(PICKER_ERAS[$input['era']]) ? $input['era'] : PICKER_DEFAULT_ERA;
+    $rating = isset($input['rating']) && is_numeric($input['rating']) && in_array((int) $input['rating'], PICKER_RATINGS, true)
+        ? (int) $input['rating'] : 0;
+    $language = isset($input['lang']) && is_string($input['lang']) && in_array($input['lang'], PICKER_LANGUAGES, true)
+        ? $input['lang'] : '';
+
     return [
         'kind' => $kind,
         'duration' => $duration,
+        'era' => $era,
+        'rating' => $rating,
+        'lang' => $language,
         'moods' => array_slice($moods, 0, 3),
         'exclude' => array_slice(array_values(array_unique($exclude)), 0, 60),
         'seed' => isset($input['seed']) && is_numeric($input['seed']) ? (int) $input['seed'] : 0,
@@ -64,7 +85,19 @@ function pickerNormalizeParams(array $input): array {
 }
 
 // TMDB discover sorgusu. Aynı ruh hallerindeki türler "veya" ile birleşir (pipe), kalite eşiği kötü önerileri eler.
-function pickerDiscoverQuery(array $params, int $page = 1): array {
+// Dönemin [en erken, en geç] çıkış tarihi (YYYY-MM-DD); sınır yoksa null. Gelecekteki yapımlar hiçbir dönemde önerilmez.
+function pickerEraBounds(string $era, string $today): array {
+    $year = (int) substr($today, 0, 4);
+    return match ($era) {
+        'recent' => [($year - 5) . '-01-01', $today],
+        'modern' => ['2000-01-01', $today],
+        'classic' => [null, '1999-12-31'],
+        default => [null, $today],
+    };
+}
+
+function pickerDiscoverQuery(array $params, int $page = 1, ?string $today = null): array {
+    $today ??= date('Y-m-d');
     $isSeries = $params['kind'] === 'series';
     $typeKey = $isSeries ? 'tv' : 'movie';
 
@@ -84,6 +117,21 @@ function pickerDiscoverQuery(array $params, int $page = 1): array {
     ];
     if ($genreIds) {
         $query['with_genres'] = implode('|', array_keys($genreIds));
+    }
+
+    [$from, $until] = pickerEraBounds($params['era'] ?? PICKER_DEFAULT_ERA, $today);
+    $dateKey = $isSeries ? 'first_air_date' : 'primary_release_date';
+    if ($from !== null) {
+        $query["$dateKey.gte"] = $from;
+    }
+    if ($until !== null) {
+        $query["$dateKey.lte"] = $until;
+    }
+    if (($params['rating'] ?? 0) > 0) {
+        $query['vote_average.gte'] = max($query['vote_average.gte'], (float) $params['rating']);
+    }
+    if (($params['lang'] ?? '') !== '') {
+        $query['with_original_language'] = $params['lang'];
     }
 
     [$min, $max] = PICKER_DURATIONS[$params['duration']][$typeKey];
