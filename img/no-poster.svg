@@ -1,12 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 225" width="150" height="225">
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#312e81"/>
-      <stop offset="1" stop-color="#701a75"/>
+      <stop offset="0" stop-color="#3b3b9c"/>
+      <stop offset="0.55" stop-color="#6b21a8"/>
+      <stop offset="1" stop-color="#9d174d"/>
     </linearGradient>
   </defs>
   <rect width="150" height="225" fill="url(#g)"/>
-  <rect x="50" y="78" width="50" height="40" rx="6" fill="none" stroke="#c7d2fe" stroke-width="3"/>
-  <path d="M60 128h30" stroke="#c7d2fe" stroke-width="3" stroke-linecap="round"/>
-  <text x="75" y="170" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#e0e7ff">Afiş yok</text>
+  <g transform="translate(50 74) scale(2)" fill="none" stroke="#e9d5ff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" transform="scale(.8)"/>
+  </g>
+  <text x="75" y="170" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#e9d5ff">Afiş yok</text>
 </svg>

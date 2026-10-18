@@ -1,102 +1,88 @@
 # Sosyal Kütüphane
 
-Film, dizi ve kitapları arayıp izlediklerini ve okuduklarını takip edebildiğin, puan verip yorum yazabildiğin bir sosyal kütüphane. PHP + MongoDB, arayüz düz HTML/CSS/JS.
+İzlediğim filmleri, dizileri ve okuduğum kitapları takip edebildiğim, puan verip yorum yazabildiğim bir sosyal kütüphane. PHP + MongoDB ile yaptım, arayüz düz HTML/CSS/JS.
 
 **Canlı demo:** https://sosyal-kutuphane-qr9i.onrender.com
 
 ![CI](https://github.com/CaptainGM/sosyal-kutuphane/actions/workflows/ci.yml/badge.svg)
 
+## Ekran görüntüleri
+
 ![Giriş ekranı](docs/screenshots/giris-koyu.png)
 
-## Özellikler
+![Keşfet](docs/screenshots/kesfet.png)
 
-- Film, dizi ve kitap arama (TMDB ve Google Books), yazım hatasına toleranslı
-- İzlediklerim, izleyeceklerim, okuduklarım ve 1-10 puanlama
-- Yorum, yanıt, beğeni; spoiler gizleme; dizilerde bölüm bazlı sohbet
-- "Ne izlesem?" akşam seçici (süre, ruh hali, dönem ve dile göre öneri)
-- Yayın platformuna göre filtre (Netflix, Prime Video, Disney+ ve diğerleri), "Ne izlesem?" dahil
-- Letterboxd, IMDb ve Goodreads dışa aktarımlarını içe aktarma
-- Yorumlara tepki (güldüm, ağladım, şaşırdım, düşündürdü)
-- Takip edilen dizilerin yeni bölüm takvimi ve tarayıcı bildirimleri
-- Karşılıklı takip eden arkadaşlarla ortak okuma / izleme
-- Takip, akış, iki kullanıcının zevk eşleşmesi, yıllık özet
-- Özel mesajlaşma, paylaşılabilir listeler, Instagram hikaye kartı
-- Yönetim konsolu (`admin.html`): kullanıcılar, yorumlar, şikâyetler, işlem günlüğü
-- Açık/koyu tema, azaltılmış hareket desteği
+![İçerik detayı](docs/screenshots/detay.png)
+
+![Ne izlesem?](docs/screenshots/ne-izlesem.png)
+
+![Yeni çıkanlar](docs/screenshots/yeni-cikanlar.png)
+
+![Profil ve rozetler](docs/screenshots/profil.png)
+
+![Yönetim konsolu](docs/screenshots/yonetim.png)
+
+## Neler var
+
+- Film, dizi ve kitap arama (TMDB, Google Books), yazım hatası olsa da bulur
+- İzledim / izlenecek listeleri, 1-10 puan, özel listeler
+- Yorum, yanıt, beğeni ve tepki; spoiler gizleme; küfür ve hakaret filtresi
+- "Ne izlesem?" önerisi, yeni çıkanlar takvimi, yayın platformuna göre filtre
+- Takip, akış, zevk eşleşmesi, ortak okuma/izleme, yıllık özet, rozetler
+- Mesajlaşma, tarayıcı bildirimleri, IMDb/Letterboxd/Goodreads içe aktarma
+- Yönetim konsolu (`admin.html`) ve açık/koyu tema
 
 ## Demo hesaplar
 
-Giriş ekranındaki hazır butonlarla ya da `ahmet@test.com`, `ayse@test.com`, `test@test.com` ile girebilirsin. Şifre: `123456`
+Giriş ekranındaki butonlarla ya da `ahmet@test.com`, `ayse@test.com`, `test@test.com` ile girilir, şifre `123456`. Demo hesaplarda kütüphane her girişte sıfırlanır; yorum, puan ve mesaj gibi başkalarını etkileyen işlemler kapalıdır.
 
-- Kütüphane, listeler ve izleme durumu kullanılabilir. Her girişte kütüphane sıfırlanır.
-- Yorum, yanıt, beğeni, puan, şikâyet, takip, engelleme ve mesaj kapalıdır. Başkalarını etkileyen hiçbir işlem demo hesaptan yapılamaz.
+## Kurulum
 
-## Yerelde çalıştırma
-
-1. MongoDB'yi çalıştır (yerelde ya da Atlas'ta) ve `composer install` yap.
-2. `.env.example` dosyasını `.env` olarak kopyala ve en azından `MONGO_URI` ile `TMDB_API_KEY` değerlerini doldur.
-3. `php api/setup-db.php` komutunu bir kez çalıştır. İndeksleri ve demo hesapları oluşturur.
-4. `START.bat` (Windows) veya `START.sh` ile sunucuyu başlat, `http://localhost:8000/index.html` adresini aç.
+1. MongoDB'yi çalıştır ve `composer install` yap.
+2. `.env.example` dosyasını `.env` olarak kopyala, `MONGO_URI` ile `TMDB_API_KEY` değerlerini doldur.
+3. `php api/setup-db.php` komutunu bir kez çalıştır (indeksleri ve demo hesapları kurar).
+4. `START.bat` (Windows) ya da `START.sh` ile başlat, `http://localhost:8000/index.html` adresini aç.
 
 Docker ile: `docker compose up`
 
-### Ortam değişkenleri
-
-| Değişken | Zorunlu | Açıklama |
+| Değişken | Zorunlu | Ne için |
 |---|---|---|
-| `MONGO_URI`, `MONGO_DB` | Evet | MongoDB bağlantısı |
-| `TMDB_API_KEY` | Evet | Film ve dizi verisi (ücretsiz, themoviedb.org) |
-| `GOOGLE_BOOKS_API_KEY` | Hayır | Kitap verisi için; yoksa anonim kota kullanılır |
-| `SMTP_*` | Hayır | Şifre sıfırlama e-postası; boşsa bağlantı sunucu loguna yazılır |
-| `LLM_MODERATION_PROVIDER`, `LLM_MODERATION_API_KEY` | Hayır | Yorumlar için yapay zekâ ile ek küfür/hakaret taraması (`gemini` veya `deepseek`) |
-| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | Hayır | Tarayıcı bildirimleri. `php scripts/make-vapid.php` ile üretilir; boşsa bildirimler kapalıdır |
+| `MONGO_URI`, `MONGO_DB` | Evet | Veritabanı |
+| `TMDB_API_KEY` | Evet | Film ve dizi verisi |
+| `GOOGLE_BOOKS_API_KEY` | Hayır | Kitap verisi |
+| `SMTP_*` | Hayır | Şifre sıfırlama e-postası |
+| `LLM_MODERATION_PROVIDER`, `LLM_MODERATION_API_KEY` | Hayır | Yorumlarda yapay zekâ ile ek küfür taraması (`gemini` veya `deepseek`) |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | Hayır | Tarayıcı bildirimleri (`php scripts/make-vapid.php` ile üretilir) |
 
-Anahtarlar yalnızca `.env` veya ortam değişkenlerinde tutulur, depoya girmez. Bildirim anahtarı üretmek için `php scripts/make-vapid.php` çalıştırıp çıktıyı Render'a ekleyin.
+Anahtarlar sadece `.env` ya da ortam değişkenlerinde durur, depoya girmez.
 
-## Yönetici yetkisi
+Yönetici yapmak için: `php scripts/make-admin.php kullanici@ornek.com`
 
-```bash
-php scripts/make-admin.php kullanici@ornek.com
-```
+## Canlıya alma
 
-Yönetici yetkisi yalnızca komut satırından verilir. Özel mesajların içeriği yönetim konsoluna bilerek dahil edilmemiştir.
-
-## Canlıya alma (Render + MongoDB Atlas)
-
-Render'da yeni bir Blueprint oluşturup bu depoyu bağla; `render.yaml` servisi kurar. Gizli değerleri Render panelinde gir: `MONGO_URI`, `TMDB_API_KEY`, `SITE_URL` (servisin adresi, `https://` ile, sonunda `/` olmadan). Atlas'ta Network Access listesine `0.0.0.0/0` eklenmelidir.
-
-Ücretsiz planda servis bir süre hareketsiz kalınca uyur; ilk açılış birkaç saniye sürebilir. Yüklenen profil fotoğrafları kalıcı diskte değildir.
+Render'da Blueprint olarak bu depoyu bağla (`render.yaml` hazır), `MONGO_URI`, `TMDB_API_KEY` ve `SITE_URL` değerlerini panelden gir. Atlas'ta Network Access'e `0.0.0.0/0` eklemek gerekir. Ücretsiz planda site bir süre kullanılmazsa uyur, ilk açılış yavaş olur.
 
 ## Testler
 
 ```bash
-# PHPUnit: çalışan bir sunucu ve izole bir test veritabanı gerektirir
 MONGO_DB=social_library_test php -S 127.0.0.1:8001 -t . router.php &
 MONGO_DB=social_library_test php api/setup-db.php
 TEST_BASE_URL=http://127.0.0.1:8001 TEST_MONGO_DB=social_library_test vendor/bin/phpunit
 
-# Tarayıcı testleri (Playwright)
 npm ci
 npx playwright install chromium
 npx playwright test
 ```
 
-Testler `tests/` (PHPUnit, Node) ve `tests/e2e/` (Playwright, axe ile erişilebilirlik) altındadır. Her push'ta GitHub Actions aynı testleri çalıştırır.
+Testler `tests/` (PHPUnit) ve `tests/e2e/` (Playwright + erişilebilirlik) altında. Her push'ta GitHub Actions çalıştırır.
 
-## Klasör yapısı
+## Klasörler
 
 ```
-index.html, search.html, tonight.html, detail.php, feed.html, social.html,
-profile.html, user-profile.html, messages.html, wrapped.html, upcoming.html,
-shared-list.html, admin.html   Sayfalar
-api/            PHP API uçları (api/lib: öneri, moderasyon, demo, DM, denetim...)
-js/, css/       İstemci kodu ve stiller
-partials/       Gezinme çubuğunun tek kaynağı (scripts/sync-nav.mjs sayfalara yazar)
-tests/          PHPUnit, Node ve Playwright testleri
-scripts/        Yönetici atama, navbar eşitleme, test kullanıcısı yardımcıları
+*.html, detail.php   sayfalar
+api/                 PHP API uçları (api/lib: moderasyon, öneri, DM...)
+js/, css/            istemci kodu ve stiller
+partials/            ortak menü
+tests/               PHPUnit ve Playwright testleri
+scripts/             yönetici atama, menü eşitleme vb. yardımcılar
 ```
-
-## Sorun giderme
-
-- **"Veritabanı bağlantı hatası"**: `MONGO_URI` doğru mu, Atlas kümesi çalışıyor mu, Network Access'te IP izinli mi kontrol et.
-- **Sunucuya bağlanılamıyor**: sunucunun açık olduğundan emin ol.
