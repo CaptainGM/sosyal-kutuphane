@@ -6,7 +6,24 @@ Film, dizi ve kitapları arayıp izlediklerini ve okuduklarını takip edebildi�
 
 ![CI](https://github.com/CaptainGM/sosyal-kutuphane/actions/workflows/ci.yml/badge.svg)
 
-![Giriş ekranı](docs/screenshots/giris-koyu.png)
+## Ekran görüntüleri
+
+| | |
+|---|---|
+| ![Giriş ekranı (koyu tema)](docs/screenshots/giris-koyu.png) | ![Giriş ekranı (açık tema)](docs/screenshots/giris-acik.png) |
+| **Giriş: koyu tema, tek tıkla demo girişi** | **Giriş: açık tema** |
+| ![Keşfet](docs/screenshots/kesfet.png) | ![Keşfet (açık tema)](docs/screenshots/kesfet-acik.png) |
+| **Keşfet: tür, yıl, puan ve yayın platformu filtreleri** | **Keşfet: açık tema** |
+| ![Yazım toleranslı arama](docs/screenshots/arama-yazim-hatasi.png) | ![Detay sayfası](docs/screenshots/detay.png) |
+| **Arama: "odysey" yazınca Odyssey bulunur** | **Detay: puan, izledim, listeye ekle, fragman, nerede izlenir** |
+| ![Detay aksiyonları](docs/screenshots/detay-aksiyonlar.png) | ![Spoiler koruması](docs/screenshots/spoiler-blur.png) |
+| **Aksiyonlar: tek satırda izledim, izlenecekler, özel liste, hikâye kartı** | **Spoiler koruması: buzlu cam, "Spoileri gör" ile açılır** |
+| ![Ne izlesem?](docs/screenshots/ne-izlesem.png) | ![Yeni çıkanlar](docs/screenshots/yeni-cikanlar.png) |
+| **Ne izlesem?: süre, ruh hali, dönem ve puana göre akşam seçici** | **Yeni çıkanlar: vizyon takvimi ve hatırlatıcı** |
+| ![Profil](docs/screenshots/profil.png) | ![Rozetler](docs/screenshots/rozetler.png) |
+| **Profil: istatistikler, puan dağılımı ve rozetler** | **Rozetler: ilerleme çubuklarıyla** |
+| ![Yıllık özet](docs/screenshots/yillik-ozet.png) | ![Yönetim konsolu](docs/screenshots/yonetim.png) |
+| **Yıllık özet: yılın en yüksek puanlısı ve istatistikler** | **Yönetim konsolu: kullanıcılar, yorumlar, şikâyetler, engellenen denemeler** |
 
 ## Özellikler
 
