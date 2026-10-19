@@ -2160,7 +2160,7 @@ html {
 .strip-card {
     display: block;
     flex: 0 0 var(--strip-card-w, 156px);
-    margin-right: 18px;
+    margin-right: var(--strip-gap, 18px);
     overflow: hidden;
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
@@ -2283,9 +2283,9 @@ html {
 }
 
 @media (max-width: 640px) {
+    /* Telefonda parmakla kaydırılır; oklar afişlerin üstünü kapatmasın. */
     .strip-arrow {
-        width: 40px;
-        height: 40px;
+        display: none;
     }
 }
 

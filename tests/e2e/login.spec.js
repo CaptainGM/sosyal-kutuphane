@@ -31,6 +31,17 @@ test.describe('giriş ekranı', () => {
     });
 
 
+    test('telefonda afiş halkası ilk ekranda ve giriş kartının üstünde görünür', async ({ page }) => {
+        await page.setViewportSize({ width: 390, height: 800 });
+        await page.goto('/index.html');
+        await page.waitForSelector('.ring .poster');
+        const stage = await page.locator('.stage3d').boundingBox();
+        const card = await page.locator('.auth-card').boundingBox();
+        expect(stage.y + stage.height).toBeLessThanOrEqual(card.y + 2);
+        expect(stage.y).toBeLessThan(800);
+        expect(stage.height).toBeGreaterThan(150);
+    });
+
     test.describe('hareket azaltma tercihi açıkken', () => {
         test.use({ reducedMotion: 'reduce' });
 

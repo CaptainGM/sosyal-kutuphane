@@ -15,6 +15,9 @@
 
     const CARD_GAP = 18;
     const CARD_MIN_WIDTH = 150;
+    const COMPACT_BELOW = 600;
+    const COMPACT_CARD_WIDTH = 92;
+    const COMPACT_GAP = 10;
 
     // Ok düğmeleri sayfa sayfa ilerletir: her sayfada tam kartlar görünür (yarım afiş kalmaz), bir sonraki sayfa
     // kaldığı yerden başlar. Fareyle sürüklenir, dokunmatikte kaydırılır; bırakınca en yakın karta oturur.
@@ -30,10 +33,15 @@
             const inner = viewport.clientWidth;
             if (!inner) return;
             const oldIndex = Math.round(viewport.scrollLeft / step);
-            perPage = Math.max(2, Math.floor((inner + CARD_GAP) / (CARD_MIN_WIDTH + CARD_GAP)));
-            const width = (inner - (perPage - 1) * CARD_GAP) / perPage;
-            step = width + CARD_GAP;
+            // Dar ekranda (telefon) küçük sabit kartlar: 3 kart tam, dördüncünün kenarı kaydırma ipucu olur.
+            const compact = inner < COMPACT_BELOW;
+            const gap = compact ? COMPACT_GAP : CARD_GAP;
+            const min = compact ? COMPACT_CARD_WIDTH : CARD_MIN_WIDTH;
+            perPage = Math.max(2, Math.floor((inner + gap) / (min + gap)));
+            const width = compact ? min : (inner - (perPage - 1) * gap) / perPage;
+            step = width + gap;
             host.style.setProperty('--strip-card-w', `${width}px`);
+            host.style.setProperty('--strip-gap', `${gap}px`);
             viewport.scrollLeft = oldIndex * step;
             syncArrows();
         }

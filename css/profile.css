@@ -219,3 +219,23 @@
         padding-top: 120px;
     }
 }
+
+/* Telefonda istatistik kutuları üç sütun ve daha küçük: ilk ekranda rozetlere kadar iner. */
+@media (max-width: 520px) {
+    .profile-metrics .stat-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .profile-metrics .stat {
+        padding: 12px;
+    }
+
+    .profile-metrics .stat-value {
+        font-size: 26px;
+    }
+
+    .profile-metrics .stat-label {
+        font-size: 11px;
+    }
+}

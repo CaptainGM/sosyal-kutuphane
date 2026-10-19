@@ -977,6 +977,48 @@ button.content-card {
         padding-top: 20px;
     }
 
+    .page-head {
+        gap: 14px;
+        margin-bottom: 18px;
+    }
+
+    .page-sub {
+        margin-top: 8px;
+        font-size: 14px;
+    }
+
+    .page-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    /* Segment sekmeler tek satırda kalır, sığmazsa yana kayar. */
+    .seg,
+    .tab-buttons,
+    .tab-navigation {
+        display: flex;
+        flex-wrap: nowrap;
+        max-width: 100%;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .seg::-webkit-scrollbar,
+    .tab-buttons::-webkit-scrollbar,
+    .tab-navigation::-webkit-scrollbar {
+        display: none;
+    }
+
+    .seg-btn,
+    .tab-btn {
+        flex: 1 0 auto;
+        justify-content: center;
+        padding: 9px 14px;
+        font-size: 13.5px;
+        white-space: nowrap;
+    }
+
     .results-grid,
     .poster-grid {
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));

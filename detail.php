@@ -700,12 +700,22 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
                 align-items: start;
             }
 
+            /* Telefonda afiş ilk ekranı kaplamasın: küçük ve ortada, başlık ve düğmeler hemen altında görünür. */
             .poster-container {
-                max-width: 280px;
+                max-width: 200px;
+                margin: 0 auto;
+            }
+
+            .poster {
+                border-radius: 16px;
+            }
+
+            .platform-rating {
+                padding: 8px 6px;
             }
 
             .detail-hero {
-                padding-top: 130px;
+                padding-top: 104px;
             }
 
             .sc-episode {

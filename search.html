@@ -296,6 +296,28 @@
                 flex-direction: column;
             }
 
+            .sort-controls {
+                flex-wrap: nowrap;
+                margin: 0 -4px;
+                padding: 2px 4px 6px;
+                overflow-x: auto;
+                scrollbar-width: none;
+            }
+
+            .sort-btn {
+                flex: 0 0 auto;
+            }
+
+            .filter-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 10px;
+            }
+
+            .filter-group select {
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+
             button.search-btn {
                 justify-content: center;
                 padding: 14px 24px;

@@ -761,7 +761,7 @@ class SocialLibraryApp {
         const hint = document.createElement('div');
         hint.className = 'motion-hint';
         hint.setAttribute('role', 'status');
-        hint.innerHTML = `<span><strong>Animasyonlar kapalı.</strong> Windows'ta "Animasyon efektleri" kapalı olduğu için sayfa durağan gösteriliyor.</span>
+        hint.innerHTML = `<span><strong>Animasyonlar kapalı.</strong> Cihazında animasyon efektleri kapalı olduğu için sayfa durağan gösteriliyor.</span>
             <div class="motion-hint-actions">
                 <button type="button" data-action="enable">Animasyonları aç</button>
                 <button type="button" data-action="dismiss">Şimdi değil</button>
