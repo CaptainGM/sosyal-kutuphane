@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Sosyal Kütüphane">
+  <defs>
+    <linearGradient id="skBg" x1="6" y1="2" x2="58" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#a78bfa"/>
+      <stop offset="0.42" stop-color="#7c3aed"/>
+      <stop offset="1" stop-color="#3b0764"/>
+    </linearGradient>
+    <radialGradient id="skGlow" cx="18" cy="12" r="36" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="skPage" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#ddd6fe"/>
+    </linearGradient>
+    <filter id="skShadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="2" stdDeviation="1.6" flood-color="#2e1065" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+  <rect width="64" height="64" rx="18" fill="url(#skBg)"/>
+  <rect width="64" height="64" rx="18" fill="url(#skGlow)"/>
+  <rect x="0.75" y="0.75" width="62.5" height="62.5" rx="17.25" fill="none" stroke="#ffffff" stroke-opacity="0.22" stroke-width="1.5"/>
+  <g id="skMark">
+    <g filter="url(#skShadow)">
+      <path d="M30 24C25.5 20.5 18 19.4 10.5 21.5V46.5C18 44.5 25.5 45.4 30 49Z" fill="url(#skPage)"/>
+      <path d="M34 24C38.5 20.5 46 19.4 53.5 21.5V46.5C46 44.5 38.5 45.4 34 49Z" fill="url(#skPage)"/>
+    </g>
+    <path d="M27.5 29.5V43.5L39.5 36.5Z" fill="#6d28d9" stroke="#6d28d9" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M48.5 6.5L50.2 10.8L54.5 12.5L50.2 14.2L48.5 18.5L46.8 14.2L42.5 12.5L46.8 10.8Z" fill="#ffffff"/>
+    <path d="M15 51L16 53.4L18.4 54.4L16 55.4L15 57.8L14 55.4L11.6 54.4L14 53.4Z" fill="#ffffff" fill-opacity="0.75"/>
+  </g>
+</svg>

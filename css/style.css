@@ -198,18 +198,17 @@ h3 {
 .logo-mark {
     width: 34px;
     height: 34px;
-    display: grid;
-    place-items: center;
+    display: block;
     flex-shrink: 0;
     border-radius: 11px;
-    background: var(--color-accent-gradient);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 20px -8px rgba(var(--color-accent-rgb), 0.8);
+    box-shadow: 0 8px 20px -8px rgba(124, 58, 237, 0.85);
 }
 
-.logo-mark svg {
-    width: 18px;
-    height: 18px;
-    color: #ffffff;
+.logo-mark img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
 }
 
 .nav-links {

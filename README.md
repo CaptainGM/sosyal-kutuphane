@@ -22,6 +22,8 @@
 
 ![Yönetim konsolu](docs/screenshots/yonetim.png)
 
+![Destek paneli](docs/screenshots/destek.png)
+
 ## Neler var
 
 - Film, dizi ve kitap arama (TMDB, Google Books), yazım hatası olsa da bulur
@@ -30,6 +32,8 @@
 - "Ne izlesem?" önerisi, yeni çıkanlar takvimi, yayın platformuna göre filtre
 - Takip, akış, zevk eşleşmesi, ortak okuma/izleme, yıllık özet, rozetler
 - Mesajlaşma, tarayıcı bildirimleri, IMDb/Letterboxd/Goodreads içe aktarma
+- Sol alttaki destek düğmesiyle talep oluşturma; yönetici talepleri `admin.html` içinde "çözüldü / çözülmedi" olarak işaretler, kullanıcıya bildirim gider
+- Profil fotoğrafı yüklenirken yapay zekâ ile cinsel içerik, şiddet ve terör taraması
 - Yönetim konsolu (`admin.html`) ve açık/koyu tema
 
 ## Demo hesaplar
@@ -52,10 +56,12 @@ Docker ile: `docker compose up`
 | `GOOGLE_BOOKS_API_KEY` | Hayır | Kitap verisi |
 | `BREVO_API_KEY` | Önerilir | E-postaları Brevo HTTPS API'si ile gönderir (Render gibi ortamlarda SMTP portu engellenebiliyor) |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM_EMAIL` | Evet | Kayıt doğrulama kodu ve şifre sıfırlama e-postası. Brevo önerilir (`smtp-relay.brevo.com`, 587) |
-| `LLM_MODERATION_PROVIDER`, `LLM_MODERATION_API_KEY` | Hayır | Yorumlarda yapay zekâ ile ek küfür taraması (`gemini` veya `deepseek`) |
+| `LLM_MODERATION_PROVIDER`, `LLM_MODERATION_API_KEY` | Hayır | Yorumlarda yapay zekâ ile ek küfür taraması (`gemini` veya `deepseek`); `gemini` ise profil fotoğrafları da cinsel içerik, şiddet ve terör için taranır |
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | Hayır | Tarayıcı bildirimleri (`php scripts/make-vapid.php` ile üretilir) |
 
 Anahtarlar sadece `.env` ya da ortam değişkenlerinde durur, depoya girmez.
+
+Yüklenen profil fotoğrafları MongoDB'de de saklanır: Render gibi barındırıcılarda uygulamanın diski her dağıtımda silinir, fotoğraflar diskte yoksa veritabanından sunulur. Yapay zekâ taraması açıkken fotoğraf Google'a (Gemini) gönderilir, sunucuda tarama için ayrıca saklanmaz; hareketli GIF/WebP kabul edilmez ve kontrol edilemezse yükleme reddedilir.
 
 Yönetici yapmak için: `php scripts/make-admin.php kullanici@ornek.com`
 
@@ -63,11 +69,15 @@ Yönetici yapmak için: `php scripts/make-admin.php kullanici@ornek.com`
 
 Render'da Blueprint olarak bu depoyu bağla (`render.yaml` hazır), `MONGO_URI`, `TMDB_API_KEY` ve `SITE_URL` değerlerini panelden gir. Atlas'ta Network Access'e `0.0.0.0/0` eklemek gerekir. Ücretsiz planda site bir süre kullanılmazsa uyur, ilk açılış yavaş olur.
 
+Kayıt e-postaları kendi alan adın olmadan spama düşebilir. Brevo'da alan adını doğrulayıp (SPF/DKIM/DMARC kayıtları) `SMTP_FROM_EMAIL`'i o alan adından bir adres yaparsan gelen kutusuna düşme oranı belirgin artar; o zamana kadar kayıt ekranı kullanıcıyı Spam klasörüne bakmaya yönlendirir.
+
 ## Testler
 
 ```bash
-MONGO_DB=social_library_test php -S 127.0.0.1:8001 -t . router.php &
-MONGO_DB=social_library_test php api/setup-db.php
+# LLM_MODERATION_PROVIDER=none: .env'deki yapay zekâ anahtarı testlerde gerçek ağ isteği yapmasın
+export MONGO_DB=social_library_test LLM_MODERATION_PROVIDER=none LLM_MODERATION_API_KEY=none
+php -S 127.0.0.1:8001 -t . router.php &
+php api/setup-db.php
 TEST_BASE_URL=http://127.0.0.1:8001 TEST_MONGO_DB=social_library_test vendor/bin/phpunit
 
 npm ci
@@ -75,7 +85,7 @@ npx playwright install chromium
 npx playwright test
 ```
 
-Testler `tests/` (PHPUnit) ve `tests/e2e/` (Playwright + erişilebilirlik) altında. Her push'ta GitHub Actions çalıştırır.
+Testler `tests/` (PHPUnit) ve `tests/e2e/` (Playwright + erişilebilirlik) altında. Her push'ta GitHub Actions çalıştırır. Windows'ta `php -S` tek süreçlidir; `ENABLE_SSE` açık bırakılmamalı (canlı akış bağlantısı diğer istekleri bekletir).
 
 ## Klasörler
 

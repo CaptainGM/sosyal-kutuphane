@@ -1,14 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 225" width="150" height="225">
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#3b3b9c"/>
-      <stop offset="0.55" stop-color="#6b21a8"/>
-      <stop offset="1" stop-color="#9d174d"/>
+      <stop offset="0" stop-color="#4c1d95"/>
+      <stop offset="0.55" stop-color="#6d28d9"/>
+      <stop offset="1" stop-color="#2e1065"/>
+    </linearGradient>
+    <linearGradient id="p" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f5f3ff"/>
+      <stop offset="1" stop-color="#c4b5fd"/>
     </linearGradient>
   </defs>
   <rect width="150" height="225" fill="url(#g)"/>
-  <g transform="translate(50 74) scale(2)" fill="none" stroke="#e9d5ff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" transform="scale(.8)"/>
+  <g transform="translate(75 98) scale(1.55) translate(-32 -34)">
+    <path d="M30 24C25.5 20.5 18 19.4 10.5 21.5V46.5C18 44.5 25.5 45.4 30 49Z" fill="url(#p)"/>
+    <path d="M34 24C38.5 20.5 46 19.4 53.5 21.5V46.5C46 44.5 38.5 45.4 34 49Z" fill="url(#p)"/>
+    <path d="M27.5 29.5V43.5L39.5 36.5Z" fill="#5b21b6" stroke="#5b21b6" stroke-width="3" stroke-linejoin="round"/>
   </g>
-  <text x="75" y="170" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#e9d5ff">Afiş yok</text>
+  <text x="75" y="178" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#ddd6fe">Afiş yok</text>
 </svg>
