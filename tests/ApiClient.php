@@ -55,6 +55,40 @@ class ApiClient
         return ['status' => $statusCode, 'data' => $data];
     }
 
+    // Dosya yükleme (multipart/form-data): tek bir alan adı altında yerel bir dosya gönderir.
+    public function upload(string $path, string $field, string $file, string $mime, string $name): array
+    {
+        $ch = curl_init($this->baseUrl . $path);
+        curl_setopt_array($ch, [
+            CURLOPT_POST => true,
+            CURLOPT_HTTPHEADER => $this->csrfToken ? ['X-CSRF-Token: ' . $this->csrfToken] : [],
+            CURLOPT_COOKIEJAR => $this->cookieFile,
+            CURLOPT_COOKIEFILE => $this->cookieFile,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POSTFIELDS => [$field => new CURLFile($file, $mime, $name)],
+        ]);
+        $response = curl_exec($ch);
+        if ($response === false) {
+            throw new RuntimeException('İstek başarısız: ' . curl_error($ch));
+        }
+        $statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        return ['status' => $statusCode, 'data' => json_decode($response, true) ?? []];
+    }
+
+    // Oturum çerezinin (PHPSESSID) şu anki değeri; girişte oturum kimliğinin değiştiğini sınamak için.
+    public function sessionCookie(): ?string
+    {
+        foreach (file($this->cookieFile, FILE_IGNORE_NEW_LINES) ?: [] as $line) {
+            $fields = explode("\t", (string) preg_replace('/^#HttpOnly_/', '', $line));
+            if (count($fields) >= 7 && $fields[5] === 'PHPSESSID') {
+                return $fields[6];
+            }
+        }
+        return null;
+    }
+
     public function get(string $path): array
     {
         return $this->request('GET', $path);

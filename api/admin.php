@@ -1,13 +1,16 @@
 <?php
 // Yönetim konsolu API'si: yöneticinin her şeyi görebildiği tek uç, ?action= ile seçilir.
-//   Okuma (GET):  overview, users, user, comments, comment, deleted, reports, audit, moderation
+//   Okuma (GET):  overview, users, user, comments, comment, deleted, reports, audit, moderation, tickets
 //   Yazma (POST, CSRF + yönetici): delete_comment, restore_comment, resolve_report,
-//                                  suspend_user, unsuspend_user, mute_user, unmute_user
+//                                  suspend_user, unsuspend_user, mute_user, unmute_user,
+//                                  resolve_ticket, reopen_ticket
 // Her yazma işlemi audit_log'a kaydedilir. Silinen yorumlar kalıcı yok olmaz (deleted_comments arşivi),
 // düzenlemeler comment_revisions'ta saklanır. Özel mesajların içeriği bilinçli olarak kapsam dışıdır (gizlilik).
 require_once 'config.php';
 require_once __DIR__ . '/lib/audit.php';
 require_once __DIR__ . '/lib/moderation-log.php';
+require_once __DIR__ . '/lib/support.php';
+require_once __DIR__ . '/lib/push.php';
 
 requireAdmin($db);
 $adminId = (int)getCurrentUserId();
@@ -118,6 +121,7 @@ function adminOverview($db): void {
         'episode_comments' => $db->comments->countDocuments(['episode_number' => ['$ne' => null]]),
         'edited' => count($db->comment_revisions->distinct('comment_id')),
         'reports_pending' => $db->comment_reports->countDocuments(['status' => 'pending']),
+        'tickets_open' => $db->support_tickets->countDocuments(['status' => 'open']),
         'deleted' => $db->deleted_comments->countDocuments(['restored_at' => ['$exists' => false]]),
         'logins_24h' => $db->login_history->countDocuments(['at' => ['$gte' => $day]]),
         'library_items' => $db->user_movie_status->countDocuments([]) + $db->user_series_status->countDocuments([]) + $db->user_book_status->countDocuments([]),
@@ -506,7 +510,7 @@ function adminAudit($db): void {
     $p = adminPageParams($_GET['page'] ?? 1, $_GET['per_page'] ?? 25, 100);
     $filter = [];
     $targetType = $_GET['target_type'] ?? '';
-    if (in_array($targetType, ['user', 'comment', 'report'], true)) {
+    if (in_array($targetType, ['user', 'comment', 'report', 'ticket'], true)) {
         $filter['target_type'] = $targetType;
     }
     $result = adminAuditRows($db, $filter, $p['skip'], $p['per_page']);
@@ -534,6 +538,54 @@ function adminTargetUser($db, int $adminId, $rawId): array {
         jsonResponse(['success' => false, 'message' => 'Yönetici hesaplarına bu işlem uygulanamaz'], 400);
     }
     return [$userId, $user];
+}
+
+// Destek talepleri: durum süzgeci (open | resolved | hepsi), en yeni önce. Sayılar süzgeç düğmelerinde görünür.
+function adminTickets($db): void {
+    $status = $_GET['status'] ?? 'open';
+    $filter = in_array($status, ['open', 'resolved'], true) ? ['status' => $status] : [];
+    $p = adminPageParams($_GET['page'] ?? 1, $_GET['per_page'] ?? 20, 50);
+    $total = $db->support_tickets->countDocuments($filter);
+    $tickets = iterator_to_array($db->support_tickets->find($filter, ['sort' => ['created_at' => -1], 'skip' => $p['skip'], 'limit' => $p['per_page']]), false);
+
+    $userIds = [];
+    foreach ($tickets as $ticket) {
+        $userIds[] = $ticket['user_id'];
+        $userIds[] = $ticket['resolved_by'] ?? null;
+    }
+    $users = adminUsersById($db, $userIds);
+
+    jsonResponse([
+        'success' => true,
+        'tickets' => array_map(static fn ($ticket) => supportTicketRow($ticket) + [
+            'user' => adminUserBrief($users[$ticket['user_id']] ?? null),
+            'resolved_by' => adminUserBrief($users[$ticket['resolved_by'] ?? 0] ?? null),
+        ], $tickets),
+        'counts' => [
+            'open' => $db->support_tickets->countDocuments(['status' => 'open']),
+            'resolved' => $db->support_tickets->countDocuments(['status' => 'resolved']),
+        ],
+        'total' => $total,
+        'page' => $p['page'],
+        'per_page' => $p['per_page'],
+    ]);
+}
+
+// Talep çözülünce sahibine bildirim (ve izin verdiyse tarayıcı bildirimi) gider.
+function adminNotifyTicketResolved($db, $ticket): void {
+    $title = mb_substr((string) preg_replace('/\s+/u', ' ', $ticket['message']), 0, 60, 'UTF-8');
+    $db->notifications->insertOne([
+        '_id' => nextSequence($db, 'notifications'),
+        'user_id' => (int) $ticket['user_id'],
+        'actor_id' => null,
+        'type' => 'ticket',
+        'content_type' => 'ticket',
+        'content_id' => (int) $ticket['_id'],
+        'content_title' => $title,
+        'is_read' => false,
+        'created_at' => new MongoDB\BSON\UTCDateTime(),
+    ]);
+    pushNotifyUser($db, (int) $ticket['user_id'], 'Destek talebin çözüldü', 'profile.html#destek');
 }
 
 // Engellenen denemeler: kim, neyi (mesaj içeriği hariç), neden, ne zaman. Karar yönetici işlemleriyle verilir.
@@ -608,6 +660,9 @@ if ($method === 'GET') {
             break;
         case 'moderation':
             adminModeration($db);
+            break;
+        case 'tickets':
+            adminTickets($db);
             break;
         default:
             jsonResponse(['success' => false, 'message' => 'Bilinmeyen işlem'], 400);
@@ -695,6 +750,30 @@ switch ($input['action'] ?? '') {
         [$targetId] = adminTargetUser($db, $adminId, $input['user_id'] ?? null);
         $db->users->updateOne(['_id' => $targetId], ['$unset' => ['muted_until' => '']]);
         auditLog($db, $adminId, 'user.unmute', 'user', $targetId);
+        jsonResponse(['success' => true]);
+
+    case 'resolve_ticket':
+    case 'reopen_ticket':
+        $ticketId = filter_var($input['ticket_id'] ?? null, FILTER_VALIDATE_INT);
+        $ticket = $ticketId ? $db->support_tickets->findOne(['_id' => $ticketId]) : null;
+        if (!$ticket) {
+            jsonResponse(['success' => false, 'message' => 'Talep bulunamadı'], 404);
+        }
+        if ($input['action'] === 'reopen_ticket') {
+            $db->support_tickets->updateOne(['_id' => $ticketId], ['$set' => ['status' => 'open', 'updated_at' => $now], '$unset' => ['resolved_by' => '', 'resolved_at' => '']]);
+            auditLog($db, $adminId, 'ticket.reopen', 'ticket', $ticketId);
+            jsonResponse(['success' => true]);
+        }
+        $note = supportCleanNote($input['note'] ?? null);
+        $set = ['status' => 'resolved', 'resolved_by' => $adminId, 'resolved_at' => $now, 'updated_at' => $now];
+        if ($note !== null) {
+            $set['admin_note'] = $note;
+        }
+        $db->support_tickets->updateOne(['_id' => $ticketId], ['$set' => $set]);
+        auditLog($db, $adminId, 'ticket.resolve', 'ticket', $ticketId, $note !== null ? ['note' => $note] : []);
+        if (($ticket['status'] ?? 'open') !== 'resolved') {
+            adminNotifyTicketResolved($db, $ticket);
+        }
         jsonResponse(['success' => true]);
 
     default:

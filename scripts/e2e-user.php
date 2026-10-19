@@ -119,6 +119,15 @@ if ($lists) {
     $db->custom_lists->deleteMany(['_id' => ['$in' => $lists]]);
 }
 
+$db->avatar_files->deleteMany(['user_id' => $user['_id']]);
+$tickets = [];
+foreach ($db->support_tickets->find(['user_id' => ['$in' => $ids]], ['projection' => ['_id' => 1]]) as $t) {
+    $tickets[] = $t['_id'];
+}
+if ($tickets) {
+    $db->audit_log->deleteMany(['target_type' => 'ticket', 'target_id' => ['$in' => $tickets]]);
+    $db->support_tickets->deleteMany(['_id' => ['$in' => $tickets]]);
+}
 $avatar = $user['avatar_url'] ?? null;
 if (is_string($avatar) && preg_match('~^/uploads/avatars/[a-f0-9]{32}\.(?:jpg|png|webp|gif)$~', $avatar) && is_file(__DIR__ . '/..' . $avatar)) {
     @unlink(__DIR__ . '/..' . $avatar);

@@ -1,0 +1,423 @@
+/* Destek düğmesi ve paneli (sol alt). Betik: js/support.js. Renkler tema belirteçlerinden gelir; düğme ve başlık
+   her iki temada da beyaz metinle yeterli karşıtlık verecek koyu mor tonlardadır. */
+
+.support {
+    position: fixed;
+    left: max(16px, env(safe-area-inset-left));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    z-index: 900; /* açılır pencerelerin (1000+) altında kalır */
+    font-family: inherit;
+}
+
+.support [hidden] {
+    display: none !important;
+}
+
+/* --- Yüzen düğme --- */
+.support-fab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 52px;
+    min-width: 52px;
+    padding: 0 18px 0 14px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: var(--radius-pill);
+    background: linear-gradient(135deg, #6d28d9 0%, #a21caf 100%);
+    color: #ffffff;
+    font: 700 14px/1 inherit;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    box-shadow: 0 14px 30px -10px rgba(109, 40, 217, 0.75), 0 2px 6px rgba(15, 23, 42, 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.support-fab:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 34px -10px rgba(109, 40, 217, 0.85), 0 2px 6px rgba(15, 23, 42, 0.25);
+}
+
+.support-fab:active {
+    transform: translateY(0);
+}
+
+.support-fab:focus-visible,
+.support-close:focus-visible,
+.support-tabs button:focus-visible,
+.support-topic input:focus-visible + span {
+    outline: 3px solid #ffffff;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 5px #5b21b6;
+}
+
+/* Işıldayan halka: sayfa açılırken iki kez, dikkat çeker ama sürekli oynamaz. */
+.support-fab::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    border: 2px solid rgba(168, 85, 247, 0.65);
+    opacity: 0;
+    pointer-events: none;
+    animation: support-ping 2s ease-out 1s 2;
+}
+
+@keyframes support-ping {
+    0% { transform: scale(1); opacity: 0.85; }
+    100% { transform: scale(1.45); opacity: 0; }
+}
+
+.support-i {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.support-fab-icon {
+    display: inline-flex;
+}
+
+/* --- Panel --- */
+.support-panel {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 12px);
+    display: flex;
+    flex-direction: column;
+    width: min(390px, calc(100vw - 32px));
+    max-height: min(640px, calc(100vh - 110px));
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    color: var(--color-text);
+    box-shadow: var(--shadow-hover);
+    overflow: hidden;
+    transform-origin: 0 100%;
+    animation: support-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes support-in {
+    from { opacity: 0; transform: translateY(10px) scale(0.97); }
+    to { opacity: 1; transform: none; }
+}
+
+.support-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 18px 16px;
+    background: linear-gradient(135deg, #5b21b6 0%, #a21caf 100%);
+    color: #ffffff;
+}
+
+.support-head h2 {
+    font-size: 18px;
+    line-height: 1.2;
+}
+
+.support-head p {
+    margin-top: 4px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.support-close {
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.support-close:hover {
+    background: rgba(255, 255, 255, 0.28);
+}
+
+/* --- Sekmeler --- */
+.support-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 8px 10px 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.support-tabs button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 12px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: none;
+    color: var(--color-text-muted);
+    font: 600 13.5px/1 inherit;
+    cursor: pointer;
+}
+
+.support-tabs button[aria-selected="true"] {
+    border-bottom-color: var(--color-accent);
+    color: var(--color-text);
+}
+
+.support-tabs button:focus-visible {
+    outline-color: var(--color-accent);
+    box-shadow: none;
+}
+
+.support-count {
+    display: inline-grid;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: var(--radius-pill);
+    background: #6d28d9;
+    color: #ffffff;
+    font-size: 11.5px;
+    font-weight: 700;
+}
+
+.support-pane {
+    padding: 16px 18px 18px;
+    overflow-y: auto;
+}
+
+/* --- Form --- */
+.support-form {
+    display: grid;
+    gap: 14px;
+}
+
+.support-topics {
+    min-width: 0;
+    border: 0;
+}
+
+.support-topics legend,
+.support-field label {
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.support-topic-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.support-topic {
+    position: relative;
+}
+
+.support-topic input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+}
+
+.support-topic span {
+    display: inline-block;
+    padding: 7px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface-2);
+    color: var(--color-text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.support-topic input:checked + span {
+    border-color: var(--color-accent);
+    background: rgba(var(--color-accent-rgb), 0.16);
+    color: var(--color-text);
+}
+
+.support-topic input:focus-visible + span {
+    outline-color: var(--color-accent);
+    box-shadow: none;
+}
+
+.support-field {
+    display: grid;
+}
+
+.support-field .textarea {
+    min-height: 110px;
+    resize: vertical;
+}
+
+.support-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+
+.support-error {
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    background: var(--color-danger-bg);
+    color: var(--color-danger);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.support-submit {
+    justify-content: center;
+    width: 100%;
+}
+
+/* --- Teşekkür ekranı --- */
+.support-done {
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    padding: 12px 4px 4px;
+    text-align: center;
+}
+
+.support-done-icon {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--color-success-bg);
+    color: var(--color-success);
+}
+
+.support-done-icon .support-i {
+    width: 28px;
+    height: 28px;
+}
+
+.support-done p {
+    color: var(--color-text-muted);
+    font-size: 14px;
+}
+
+.support-done-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+/* --- Talepler --- */
+.support-list {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.support-ticket {
+    display: grid;
+    gap: 8px;
+    padding: 12px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface-2);
+}
+
+.support-ticket-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    font-size: 12.5px;
+    color: var(--color-text-muted);
+}
+
+.support-ticket-head time {
+    margin-left: auto;
+}
+
+.support-ticket-msg {
+    font-size: 14px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.support-ticket-note {
+    padding: 8px 10px;
+    border-left: 3px solid var(--color-success);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    background: var(--color-success-bg);
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.support-empty {
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+    padding: 22px 8px;
+    color: var(--color-text-muted);
+    font-size: 14px;
+    text-align: center;
+}
+
+/* --- Telefon: panel ekranın altına yaslanır, düğme yine sol altta --- */
+@media (max-width: 520px) {
+    .support {
+        left: max(12px, env(safe-area-inset-left));
+        bottom: max(12px, env(safe-area-inset-bottom));
+    }
+
+    .support-fab-label {
+        display: none;
+    }
+
+    .support-fab {
+        padding: 0;
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+    }
+
+    .support-panel {
+        position: fixed;
+        left: 12px;
+        right: 12px;
+        bottom: calc(max(12px, env(safe-area-inset-bottom)) + 60px);
+        width: auto;
+        max-height: calc(100dvh - 130px);
+    }
+}
+
+/* Hareket tercihi: css/style.css'teki genel kural (data-motion="reduced") bu düğmenin halkasını ve panel açılışını da keser. */
+
+@media print {
+    .support {
+        display: none;
+    }
+}

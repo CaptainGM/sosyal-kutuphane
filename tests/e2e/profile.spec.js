@@ -60,6 +60,25 @@ test.describe('profilim', () => {
         await expect(page.locator('#profileAvatar .avatar--emoji')).toHaveText(choice);
     });
 
+    test('fotoğraf yüklenir ve kalıcıdır; resim olmayan dosya reddedilir', async ({ page }) => {
+        await loginAs(page, user);
+        await page.goto('/profile.html');
+        await expect(page.locator('#profileContent')).toBeVisible();
+
+        const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+        await page.setInputFiles('#avatarFileInput', { name: 'ben.png', mimeType: 'image/png', buffer: png });
+        await expect(page.locator('.toast-success')).toContainText('Avatar güncellendi');
+        await expect(page.locator('#profileAvatar img')).toHaveAttribute('src', /\/uploads\/avatars\/[a-f0-9]{32}\.png$/);
+
+        await page.reload();
+        const photo = page.locator('#profileAvatar img');
+        await expect(photo).toHaveAttribute('src', /\/uploads\/avatars\//);
+        await expect.poll(() => photo.evaluate((img) => img.complete && img.naturalWidth > 0)).toBe(true);
+
+        await page.setInputFiles('#avatarFileInput', { name: 'sahte.png', mimeType: 'image/png', buffer: Buffer.from('bu bir resim degil') });
+        await expect(page.locator('.toast-error')).toContainText('Geçersiz resim');
+    });
+
     test('sekmeler adres çubuğuna yazılır, #settings doğrudan açılır', async ({ page }) => {
         await loginAs(page, user);
         await page.goto('/profile.html');

@@ -2,6 +2,7 @@
 require_once 'config.php';
 require_once __DIR__ . '/lib/profile.php';
 require_once __DIR__ . '/lib/moderation-log.php';
+require_once __DIR__ . '/lib/avatar-store.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 if ($method === 'POST') {
@@ -16,6 +17,7 @@ if ($method === 'POST') {
     $set = [];
     $result = [];
     $oldUploadedAvatar = null;
+    $previousAvatarUrl = null;
 
     if (array_key_exists('bio', $input)) {
         if (!is_string($input['bio'])) {
@@ -35,13 +37,19 @@ if ($method === 'POST') {
     }
 
     if (array_key_exists('avatar', $input)) {
-        // XSS önlemi: avatar yalnızca http(s) adresi ya da emoji olabilir; javascript:, data: ve HTML içeren değerler reddedilir.
+        // XSS önlemi: avatar yalnızca emoji olabilir; javascript:, data:, HTML ve dış adresler reddedilir.
         $avatar = is_string($input['avatar']) ? trim($input['avatar']) : '';
-        if (profileAvatarKind($avatar) === null) {
+        $avatarKind = profileAvatarKind($avatar);
+        if ($avatarKind === null) {
             jsonResponse(['success' => false, 'message' => 'Geçersiz avatar'], 400);
         }
+        // Başka sitedeki bir görsel yüklenirken denetlenemez ve sonradan değiştirilebilir; fotoğraf yalnızca upload-avatar.php ile gelir.
+        if ($avatarKind !== 'emoji') {
+            jsonResponse(['success' => false, 'message' => 'Avatar için bir emoji seç ya da fotoğraf yükle.'], 400);
+        }
         $previous = $db->users->findOne(['_id' => $userId], ['projection' => ['avatar_url' => 1]]);
-        $oldUploadedAvatar = profileUploadedAvatarPath($previous['avatar_url'] ?? null);
+        $previousAvatarUrl = $previous['avatar_url'] ?? null;
+        $oldUploadedAvatar = profileUploadedAvatarPath($previousAvatarUrl);
         $set['avatar_url'] = $avatar;
         $result['avatar_url'] = $avatar;
     }
@@ -50,8 +58,11 @@ if ($method === 'POST') {
     $db->users->updateOne(['_id' => $userId], ['$set' => $set]);
 
     // Yüklenmiş fotoğraf başka bir avatarla değiştirildiyse dosya diskte artık kalmasın.
-    if ($oldUploadedAvatar !== null && is_file($oldUploadedAvatar)) {
-        @unlink($oldUploadedAvatar);
+    if ($oldUploadedAvatar !== null) {
+        if (is_file($oldUploadedAvatar)) {
+            @unlink($oldUploadedAvatar);
+        }
+        avatarStoreDelete($db, $previousAvatarUrl);
     }
 
     jsonResponse(['success' => true, 'message' => 'Profil güncellendi'] + $result);

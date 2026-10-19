@@ -82,6 +82,14 @@ $indexPlans = [
     'login_attempts' => [
         ['key' => ['last_attempt' => 1], 'expireAfterSeconds' => 3600],
     ],
+    // Yüklenen profil fotoğrafları (lib/avatar-store.php): barındırıcı diski kalıcı olmadığı için baytlar burada da tutulur.
+    'avatar_files' => [
+        ['key' => ['user_id' => 1]],
+    ],
+    // Uç nokta bazlı hız sınırı sayaçları (lib/rate-limit.php): pencere bitince kayıt silinir.
+    'rate_limits' => [
+        ['key' => ['expires_at' => 1], 'expireAfterSeconds' => 0],
+    ],
     'email_change_requests' => [
         ['key' => ['created_at' => 1], 'expireAfterSeconds' => 3600],
     ],
@@ -116,6 +124,11 @@ $indexPlans = [
     'moderation_events' => [
         ['key' => ['created_at' => -1]],
         ['key' => ['user_id' => 1, 'created_at' => -1]],
+    ],
+    // Destek talepleri: kullanıcının kendi listesi ve yönetici kuyruğu (duruma göre, en yeni önce).
+    'support_tickets' => [
+        ['key' => ['user_id' => 1, 'created_at' => -1]],
+        ['key' => ['status' => 1, 'created_at' => -1]],
     ],
     // Yorum tepkileri: bir kullanıcı bir yoruma en fazla bir tepki verir.
     'comment_reactions' => [

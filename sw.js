@@ -1,8 +1,8 @@
 // Statik varlıklar (CSS/JS/ikon) ve herkese açık API yanıtları (TMDB listeleri vb.) "önce önbellek, arkada yenile":
 // sayfa hemen açılır, güncel sürüm arka planda alınıp bir sonraki açılışta kullanılır. Kullanıcıya özel API yanıtları
 // (oturum, kütüphane, yorumlar) asla önbelleğe girmez. Sayfalar ağ öncelikli, çevrimdışıyken offline.html'e düşer.
-const CACHE_NAME = 'sosyal-kutuphane-v10';
-const API_CACHE = 'sk-api-v10';
+const CACHE_NAME = 'sosyal-kutuphane-v11';
+const API_CACHE = 'sk-api-v11';
 const API_CACHE_LIMIT = 200;
 const PUBLIC_API = [
     '/api/tmdb-proxy.php',
@@ -15,7 +15,9 @@ const STATIC_ASSETS = [
     'css/style.css',
     'css/ui.css',
     'css/profile.css',
+    'css/support.css',
     'js/app.js',
+    'js/support.js',
     'js/escape-html.js',
     'js/comment-view.js',
     'js/motion.js',
@@ -24,6 +26,7 @@ const STATIC_ASSETS = [
     'js/profile-view.js',
     'js/password-rules.js',
     'manifest.json',
+    'img/logo.svg',
     'icons/icon-192.png',
     'icons/icon-512.png',
     'offline.html',

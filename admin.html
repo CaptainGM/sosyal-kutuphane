@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#05060b">
+    <link rel="icon" type="image/svg+xml" href="img/logo.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <title>Yönetim Konsolu - Sosyal Kütüphane</title>
     <link rel="stylesheet" href="css/style.css">
@@ -440,7 +442,7 @@
 <nav class="navbar" aria-label="Ana gezinme">
     <div class="navbar-inner">
         <a href="search.html" class="logo">
-            <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="m10 14 5 3-5 3v-6Z"/></svg></span>
+            <span class="logo-mark"><img src="img/logo.svg" alt="" width="34" height="34"></span>
             <span>Sosyal Kütüphane</span>
         </a>
         <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button>
@@ -485,6 +487,7 @@
             { id: 'comments', label: 'Yorumlar', icon: 'message' },
             { id: 'deleted', label: 'Silinenler', icon: 'trash' },
             { id: 'reports', label: 'Şikâyetler', icon: 'flag' },
+            { id: 'tickets', label: 'Talepler', icon: 'lifebuoy' },
             { id: 'moderation', label: 'Engellenen denemeler', icon: 'shield' },
             { id: 'audit', label: 'İşlem günlüğü', icon: 'history' }
         ];
@@ -497,7 +500,9 @@
             'user.suspend': 'Hesabı askıya aldı',
             'user.unsuspend': 'Askıyı kaldırdı',
             'user.mute': 'Kullanıcıyı susturdu',
-            'user.unmute': 'Susturmayı kaldırdı'
+            'user.unmute': 'Susturmayı kaldırdı',
+            'ticket.resolve': 'Talebi çözüldü olarak işaretledi',
+            'ticket.reopen': 'Talebi çözülmedi olarak işaretledi'
         };
 
         const TYPE_LABEL = { movie: 'Film', series: 'Dizi', book: 'Kitap' };
@@ -509,6 +514,7 @@
             comments: { page: 1, q: '', filter: 'all', userId: null, userName: '' },
             deleted: { page: 1 },
             reports: { status: 'pending', page: 1 },
+            tickets: { status: 'open', page: 1 },
             moderation: { page: 1 },
             audit: { page: 1, target: '' }
         };
@@ -612,7 +618,7 @@
                 button.classList.toggle('active', active);
                 button.setAttribute('aria-current', active ? 'page' : 'false');
             });
-            const renderers = { overview: renderOverview, users: renderUsers, comments: renderComments, deleted: renderDeleted, reports: renderReports, moderation: renderModeration, audit: renderAudit };
+            const renderers = { overview: renderOverview, users: renderUsers, comments: renderComments, deleted: renderDeleted, reports: renderReports, tickets: renderTickets, moderation: renderModeration, audit: renderAudit };
             renderers[name](options);
             refreshCounts();
         }
@@ -622,6 +628,8 @@
                 const data = await adminGet({ action: 'overview' });
                 const pending = document.getElementById('count-reports');
                 if (pending) pending.textContent = data.totals.reports_pending || '';
+                const tickets = document.getElementById('count-tickets');
+                if (tickets) tickets.textContent = data.totals.tickets_open || '';
             } catch (error) { }
         }
 
@@ -664,6 +672,7 @@
                         ${tile(t.comments, 'Yorum', `${t.replies} yanıt`)}
                         ${tile(t.comments_24h, 'Son 24 saatte yorum')}
                         ${tile(t.reports_pending, 'Bekleyen şikâyet', '', t.reports_pending > 0)}
+                        ${tile(t.tickets_open, 'Çözülmeyen talep', '', t.tickets_open > 0)}
                         ${tile(t.deleted, 'Silinmiş yorum', 'arşivde, geri yüklenebilir')}
                         ${tile(t.edited, 'Düzenlenen yorum', 'geçmişi saklanıyor')}
                         ${tile(t.spoilers, 'Spoiler işaretli')}
@@ -1001,12 +1010,12 @@
         // =========================================================
         // Şikâyetler
         // =========================================================
-        const MODERATION_KIND = { comment: 'Yorum', reply: 'Yanıt', bio: 'Biyografi', dm: 'Mesaj' };
-        const MODERATION_REASON = { profanity: 'Küfür veya hakaret', iban: 'IBAN', link: 'Bağlantı veya iletişim', llm: 'Hakaret (yapay zekâ)' };
+        const MODERATION_KIND = { comment: 'Yorum', reply: 'Yanıt', bio: 'Biyografi', dm: 'Mesaj', avatar: 'Profil fotoğrafı' };
+        const MODERATION_REASON = { profanity: 'Küfür veya hakaret', iban: 'IBAN', link: 'Bağlantı veya iletişim', llm: 'Hakaret (yapay zekâ)', image: 'Uygunsuz görsel (yapay zekâ)' };
 
         function renderModeration() {
             const main = document.getElementById('adminMain');
-            main.innerHTML = head('Engellenen denemeler', 'Küfür, hakaret, IBAN veya bağlantı içeren ve engellenen yorum, yanıt, biyografi ve mesaj denemeleri. Mesaj içerikleri gizlidir; yalnızca olay kaydı görünür.') + `
+            main.innerHTML = head('Engellenen denemeler', 'Küfür, hakaret, IBAN veya bağlantı içeren yorum, yanıt, biyografi ve mesaj denemeleri ile cinsel içerik, şiddet ya da terör içeren profil fotoğrafı denemeleri. Mesaj içerikleri gizlidir; reddedilen fotoğraflar saklanmaz, yalnızca kategorisi görünür.') + `
                 <div id="listArea">${loadingBlock()}</div>`;
             loadModeration();
         }
@@ -1020,7 +1029,7 @@
                 const data = await adminGet({ action: 'moderation', page: s.page });
                 if (token !== listToken) return;
                 if (!data.events.length) {
-                    area.innerHTML = emptyBlock('check', 'Engellenen deneme yok', 'Henüz kimse küfür ya da hakaret içeren bir şey denemedi.');
+                    area.innerHTML = emptyBlock('check', 'Engellenen deneme yok', 'Henüz kimse uygunsuz bir içerik denemedi.');
                     return;
                 }
                 const summary = data.summary.length
@@ -1092,6 +1101,81 @@
         }
 
         // =========================================================
+        // Destek talepleri
+        // =========================================================
+        function renderTickets() {
+            const s = state.tickets;
+            const main = document.getElementById('adminMain');
+            main.innerHTML = head('Talepler', 'Kullanıcıların sol alttaki destek düğmesinden gönderdiği talepler. Çözüldü olarak işaretleyince kullanıcıya bildirim gider; istersen bir not da bırakabilirsin.') + `
+                <div class="toolbar"><div class="chip-row" role="group" aria-label="Talep durumu">
+                    ${[['open', 'Çözülmeyenler'], ['resolved', 'Çözülenler'], ['all', 'Hepsi']].map(([value, label]) => `<button type="button" class="chip" data-act="ticket-filter" data-value="${value}" aria-pressed="${s.status === value}">${label}</button>`).join('')}
+                </div></div>
+                <div id="listArea">${loadingBlock()}</div>`;
+            loadTickets();
+        }
+
+        async function loadTickets() {
+            const s = state.tickets;
+            const area = document.getElementById('listArea');
+            if (!area) return;
+            const token = ++listToken;
+            document.querySelectorAll('[data-act="ticket-filter"]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.value === s.status)));
+            try {
+                const data = await adminGet({ action: 'tickets', status: s.status, page: s.page });
+                if (token !== listToken) return;
+                const counts = { open: data.counts.open, resolved: data.counts.resolved, all: data.counts.open + data.counts.resolved };
+                const names = { open: 'Çözülmeyenler', resolved: 'Çözülenler', all: 'Hepsi' };
+                document.querySelectorAll('[data-act="ticket-filter"]').forEach(button => { button.textContent = `${names[button.dataset.value]} (${counts[button.dataset.value]})`; });
+                const badge = document.getElementById('count-tickets');
+                if (badge) badge.textContent = data.counts.open || '';
+                if (!data.tickets.length) {
+                    area.innerHTML = emptyBlock('check', s.status === 'open' ? 'Çözülmeyen talep yok' : 'Talep bulunamadı', s.status === 'open' ? 'Bütün talepler çözülmüş.' : '');
+                    return;
+                }
+                area.innerHTML = data.tickets.map(ticket => {
+                    const open = ticket.status === 'open';
+                    return `
+                    <article class="panel report-card">
+                        <div class="report-head">
+                            <div class="cluster cluster--tight">
+                                <span class="chip ${open ? 'chip--warm' : 'chip--success'}">${open ? 'Çözülmedi' : 'Çözüldü'}</span>
+                                <span class="chip">${esc(ticket.category_label)}</span>
+                                <span class="muted">${esc(fmtDate(ticket.created_at))}</span>
+                            </div>
+                            ${userCell(ticket.user)}
+                        </div>
+                        <div class="quote">${esc(ticket.message)}</div>
+                        ${ticket.page ? `<div class="muted">Gönderildiği sayfa: <a href="${esc(ticket.page)}" target="_blank" rel="noopener">${esc(ticket.page)}</a></div>` : ''}
+                        ${ticket.admin_note ? `<div><strong>Yönetici notu:</strong> ${esc(ticket.admin_note)}</div>` : ''}
+                        <div class="cluster cluster--tight">
+                            ${open
+                                ? `<button type="button" class="btn btn-primary btn-sm" data-act="ticket-resolve" data-id="${Number(ticket.id)}">Çözüldü olarak işaretle</button>`
+                                : `<button type="button" class="btn btn-secondary btn-sm" data-act="ticket-reopen" data-id="${Number(ticket.id)}">Çözülmedi olarak işaretle</button><span class="muted">${ticket.resolved_by ? `${esc(ticket.resolved_by.username)} · ` : ''}${esc(fmtDate(ticket.resolved_at))}</span>`}
+                            ${ticket.user ? `<button type="button" class="btn-glass btn-sm" data-act="open-user" data-id="${Number(ticket.user.id)}">Kullanıcıyı aç</button>` : ''}
+                        </div>
+                    </article>`;
+                }).join('') + pagerHtml('tickets', data.page, data.per_page, data.total);
+            } catch (error) {
+                area.innerHTML = errorBlock(error.message);
+            }
+        }
+
+        async function resolveTicket(ticketId) {
+            const values = await app.formDialog({
+                title: 'Talebi çözüldü olarak işaretle',
+                description: 'Kullanıcıya bildirim gider. İstersen bir not bırak; kullanıcı bunu Taleplerim ekranında görür.',
+                fields: [{ name: 'note', label: 'Not (isteğe bağlı)', type: 'textarea', maxlength: 500 }],
+                submitText: 'Çözüldü'
+            });
+            if (!values) return;
+            if (await run('Talep çözüldü olarak işaretlendi', () => adminPost({ action: 'resolve_ticket', ticket_id: ticketId, note: values.note }))) afterChange(false);
+        }
+
+        async function reopenTicket(ticketId) {
+            if (await run('Talep çözülmedi olarak işaretlendi', () => adminPost({ action: 'reopen_ticket', ticket_id: ticketId }))) afterChange(false);
+        }
+
+        // =========================================================
         // İşlem günlüğü
         // =========================================================
         function auditMetaText(entry) {
@@ -1103,7 +1187,7 @@
         }
 
         function auditTargetText(entry) {
-            const names = { user: 'kullanıcı', comment: 'yorum', report: 'şikâyet' };
+            const names = { user: 'kullanıcı', comment: 'yorum', report: 'şikâyet', ticket: 'talep' };
             return `${names[entry.target_type] || entry.target_type} #${entry.target_id}`;
         }
 
@@ -1112,7 +1196,7 @@
             const main = document.getElementById('adminMain');
             main.innerHTML = head('İşlem günlüğü', 'Yöneticilerin yaptığı her işlem kayda geçer: kim, ne zaman, kime ne yaptı. Kayıtlar silinemez.') + `
                 <div class="toolbar"><div class="chip-row" role="group" aria-label="Hedef süzgeci">
-                    ${[['', 'Hepsi'], ['user', 'Kullanıcı'], ['comment', 'Yorum'], ['report', 'Şikâyet']].map(([value, label]) => `<button type="button" class="chip" data-act="audit-filter" data-value="${value}" aria-pressed="${s.target === value}">${label}</button>`).join('')}
+                    ${[['', 'Hepsi'], ['user', 'Kullanıcı'], ['comment', 'Yorum'], ['report', 'Şikâyet'], ['ticket', 'Talep']].map(([value, label]) => `<button type="button" class="chip" data-act="audit-filter" data-value="${value}" aria-pressed="${s.target === value}">${label}</button>`).join('')}
                 </div></div>
                 <div id="listArea">${loadingBlock()}</div>`;
             loadAudit();
@@ -1245,13 +1329,16 @@
                 case 'page': {
                     const key = el.dataset.key;
                     state[key].page = Math.max(1, Number(el.dataset.page));
-                    ({ users: loadUsers, comments: loadComments, deleted: loadDeleted, reports: loadReports, moderation: loadModeration, audit: loadAudit })[key]();
+                    ({ users: loadUsers, comments: loadComments, deleted: loadDeleted, reports: loadReports, tickets: loadTickets, moderation: loadModeration, audit: loadAudit })[key]();
                     window.scrollTo({ top: 0, behavior: motionReduced() ? 'auto' : 'smooth' });
                     break;
                 }
                 case 'user-filter': state.users.status = el.dataset.value; state.users.page = 1; loadUsers(); break;
                 case 'comment-filter': state.comments.filter = el.dataset.value; state.comments.page = 1; loadComments(); break;
                 case 'report-filter': state.reports.status = el.dataset.value; state.reports.page = 1; loadReports(); break;
+                case 'ticket-filter': state.tickets.status = el.dataset.value; state.tickets.page = 1; loadTickets(); break;
+                case 'ticket-resolve': resolveTicket(id); break;
+                case 'ticket-reopen': reopenTicket(id); break;
                 case 'audit-filter': state.audit.target = el.dataset.value; state.audit.page = 1; loadAudit(); break;
                 case 'clear-user-filter': state.comments.userId = null; state.comments.userName = ''; state.comments.page = 1; renderComments(); break;
                 case 'open-user': openUser(id); break;

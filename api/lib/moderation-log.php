@@ -6,7 +6,7 @@
 
 const MODERATION_WINDOW_DAYS = 30;
 
-// Engellenen bir denemeyi kaydeder. $kind: comment | reply | bio | dm. $reason: profanity | iban | link | llm.
+// Engellenen bir denemeyi kaydeder. $kind: comment | reply | bio | dm | avatar. $reason: profanity | iban | link | llm | image.
 function moderationRecord($db, int $userId, string $kind, string $reason, ?string $text): void {
     $stored = ($kind === 'dm' || $text === null) ? null : mb_substr($text, 0, 1000, 'UTF-8');
     $db->moderation_events->insertOne([
@@ -34,6 +34,18 @@ function moderationWarning(string $message, int $strikes): string {
         return $message . ' Bu ikinci denemen engellendi. Bir daha tekrarlarsan hesabın kısıtlanabilir.';
     }
     return $message . " Son {$strikes} denemen engellendi. Hesabın yönetici incelemesine alınabilir.";
+}
+
+// Reddedilen görseli kaydeder (görselin kendisi saklanmaz; yöneticiye yalnızca $label, ör. "Cinsel içerik" görünür),
+// uyarıyla birlikte 422 yanıtı döner ve işlemi durdurur.
+function rejectModeratedImage($db, int $userId, string $kind, array $verdict, string $label): void {
+    moderationRecord($db, $userId, $kind, $verdict['reason'], $label);
+    $strikes = moderationStrikeCount($db, $userId);
+    jsonResponse([
+        'success' => false,
+        'message' => moderationWarning($verdict['message'], $strikes),
+        'strikes' => $strikes,
+    ], 422);
 }
 
 // Engellenen metni kaydeder, uyarıyla birlikte 422 yanıtı döner ve işlemi durdurur.

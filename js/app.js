@@ -27,6 +27,31 @@ class SocialLibraryApp {
         this.initPromise = this.init();
     }
 
+    // Destek düğmesi (sol alt) gerektiğinde yüklenir; sayfa açılışını yavaşlatmaz. Promise döner, birden çok çağrı tek yükleme yapar.
+    loadSupportWidget() {
+        if (!this._supportLoading) {
+            this._supportLoading = new Promise((resolve, reject) => {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = 'css/support.css';
+                document.head.appendChild(link);
+                const script = document.createElement('script');
+                script.src = 'js/support.js';
+                script.onload = resolve;
+                script.onerror = reject;
+                document.body.appendChild(script);
+            });
+        }
+        return this._supportLoading;
+    }
+
+    // Destek panelini açar (tab: 'new' | 'list'); düğme henüz yüklenmediyse önce yükler.
+    openSupport(tab = 'list') {
+        this.loadSupportWidget()
+            .then(() => window.dispatchEvent(new CustomEvent('support:open', { detail: { tab } })))
+            .catch(() => { });
+    }
+
     // Demo hesaplar başkalarını etkileyen işlemleri yapamaz; sunucu zaten reddeder, burada bunu baştan söylüyoruz.
     showDemoNotice() {
         if (document.querySelector('.demo-notice')) return;
@@ -192,7 +217,8 @@ class SocialLibraryApp {
             search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
             restore: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
             ban: '<circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/>',
-            volumeX: '<path d="M11 5 6 9H2v6h4l5 4zM22 9l-6 6M16 9l6 6"/>'
+            volumeX: '<path d="M11 5 6 9H2v6h4l5 4zM22 9l-6 6M16 9l6 6"/>',
+            lifebuoy: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><path d="m4.93 4.93 4.24 4.24M14.83 9.17l4.24-4.24M14.83 14.83l4.24 4.24M9.17 14.83l-4.24 4.24"/>'
         };
         const body = paths[name] || paths.star;
         return `<svg class="ui-i" viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
@@ -588,6 +614,8 @@ class SocialLibraryApp {
                 return `<strong>${this.escapeHtml(n.content_title || 'Bir dizi')}</strong>`;
             case 'buddy':
                 return `<strong>${this.escapeHtml(n.content_title || 'Ortak okuma')}</strong>`;
+            case 'ticket':
+                return `<strong>Destek talebin</strong> çözüldü: ${this.escapeHtml(n.content_title || '')}`;
             default:
                 return `<strong>${username}</strong> bir bildirim gönderdi`;
         }
@@ -630,6 +658,9 @@ class SocialLibraryApp {
                     window.location.href = 'profile.html#buddyCard';
                 } else if (type === 'episode' && contentId) {
                     window.location.href = `detail.php?type=series&id=${contentId}&tab=season`;
+                } else if (type === 'ticket') {
+                    panel.classList.remove('open');
+                    this.openSupport('list');
                 }
             });
         });
@@ -1286,6 +1317,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (app.currentUser && app.currentUser.is_admin) {
             const adminLink = document.getElementById('navAdminLink');
             if (adminLink) adminLink.hidden = false;
+        }
+        // Sol alttaki destek düğmesi: giriş yapmış, demo olmayan kullanıcılara; yönetim sayfasında yönetici zaten talepleri görür.
+        if (app.currentUser && !app.currentUser.is_demo && !/\/admin\.html$/.test(location.pathname)) {
+            app.loadSupportWidget().catch(() => { });
         }
         if (app.currentUser) return;
 
