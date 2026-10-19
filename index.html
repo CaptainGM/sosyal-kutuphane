@@ -1082,6 +1082,15 @@
             }
         }
 
+        // Sunucu HTML hata sayfası dönerse (zaman aşımı gibi) ham JSON hatası yerine açık bir mesaj gösterilir.
+        async function readApiJson(response) {
+            try {
+                return await response.json();
+            } catch (error) {
+                return { success: false, message: 'Sunucu zamanında yanıt vermedi. Birkaç saniye sonra tekrar dene.' };
+            }
+        }
+
         async function handleRegister(e) {
             e.preventDefault();
 
@@ -1103,10 +1112,13 @@
                     body: JSON.stringify({ username, email, password })
                 });
 
-                const data = await response.json();
+                const data = await readApiJson(response);
 
                 if (data.success && data.pending_verification) {
                     showRegisterVerify(data.email);
+                    if (data.email_sent === false) {
+                        showError('registerVerifyError', 'Doğrulama e-postası şu an gönderilemedi. Birkaç dakika sonra "Kodu Tekrar Gönder"e dokun.');
+                    }
                 } else if (data.success) {
                     showSuccess('registerSuccess', 'Kayıt başarılı! Yönlendiriliyorsunuz...');
                     setTimeout(() => {
@@ -1132,7 +1144,7 @@
                     body: JSON.stringify({ action: 'verify', email: pendingRegisterEmail, code })
                 });
 
-                const data = await response.json();
+                const data = await readApiJson(response);
 
                 if (data.success) {
                     showSuccess('registerVerifySuccess', 'Hesabın oluşturuldu! Yönlendiriliyorsun...');
@@ -1155,7 +1167,7 @@
                     credentials: 'include',
                     body: JSON.stringify({ action: 'resend', email: pendingRegisterEmail })
                 });
-                const data = await response.json();
+                const data = await readApiJson(response);
                 if (data.success) {
                     showSuccess('registerVerifySuccess', 'Yeni kod gönderildi!');
                 } else {
@@ -1185,7 +1197,7 @@
                     body: JSON.stringify({ email, password })
                 });
 
-                const data = await response.json();
+                const data = await readApiJson(response);
 
                 if (data.success && data.requires_2fa) {
                     showTwoFactor();
@@ -1219,7 +1231,7 @@
                     body: JSON.stringify({ code })
                 });
 
-                const data = await response.json();
+                const data = await readApiJson(response);
 
                 if (data.success) {
                     showSuccess('twoFactorError', 'Doğrulama başarılı! Yönlendiriliyorsunuz...');
@@ -1246,7 +1258,7 @@
                     body: JSON.stringify({ email })
                 });
 
-                const data = await response.json();
+                const data = await readApiJson(response);
 
                 if (data.success) {
                     showSuccess('forgotSuccess', 'Şifre sıfırlama linki e-postanıza gönderildi!');

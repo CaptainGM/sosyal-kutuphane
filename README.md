@@ -50,7 +50,8 @@ Docker ile: `docker compose up`
 | `MONGO_URI`, `MONGO_DB` | Evet | Veritabanı |
 | `TMDB_API_KEY` | Evet | Film ve dizi verisi |
 | `GOOGLE_BOOKS_API_KEY` | Hayır | Kitap verisi |
-| `SMTP_*` | Hayır | Şifre sıfırlama e-postası |
+| `BREVO_API_KEY` | Önerilir | E-postaları Brevo HTTPS API'si ile gönderir (Render gibi ortamlarda SMTP portu engellenebiliyor) |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM_EMAIL` | Evet | Kayıt doğrulama kodu ve şifre sıfırlama e-postası. Brevo önerilir (`smtp-relay.brevo.com`, 587) |
 | `LLM_MODERATION_PROVIDER`, `LLM_MODERATION_API_KEY` | Hayır | Yorumlarda yapay zekâ ile ek küfür taraması (`gemini` veya `deepseek`) |
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | Hayır | Tarayıcı bildirimleri (`php scripts/make-vapid.php` ile üretilir) |
 

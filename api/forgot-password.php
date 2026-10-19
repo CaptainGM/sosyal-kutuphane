@@ -51,6 +51,8 @@ function sendPasswordResetEmail($toEmail, $username, $resetLink) {
     try {
         $mail->isSMTP();
         $mail->Host = SMTP_HOST;
+        // Sunucu 10 sn içinde yanıt vermeli: uzayan SMTP bağlantısı isteği Render'ın zaman aşımına düşürmesin.
+        $mail->Timeout = 10;
         $mail->SMTPAuth = true;
         $mail->Username = SMTP_USERNAME;
         $mail->Password = SMTP_PASSWORD;
@@ -96,11 +98,13 @@ function sendPasswordResetEmail($toEmail, $username, $resetLink) {
 
         $mail->AltBody = "Merhaba $username, Şifrenizi sıfırlamak için bu linki tarayıcınıza yapıştırın: $resetLink";
 
-        $mail->send();
+        if (!sendMailPrepared($mail)) {
+            throw new Exception($mail->ErrorInfo);
+        }
         return true;
     } catch (Exception $e) {
-        error_log("Mail gönderilemedi: " . $mail->ErrorInfo);
-        error_log("Şifre sıfırlama linki (SMTP başarısız, gelişim amaçlı log): " . $resetLink);
+        // Sıfırlama bağlantısı günlüğe yazılmaz: günlük erişimi olan biri şifreyi sıfırlayamasın.
+        error_log("Şifre sıfırlama e-postası gönderilemedi: " . $mail->ErrorInfo);
         return false;
     }
 }

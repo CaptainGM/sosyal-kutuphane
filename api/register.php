@@ -24,6 +24,8 @@ function sendRegistrationCodeEmail(string $toEmail, string $username, string $co
     try {
         $mail->isSMTP();
         $mail->Host = SMTP_HOST;
+        // Sunucu 10 sn içinde yanıt vermeli: uzayan SMTP bağlantısı isteği Render'ın zaman aşımına düşürmesin.
+        $mail->Timeout = 10;
         $mail->SMTPAuth = true;
         $mail->Username = SMTP_USERNAME;
         $mail->Password = SMTP_PASSWORD;
@@ -44,11 +46,15 @@ function sendRegistrationCodeEmail(string $toEmail, string $username, string $co
             <p>Bu kod 10 dakika geçerlidir. Bu kaydı siz başlatmadıysanız bu e-postayı yok sayabilirsiniz.</p>
         </div>';
         $mail->AltBody = "Doğrulama kodunuz: $code (10 dakika geçerlidir)";
-        $mail->send();
+        if (!sendMailPrepared($mail)) {
+            throw new Exception($mail->ErrorInfo);
+        }
+        // Gönderim Brevo tarafından kabul edildi. Teslimat ayrıca Brevo panelinde izlenir.
+        error_log('Kayıt doğrulama e-postası kabul edildi: ' . maskEmailForLog($toEmail));
         return true;
     } catch (Exception $e) {
-        error_log("Kayıt doğrulama e-postası gönderilemedi: " . $mail->ErrorInfo);
-        error_log("Kayıt doğrulama kodu (gelişim amaçlı log): $code -> $toEmail");
+        // Kod burada günlüğe yazılmaz: günlük erişimi olan biri hesabı doğrulayamasın.
+        error_log('Kayıt doğrulama e-postası gönderilemedi (' . maskEmailForLog($toEmail) . '): ' . $mail->ErrorInfo);
         return false;
     }
 }
@@ -132,7 +138,9 @@ if ($action === 'verify') {
             'created_at' => new MongoDB\BSON\UTCDateTime(),
         ]]
     );
-    sendRegistrationCodeEmail($pending->email, $pending->username, $code);
+    if (!sendRegistrationCodeEmail($pending->email, $pending->username, $code)) {
+        jsonResponse(['success' => false, 'message' => 'E-posta şu an gönderilemedi, birkaç dakika sonra tekrar dene.'], 503);
+    }
     jsonResponse(['success' => true, 'message' => 'Yeni kod gönderildi']);
 
 } else {
@@ -183,12 +191,14 @@ if ($action === 'verify') {
         ['upsert' => true]
     );
 
-    sendRegistrationCodeEmail($email, $username, $code);
+    // Gönderilemezse kayıt yine de bekler (kod sunucu loguna yazılır); istemci bunu açıkça gösterir.
+    $emailSent = sendRegistrationCodeEmail($email, $username, $code);
 
     jsonResponse([
         'success' => true,
         'pending_verification' => true,
-        'message' => 'Doğrulama kodu e-postana gönderildi.',
+        'email_sent' => $emailSent,
+        'message' => $emailSent ? 'Doğrulama kodu e-postana gönderildi.' : 'Doğrulama kodu hazırlandı ama e-posta gönderilemedi.',
         'email' => $email
     ]);
 }

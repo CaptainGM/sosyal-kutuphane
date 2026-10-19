@@ -26,6 +26,8 @@ function sendVerificationCodeEmail(string $toEmail, string $username, string $co
     try {
         $mail->isSMTP();
         $mail->Host = SMTP_HOST;
+        // Sunucu 10 sn içinde yanıt vermeli: uzayan SMTP bağlantısı isteği Render'ın zaman aşımına düşürmesin.
+        $mail->Timeout = 10;
         $mail->SMTPAuth = true;
         $mail->Username = SMTP_USERNAME;
         $mail->Password = SMTP_PASSWORD;
@@ -46,11 +48,13 @@ function sendVerificationCodeEmail(string $toEmail, string $username, string $co
             <p>Bu kod 10 dakika geçerlidir. Bu talebi siz yapmadıysanız bu e-postayı yok sayabilirsiniz.</p>
         </div>';
         $mail->AltBody = "Doğrulama kodunuz: $code (10 dakika geçerlidir)";
-        $mail->send();
+        if (!sendMailPrepared($mail)) {
+            throw new Exception($mail->ErrorInfo);
+        }
         return true;
     } catch (Exception $e) {
-        error_log("E-posta gönderilemedi: " . $mail->ErrorInfo);
-        error_log("Doğrulama kodu (gelişim amaçlı log): $code -> $toEmail");
+        // Kod burada günlüğe yazılmaz: günlük erişimi olan biri e-posta adresini değiştirebilmesin.
+        error_log("E-posta değişikliği kodu gönderilemedi: " . $mail->ErrorInfo);
         return false;
     }
 }
