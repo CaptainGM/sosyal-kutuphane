@@ -73,6 +73,63 @@ test.describe('ne izlesem', () => {
         });
     });
 
+    test('türler: aksiyon ve komedi var; diziye geçince dizide karşılığı olmayanlar gizlenir', async ({ page }) => {
+        await page.goto('/tonight.html');
+        const chips = page.locator('#moodGroup .chip');
+        await expect(chips.filter({ hasText: /^Aksiyon$/ })).toHaveCount(1);
+        await expect(chips.filter({ hasText: /^Komedi$/ })).toHaveCount(1);
+        expect(await chips.count()).toBeGreaterThanOrEqual(15);
+
+        await page.click('#moodGroup .chip[data-mood="romantik"]');
+        await expect(page).toHaveURL(/moods=romantik/);
+        await page.click('[data-kind="series"]');
+        await expect(page.locator('#moodGroup .chip[data-mood="romantik"]')).toHaveCount(0);
+        await expect(page.locator('#moodGroup .chip[data-mood="tarih"]')).toHaveCount(0);
+        await expect(page.locator('#moodGroup .chip[data-mood="komedi"]')).toHaveCount(1);
+        expect(new URL(page.url()).search).not.toContain('romantik');
+    });
+
+    test.describe('seri uyarısı', () => {
+        test.use({ reducedMotion: 'reduce' });
+
+        const hobbit = {
+            id: 122917, type: 'movie', title: 'Hobbit: Beş Ordunun Savaşı', year: '2014', rating: 7.3,
+            poster: 'img/no-poster.svg', url: 'detail.php?type=movie&id=122917', overview: 'Son savaş.', backdrop: null,
+            runtime: 144, genres: ['Macera'], genre_ids: [12], poster_path: null, tagline: '',
+        };
+        const answer = (franchise) => ({ success: true, pick: hobbit, franchise, alternatives: [], reel: [], reason: '144 dk · 7.3 puan', seed: 1, candidate_count: 5 });
+
+        test('serinin sonraki filmi çıkınca ilk film uyarısı görünür', async ({ page }) => {
+            await page.route('**/api/evening-picker.php*', route => route.fulfill({ json: answer({
+                collection: 'Hobbit Serisi', position: 3, total: 3, missing_count: 2, starts_at_first: true,
+                first: { id: 49051, title: 'Hobbit: Beklenmedik Yolculuk', year: '2012', poster: null, poster_path: null, url: 'detail.php?type=movie&id=49051' },
+                before: [
+                    { id: 49051, title: 'Hobbit: Beklenmedik Yolculuk', year: '2012', poster: null, url: 'detail.php?type=movie&id=49051' },
+                    { id: 57158, title: 'Hobbit: Smaug', year: '2013', poster: null, url: 'detail.php?type=movie&id=57158' },
+                ],
+            }) }));
+            await page.goto('/tonight.html');
+            await page.click('#rollBtn');
+
+            const note = page.locator('.franchise-note');
+            await expect(note).toBeVisible();
+            await expect(note).toContainText('Bu film bir serinin 3. filmi (Hobbit Serisi)');
+            await expect(note).toContainText('İlk filmi izlemeden bunu izlemen önerilir');
+            await expect(note.locator('.franchise-text a')).toHaveAttribute('href', 'detail.php?type=movie&id=49051');
+            await expect(note).toContainText('Toplam 2 önceki film var');
+            await expect(note.locator('.franchise-poster')).toHaveCount(2);
+            await expect(page.locator('#addFirstBtn')).toContainText('İzlenecek listeme ekle');
+        });
+
+        test('serinin ilk filmi ya da seri dışı filmde uyarı çıkmaz', async ({ page }) => {
+            await page.route('**/api/evening-picker.php*', route => route.fulfill({ json: answer(null) }));
+            await page.goto('/tonight.html');
+            await page.click('#rollBtn');
+            await expect(page.locator('.pick-result')).toBeVisible();
+            await expect(page.locator('.franchise-note')).toHaveCount(0);
+        });
+    });
+
     test('dar ekranda sayfa yatay kaymaz', async ({ page }) => {
         await page.setViewportSize({ width: 390, height: 800 });
         await page.route(/\/api\/tmdb-proxy\.php\?.*endpoint=list/, route => route.fulfill({ json: { results: Array.from({ length: 12 }, (_, i) => ({ id: i + 1, title: `F${i}`, poster_path: `/p${i}.jpg` })) } }));

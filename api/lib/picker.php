@@ -4,15 +4,29 @@
 
 require_once __DIR__ . '/providers.php';
 
-// Ruh hali -> TMDB tür kimlikleri (film ve dizi türleri TMDB'de ayrı listelenir).
+// Tür ya da ruh hali -> TMDB tür kimlikleri (film ve dizi türleri TMDB'de ayrı listelenir).
+// Dizide karşılığı olmayan türlerin 'tv' listesi boştur: dizi aranırken o seçenek kullanılamaz (arayüz de gizler).
+// 'heyecan' eski paylaşım bağlantıları için durur; arayüzde yerine Aksiyon ve Macera gösterilir.
 const PICKER_MOODS = [
     'heyecan' => ['label' => 'Heyecanlı', 'movie' => [28, 12], 'tv' => [10759]],
-    'gerilim' => ['label' => 'Gerilim', 'movie' => [53, 9648], 'tv' => [9648, 80]],
-    'komedi' => ['label' => 'Eğlenceli', 'movie' => [35], 'tv' => [35]],
+    'aksiyon' => ['label' => 'Aksiyon', 'movie' => [28], 'tv' => [10759]],
+    'macera' => ['label' => 'Macera', 'movie' => [12], 'tv' => [10759]],
+    'komedi' => ['label' => 'Komedi', 'movie' => [35], 'tv' => [35]],
+    'dram' => ['label' => 'Dram', 'movie' => [18], 'tv' => [18]],
     'duygusal' => ['label' => 'Duygusal', 'movie' => [18, 10749], 'tv' => [18]],
-    'bilimkurgu' => ['label' => 'Bilim kurgu', 'movie' => [878, 14], 'tv' => [10765]],
+    'romantik' => ['label' => 'Romantik', 'movie' => [10749], 'tv' => []],
+    'gerilim' => ['label' => 'Gerilim', 'movie' => [53, 9648], 'tv' => [9648, 80]],
+    'gizem' => ['label' => 'Gizem', 'movie' => [9648], 'tv' => [9648]],
+    'suc' => ['label' => 'Suç', 'movie' => [80], 'tv' => [80]],
     'korku' => ['label' => 'Korku', 'movie' => [27], 'tv' => [9648]],
+    'bilimkurgu' => ['label' => 'Bilim kurgu', 'movie' => [878, 14], 'tv' => [10765]],
+    'fantastik' => ['label' => 'Fantastik', 'movie' => [14], 'tv' => [10765]],
+    'animasyon' => ['label' => 'Animasyon', 'movie' => [16], 'tv' => [16]],
     'aile' => ['label' => 'Aile', 'movie' => [10751, 16], 'tv' => [10751, 16]],
+    'savas' => ['label' => 'Savaş', 'movie' => [10752], 'tv' => [10768]],
+    'tarih' => ['label' => 'Tarih', 'movie' => [36], 'tv' => []],
+    'muzik' => ['label' => 'Müzikal', 'movie' => [10402], 'tv' => []],
+    'western' => ['label' => 'Western', 'movie' => [37], 'tv' => [37]],
     'gercek' => ['label' => 'Gerçek hikâye', 'movie' => [99, 36], 'tv' => [99]],
 ];
 
@@ -49,9 +63,14 @@ function pickerNormalizeParams(array $input): array {
     }
     if (is_array($rawMoods)) {
         foreach ($rawMoods as $mood) {
-            if (is_string($mood) && isset(PICKER_MOODS[$mood]) && !in_array($mood, $moods, true)) {
-                $moods[] = $mood;
+            if (!is_string($mood) || !isset(PICKER_MOODS[$mood]) || in_array($mood, $moods, true)) {
+                continue;
             }
+            // Dizilerde karşılığı olmayan türler (romantik, tarih, müzikal) atılır.
+            if ($kind === 'series' && !PICKER_MOODS[$mood]['tv']) {
+                continue;
+            }
+            $moods[] = $mood;
         }
     }
 
@@ -185,6 +204,68 @@ function pickerChoose(array $results, array $excludeIds, int $seed): array {
             array_slice($shuffled, 0, 14)
         ))),
         'candidate_count' => count($candidates),
+    ];
+}
+
+// TMDB koleksiyon adlarındaki ek sözcükleri atar: "Hobbit [Seri]", "Hobbit Serisi", "Hobbit Koleksiyonu" -> "Hobbit".
+function pickerCollectionName(string $name): string {
+    $clean = trim((string) preg_replace('/\s*(\[Seri\]|Koleksiyonu|Serisi|Collection|Üçlemesi|Dörtlemesi)\s*$/iu', '', trim($name)));
+    return $clean !== '' ? $clean : trim($name);
+}
+
+// Film serisi uyarısı. Önerilen film bir serinin ilk filmi değilse ve önceki filmlerden izlenmemiş olan varsa,
+// "önce şunu izlemen önerilir" bilgisi döner; yoksa null. Sıralama çıkış tarihine göredir.
+// $collection: TMDB collection/{id} yanıtı (name, parts[]). $watchedIds: kullanıcının izlediği TMDB film kimlikleri.
+// Henüz çıkmamış parçalar sırayı etkilemez; çıkış tarihi bilinmeyenler sayılmaz. Saf fonksiyon (ağ ve veritabanı yok).
+function pickerFranchiseNote(array $collection, int $pickId, string $today, array $watchedIds = []): ?array {
+    $parts = [];
+    foreach ($collection['parts'] ?? [] as $part) {
+        if (!is_array($part) || empty($part['id']) || empty($part['release_date'])) {
+            continue;
+        }
+        if ((string) $part['release_date'] > $today && (int) $part['id'] !== $pickId) {
+            continue;
+        }
+        $parts[] = $part;
+    }
+    usort($parts, static fn (array $a, array $b): int => [(string) $a['release_date'], (int) $a['id']] <=> [(string) $b['release_date'], (int) $b['id']]);
+
+    $index = null;
+    foreach ($parts as $i => $part) {
+        if ((int) $part['id'] === $pickId) {
+            $index = $i;
+            break;
+        }
+    }
+    if ($index === null || $index === 0) {
+        return null;
+    }
+
+    $watched = array_flip(array_map('intval', $watchedIds));
+    $missing = array_values(array_filter(
+        array_slice($parts, 0, $index),
+        static fn (array $part): bool => !isset($watched[(int) $part['id']])
+    ));
+    if (!$missing) {
+        return null;
+    }
+
+    $card = static fn (array $part): array => [
+        'id' => (int) $part['id'],
+        'title' => (string) ($part['title'] ?? $part['name'] ?? ''),
+        'year' => substr((string) $part['release_date'], 0, 4),
+        'poster_path' => $part['poster_path'] ?? null,
+        'url' => 'detail.php?type=movie&id=' . (int) $part['id'],
+    ];
+
+    return [
+        'collection' => pickerCollectionName((string) ($collection['name'] ?? '')),
+        'position' => $index + 1,
+        'total' => count($parts),
+        'missing_count' => count($missing),
+        'starts_at_first' => (int) $missing[0]['id'] === (int) $parts[0]['id'],
+        'first' => $card($missing[0]),
+        'before' => array_map($card, array_slice($missing, 0, 3)),
     ];
 }
 

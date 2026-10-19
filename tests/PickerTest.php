@@ -83,7 +83,7 @@ final class PickerTest extends TestCase
     public function testReasonSummarisesRuntimeRatingAndMoods(): void
     {
         $params = pickerNormalizeParams(['kind' => 'series', 'moods' => ['komedi', 'aile']]);
-        $this->assertSame('22 dk bölüm · 8.2 puan · Eğlenceli / Aile', pickerReason($params, ['vote_average' => 8.2], 22));
+        $this->assertSame('22 dk bölüm · 8.2 puan · Komedi / Aile', pickerReason($params, ['vote_average' => 8.2], 22));
         $this->assertSame('Popüler ve beğenilen bir yapım', pickerReason(pickerNormalizeParams([]), [], null));
     }
 
@@ -134,5 +134,81 @@ final class PickerTest extends TestCase
         $this->assertSame(0, $bad['rating']);
         $this->assertSame('', $bad['lang']);
         $this->assertArrayNotHasKey('with_original_language', pickerDiscoverQuery($bad, 1, '2026-10-17')['query']);
+    }
+
+    public function testGenreMoodsMapToTmdbGenres(): void
+    {
+        $action = pickerDiscoverQuery(pickerNormalizeParams(['moods' => ['aksiyon', 'komedi']]), 1, '2026-10-17')['query'];
+        $this->assertSame('28|35', $action['with_genres']);
+
+        $war = pickerDiscoverQuery(pickerNormalizeParams(['kind' => 'series', 'moods' => ['savas']]), 1, '2026-10-17')['query'];
+        $this->assertSame('10768', $war['with_genres']);
+
+        $legacy = pickerDiscoverQuery(pickerNormalizeParams(['moods' => ['heyecan']]), 1, '2026-10-17')['query'];
+        $this->assertSame('28|12', $legacy['with_genres'], 'Eski paylaşım bağlantıları çalışmaya devam eder');
+    }
+
+    public function testGenresWithoutTvEquivalentAreDroppedForSeries(): void
+    {
+        $series = pickerNormalizeParams(['kind' => 'series', 'moods' => ['romantik', 'komedi', 'tarih', 'muzik']]);
+        $this->assertSame(['komedi'], $series['moods']);
+        $movie = pickerNormalizeParams(['kind' => 'movie', 'moods' => ['romantik', 'tarih', 'muzik']]);
+        $this->assertSame(['romantik', 'tarih', 'muzik'], $movie['moods']);
+    }
+
+    private function hobbit(): array
+    {
+        return ['name' => 'Hobbit Serisi', 'parts' => [
+            ['id' => 122917, 'title' => 'Hobbit: Beş Ordunun Savaşı', 'release_date' => '2014-12-10', 'poster_path' => '/c.jpg'],
+            ['id' => 49051, 'title' => 'Hobbit: Beklenmedik Yolculuk', 'release_date' => '2012-12-12', 'poster_path' => '/a.jpg'],
+            ['id' => 57158, 'title' => "Hobbit: Smaug'un Çorak Toprakları", 'release_date' => '2013-12-11', 'poster_path' => '/b.jpg'],
+            ['id' => 999, 'title' => 'Henüz çıkmamış film', 'release_date' => '2030-01-01', 'poster_path' => null],
+            ['id' => 1000, 'title' => 'Tarihi belli olmayan', 'release_date' => '', 'poster_path' => null],
+        ]];
+    }
+
+    public function testFranchiseNotePointsLaterFilmToTheFirstFilm(): void
+    {
+        $note = pickerFranchiseNote($this->hobbit(), 122917, '2026-10-19');
+        $this->assertNotNull($note);
+        $this->assertSame('Hobbit', $note['collection'], 'Koleksiyon adındaki "Serisi" eki atılır');
+        $this->assertSame(3, $note['position']);
+        $this->assertSame(3, $note['total'], 'Çıkmamış ve tarihsiz parçalar sayılmaz');
+        $this->assertSame(2, $note['missing_count']);
+        $this->assertTrue($note['starts_at_first']);
+        $this->assertSame(49051, $note['first']['id']);
+        $this->assertSame('2012', $note['first']['year']);
+        $this->assertSame('detail.php?type=movie&id=49051', $note['first']['url']);
+        $this->assertSame([49051, 57158], array_column($note['before'], 'id'));
+    }
+
+    public function testCollectionNameLosesTmdbSuffixes(): void
+    {
+        $this->assertSame('Hobbit', pickerCollectionName('Hobbit [Seri]'));
+        $this->assertSame('Yüzüklerin Efendisi', pickerCollectionName('Yüzüklerin Efendisi Üçlemesi'));
+        $this->assertSame('Harry Potter', pickerCollectionName('Harry Potter Koleksiyonu'));
+        $this->assertSame('Koleksiyonu', pickerCollectionName('Koleksiyonu'), 'Yalnızca ek varsa ad korunur');
+        $this->assertSame('Matrix', pickerCollectionName('Matrix'));
+    }
+
+    public function testFranchiseNoteIsNullForFirstFilmUnknownFilmAndUnreleasedOrder(): void
+    {
+        $this->assertNull(pickerFranchiseNote($this->hobbit(), 49051, '2026-10-19'), 'İlk film için uyarı yok');
+        $this->assertNull(pickerFranchiseNote($this->hobbit(), 424242, '2026-10-19'), 'Seride olmayan film');
+        $this->assertNull(pickerFranchiseNote(['name' => 'Boş', 'parts' => []], 1, '2026-10-19'));
+
+        $second = pickerFranchiseNote($this->hobbit(), 57158, '2026-10-19');
+        $this->assertSame(2, $second['position']);
+        $this->assertSame(1, $second['missing_count']);
+    }
+
+    public function testFranchiseNoteSkipsFilmsTheUserAlreadyWatched(): void
+    {
+        $partlyWatched = pickerFranchiseNote($this->hobbit(), 122917, '2026-10-19', ['49051']);
+        $this->assertSame(1, $partlyWatched['missing_count']);
+        $this->assertSame(57158, $partlyWatched['first']['id']);
+        $this->assertFalse($partlyWatched['starts_at_first'], 'İlk film izlenmiş: uyarı ikinci filmi gösterir');
+
+        $this->assertNull(pickerFranchiseNote($this->hobbit(), 122917, '2026-10-19', [49051, 57158]), 'Öncekilerin hepsi izlenmişse uyarı yok');
     }
 }

@@ -12,13 +12,17 @@ if (tmdbApiKey() === null) {
 }
 
 // Kütüphanedeki içeriklerin TMDB kimlikleri (movies / series koleksiyonlarında tmdb_id olarak saklanır).
-function pickerLibraryTmdbIds($db, int $userId, string $kind): array {
+function pickerLibraryTmdbIds($db, int $userId, string $kind, ?string $status = null): array {
     $statusCollection = $kind === 'series' ? 'user_series_status' : 'user_movie_status';
     $idField = $kind === 'series' ? 'series_id' : 'movie_id';
     $contentCollection = $kind === 'series' ? 'series' : 'movies';
 
+    $filter = ['user_id' => $userId];
+    if ($status !== null) {
+        $filter['status'] = $status;
+    }
     $contentIds = [];
-    foreach ($db->$statusCollection->find(['user_id' => $userId], ['projection' => [$idField => 1]]) as $row) {
+    foreach ($db->$statusCollection->find($filter, ['projection' => [$idField => 1]]) as $row) {
         $contentIds[] = $row[$idField];
     }
     if (!$contentIds) {
@@ -96,9 +100,26 @@ $card = pickerCard($pick, $typeName) + [
     'tagline' => (string)($detail['tagline'] ?? ''),
 ];
 
+// Film bir serinin ilk filmi değilse ve öncekilerden izlenmemiş olan varsa uyarı eklenir (ör. Hobbit: Beş Ordunun Savaşı).
+$franchise = null;
+$collectionId = (int)($detail['belongs_to_collection']['id'] ?? 0);
+if ($params['kind'] === 'movie' && $collectionId > 0) {
+    $collection = tmdbGet($db, "collection/$collectionId", [], 86400);
+    if ($collection !== null) {
+        $watched = isLoggedIn() ? pickerLibraryTmdbIds($db, (int)getCurrentUserId(), 'movie', 'watched') : [];
+        $franchise = pickerFranchiseNote($collection, (int)$pick['id'], date('Y-m-d'), $watched);
+        if ($franchise !== null) {
+            $withPoster = static fn (array $part): array => $part + ['poster' => tmdbImageUrl($part['poster_path'] ?? null, 'w185')];
+            $franchise['first'] = $withPoster($franchise['first']);
+            $franchise['before'] = array_map($withPoster, $franchise['before']);
+        }
+    }
+}
+
 jsonResponse([
     'success' => true,
     'pick' => $card,
+    'franchise' => $franchise,
     'alternatives' => array_map(static fn (array $item): array => pickerCard($item, $typeName), $choice['alternatives']),
     'reel' => array_values(array_filter(array_map(static fn (string $path): ?string => tmdbImageUrl($path, 'w185'), $choice['reel']))),
     'reason' => pickerReason($params, $pick, $runtime ? (int)$runtime : null),

@@ -604,6 +604,22 @@
             overflow-x: clip;
         }
 
+        /* Doğrulama ve sıfırlama e-postası spam'e düşebildiği için kullanıcıya önceden söylenir. */
+        .mail-hint {
+            margin: 0 0 16px;
+            padding: 12px 14px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            background: rgba(var(--color-accent-rgb), 0.08);
+            color: var(--color-text-muted);
+            font-size: 13.5px;
+            line-height: 1.55;
+        }
+
+        .mail-hint strong {
+            color: var(--color-text);
+        }
+
         .auth-corner {
             position: fixed;
             top: 16px;
@@ -924,6 +940,8 @@
                         <p><span id="registerVerifyEmailText">E-posta adresine</span> gelen 6 haneli kodu gir.</p>
                     </div>
 
+                    <p class="mail-hint" role="note"><strong>Mail gelmedi mi?</strong> Birkaç dakika bekle, sonra <strong>Spam / Gereksiz</strong> klasörüne ve <strong>Tüm postalar</strong>'a da bak. Spam'de bulursan "Spam değil" olarak işaretle.</p>
+
                     <div class="alert-box alert-danger" id="registerVerifyError"></div>
                     <div class="alert-box alert-success" id="registerVerifySuccess"></div>
 
@@ -1169,7 +1187,7 @@
                 });
                 const data = await readApiJson(response);
                 if (data.success) {
-                    showSuccess('registerVerifySuccess', 'Yeni kod gönderildi!');
+                    showSuccess('registerVerifySuccess', 'Yeni kod gönderildi! Gelmezse Spam / Gereksiz klasörüne de bak.');
                 } else {
                     showError('registerVerifyError', data.message || 'Kod gönderilemedi!');
                 }
@@ -1261,7 +1279,7 @@
                 const data = await readApiJson(response);
 
                 if (data.success) {
-                    showSuccess('forgotSuccess', 'Şifre sıfırlama linki e-postanıza gönderildi!');
+                    showSuccess('forgotSuccess', 'Şifre sıfırlama linki e-postanıza gönderildi! Birkaç dakika içinde gelmezse Spam / Gereksiz klasörüne ve Tüm postalar\'a da bak.');
                 } else {
                     showSuccess('forgotSuccess', data.message || 'İşlem tamamlandı.');
                 }

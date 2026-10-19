@@ -99,6 +99,7 @@
             display: grid;
             gap: 22px;
             min-width: 0;
+            scroll-margin-top: 96px;
         }
 
         .reel {
@@ -257,6 +258,54 @@
             color: #ffffff;
         }
 
+        /* Seri uyarısı: önerilen film bir serinin ilk filmi değilse, izlenmemiş önceki film(ler) gösterilir. */
+        .franchise-note {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            gap: 14px;
+            align-items: center;
+            width: 100%;
+            max-width: 62ch;
+            padding: 12px 14px;
+            border: 1px solid rgba(255, 214, 102, 0.55);
+            border-radius: var(--radius);
+            background: rgba(255, 196, 61, 0.14);
+            color: #ffffff;
+        }
+
+        .franchise-posters {
+            display: flex;
+            gap: 6px;
+        }
+
+        .franchise-poster img {
+            display: block;
+            width: 46px;
+            height: 69px;
+            border-radius: 6px;
+            object-fit: cover;
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 8px 18px -8px rgba(0, 0, 0, 0.8);
+        }
+
+        .franchise-text {
+            display: grid;
+            gap: 6px;
+            justify-items: start;
+            font-size: 13.5px;
+            line-height: 1.5;
+        }
+
+        .franchise-text strong {
+            font-size: 14px;
+        }
+
+        .franchise-text a {
+            color: #ffe08a;
+            font-weight: 700;
+            text-underline-offset: 3px;
+        }
+
         .alt-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -367,6 +416,12 @@
                 max-width: 220px;
             }
         }
+
+        @media (max-width: 520px) {
+            .franchise-note {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
     </style>
 </head>
 
@@ -431,7 +486,7 @@
                 </div>
 
                 <div class="control-group">
-                    <span class="control-label" id="moodLabel">Ruh halin? <small class="faint">(en fazla 3)</small></span>
+                    <span class="control-label" id="moodLabel">Tür ya da ruh halin? <small class="faint">(en fazla 3)</small></span>
                     <div class="chip-group" id="moodGroup" role="group" aria-labelledby="moodLabel"></div>
                 </div>
 
@@ -480,10 +535,16 @@
             movie: [['short', 'Kısa', '100 dk\'ya kadar'], ['medium', 'Orta', '100–140 dk'], ['long', 'Uzun', '140 dk üstü'], ['any', 'Fark etmez', '']],
             series: [['short', 'Kısa bölüm', '30 dk\'ya kadar'], ['medium', 'Orta', '30–50 dk'], ['long', 'Uzun', '50 dk üstü'], ['any', 'Fark etmez', '']],
         };
+        // [anahtar, etiket, yalnızca filmde]: dizilerde karşılığı olmayan türler dizi seçilince gizlenir (bkz. api/lib/picker.php).
         const MOODS = [
-            ['heyecan', 'Heyecanlı'], ['gerilim', 'Gerilim'], ['komedi', 'Eğlenceli'], ['duygusal', 'Duygusal'],
-            ['bilimkurgu', 'Bilim kurgu'], ['korku', 'Korku'], ['aile', 'Aile'], ['gercek', 'Gerçek hikâye'],
+            ['aksiyon', 'Aksiyon'], ['komedi', 'Komedi'], ['dram', 'Dram'], ['romantik', 'Romantik', true],
+            ['macera', 'Macera'], ['gerilim', 'Gerilim'], ['gizem', 'Gizem'], ['suc', 'Suç'],
+            ['korku', 'Korku'], ['bilimkurgu', 'Bilim kurgu'], ['fantastik', 'Fantastik'], ['animasyon', 'Animasyon'],
+            ['aile', 'Aile'], ['duygusal', 'Duygusal'], ['savas', 'Savaş'], ['tarih', 'Tarih', true],
+            ['muzik', 'Müzikal', true], ['western', 'Western'], ['gercek', 'Gerçek hikâye'],
         ];
+        // Eski paylaşım bağlantılarındaki "heyecan" artık "aksiyon" olarak açılır.
+        const LEGACY_MOODS = { heyecan: 'aksiyon' };
         const MAX_MOODS = 3;
         const REEL_ITEM_STEP = 134; // 120px afiş + 14px boşluk
         // Tek seçimli süzgeçler: [anahtar, etiket, ipucu]. Varsayılan dönem "2000 ve sonrası": çok eski filmler çıkmasın.
@@ -520,8 +581,12 @@
             ).join('');
         }
 
+        function moodsForKind() {
+            return MOODS.filter(([, , movieOnly]) => !movieOnly || state.kind === 'movie');
+        }
+
         function renderMoods() {
-            document.getElementById('moodGroup').innerHTML = MOODS.map(([key, label]) =>
+            document.getElementById('moodGroup').innerHTML = moodsForKind().map(([key, label]) =>
                 `<button type="button" class="chip" data-mood="${key}" aria-pressed="${state.moods.has(key)}">${label}</button>`
             ).join('');
         }
@@ -596,6 +661,10 @@
 
         function setKind(kind) {
             state.kind = kind;
+            // Yeni türde karşılığı olmayan seçili türler düşer (ör. diziye geçince "Romantik").
+            const allowed = new Set(moodsForKind().map(([key]) => key));
+            [...state.moods].forEach((mood) => { if (!allowed.has(mood)) state.moods.delete(mood); });
+            renderMoods();
             document.querySelectorAll('[data-kind]').forEach((button) => {
                 const active = button.dataset.kind === kind;
                 button.classList.toggle('active', active);
@@ -680,6 +749,27 @@
             ].join('');
         }
 
+        // Seri uyarısı kutusu: önceki film afişleri, açıklama ve ilk filmi listeye ekleme düğmesi.
+        function franchiseNoteHtml(note) {
+            const first = note.first;
+            const posters = note.before.map(part => `
+                <a class="franchise-poster" href="${escapeHtml(part.url)}" title="${escapeHtml(part.title)} (${escapeHtml(part.year)})">
+                    <img src="${escapeHtml(part.poster || 'img/no-poster.svg')}" alt="${escapeHtml(part.title)}" loading="lazy">
+                </a>`).join('');
+            const lead = note.starts_at_first ? 'İlk filmi izlemeden bunu izlemen önerilir' : 'Önce şu filmi izlemen önerilir';
+            const more = note.missing_count > 1 ? ` Toplam ${Number(note.missing_count)} önceki film var.` : '';
+            const collection = note.collection ? ` (${escapeHtml(note.collection)})` : '';
+            return `
+                <aside class="franchise-note" aria-label="Seri uyarısı">
+                    <div class="franchise-posters">${posters}</div>
+                    <div class="franchise-text">
+                        <strong>Bu film bir serinin ${Number(note.position)}. filmi${collection}</strong>
+                        <span>${lead}: <a href="${escapeHtml(first.url)}">${escapeHtml(first.title)}${first.year ? ` (${escapeHtml(first.year)})` : ''}</a>.${more}</span>
+                        <button type="button" class="btn-glass btn-sm" id="addFirstBtn">İzlenecek listeme ekle</button>
+                    </div>
+                </aside>`;
+        }
+
         function showResult(data) {
             const pick = data.pick;
             state.history.push(pick);
@@ -702,6 +792,7 @@
                         <span class="eyebrow"><span class="dot"></span>Bu akşamın önerisi</span>
                         <h2 class="pick-title" id="pickTitle" tabindex="-1">${escapeHtml(pick.title)}${pick.year ? ` <small>(${escapeHtml(pick.year)})</small>` : ''}</h2>
                         <p class="pick-reason"><strong>Neden bu?</strong> ${escapeHtml(data.reason)}</p>
+                        ${data.franchise ? franchiseNoteHtml(data.franchise) : ''}
                         <div class="cluster cluster--tight">${pickChips(pick)}</div>
                         ${pick.overview ? `<p class="pick-overview">${escapeHtml(pick.overview)}${pick.overview.length >= 420 ? '…' : ''}</p>` : ''}
                         <div class="cluster">
@@ -714,12 +805,20 @@
                 ${alternatives ? `<div><div class="control-label" style="margin-bottom: 10px;">Alternatifler</div><div class="alt-row">${alternatives}</div></div>` : ''}
                 ${previous ? `<div class="history-row"><span class="control-label">Önceki öneriler</span>${previous}</div>` : ''}`;
 
-            document.getElementById('addWatchlistBtn').addEventListener('click', () => addToWatchlist(pick));
+            document.getElementById('addWatchlistBtn').addEventListener('click', (event) => addToWatchlist(pick, event.currentTarget));
+            const addFirstBtn = document.getElementById('addFirstBtn');
+            if (addFirstBtn && data.franchise) {
+                const first = data.franchise.first;
+                addFirstBtn.addEventListener('click', (event) => addToWatchlist(
+                    { type: 'movie', id: first.id, title: first.title, poster_path: first.poster_path, overview: '', year: first.year, genre_ids: [] },
+                    event.currentTarget
+                ));
+            }
             document.getElementById('againBtn').addEventListener('click', roll);
             document.getElementById('pickTitle').focus({ preventScroll: true });
         }
 
-        async function addToWatchlist(pick) {
+        async function addToWatchlist(pick, button) {
             if (!app.currentUser) {
                 app.toast('Listene eklemek için giriş yapmalısın.', 'error');
                 return;
@@ -746,7 +845,6 @@
                 const data = await response.json();
                 if (data.success) {
                     app.toast('İzlenecekler listene eklendi!', 'success');
-                    const button = document.getElementById('addWatchlistBtn');
                     if (button) { button.textContent = '✓ Listende'; button.disabled = true; }
                 } else {
                     app.toast(data.message || 'Eklenemedi', 'error');
@@ -781,6 +879,10 @@
                 } else if (!data.pick) {
                     stageNotice(data.message || 'Bu ölçülere uygun yeni bir öneri bulunamadı.', 'warn');
                 } else {
+                    // Telefonda sonuç alanı kontrollerin altında kalır; çark ve sonuç görünsün diye oraya kaydırılır.
+                    if (window.matchMedia('(max-width: 900px)').matches) {
+                        document.getElementById('pickerStage').scrollIntoView({ behavior: motionReduced() ? 'auto' : 'smooth', block: 'start' });
+                    }
                     await playReel(data);
                     showResult(data);
                 }
@@ -800,7 +902,8 @@
             const params = new URLSearchParams(window.location.search);
             if (params.get('kind') === 'series') state.kind = 'series';
             if (DURATIONS[state.kind].some(([key]) => key === params.get('duration'))) state.duration = params.get('duration');
-            (params.get('moods') || '').split(',').forEach((mood) => {
+            (params.get('moods') || '').split(',').forEach((rawMood) => {
+                const mood = LEGACY_MOODS[rawMood] || rawMood;
                 if (MOODS.some(([key]) => key === mood) && state.moods.size < MAX_MOODS) state.moods.add(mood);
             });
             Object.entries(FILTERS).forEach(([name, filter]) => {
