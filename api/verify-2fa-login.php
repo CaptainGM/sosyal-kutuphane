@@ -56,9 +56,7 @@ if (($user->status ?? 'active') === 'suspended') {
     jsonResponse(['success' => false, 'message' => 'Hesabınız askıya alındı. Destek için yönetici ile iletişime geçin.', 'suspended' => true], 403);
 }
 
-$_SESSION['user_id'] = $user->_id;
-$_SESSION['username'] = $user->username;
-$_SESSION['email'] = $user->email;
+startAuthenticatedSession($user->_id, $user->username, $user->email);
 recordLogin($db, $user->_id);
 
 jsonResponse([

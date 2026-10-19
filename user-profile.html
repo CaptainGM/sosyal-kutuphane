@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#05060b">
+    <link rel="icon" type="image/svg+xml" href="img/logo.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <title>Kullanıcı Profili - Sosyal Kütüphane</title>
     <link rel="stylesheet" href="css/style.css">
@@ -189,7 +191,7 @@
 <nav class="navbar" aria-label="Ana gezinme">
     <div class="navbar-inner">
         <a href="search.html" class="logo">
-            <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="m10 14 5 3-5 3v-6Z"/></svg></span>
+            <span class="logo-mark"><img src="img/logo.svg" alt="" width="34" height="34"></span>
             <span>Sosyal Kütüphane</span>
         </a>
         <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button>
@@ -625,13 +627,27 @@
             requestAnimationFrame(() => requestAnimationFrame(() => gauge.style.setProperty('--value', Number(report.score))));
         }
 
-        async function loadCompatibility() {
+        async function loadCompatibility(attempt = 1) {
             try {
                 const response = await fetch(`/api/compatibility.php?user_id=${profileUserId}`, { credentials: 'include' });
                 const data = await response.json();
-                if (data.success && data.report) renderCompatibility(data.report);
+                if (!data.success || !data.report) throw new Error(data.message || 'Rapor alınamadı');
+                renderCompatibility(data.report);
             } catch (error) {
                 console.error('Uyumluluk hesaplama hatası:', error);
+                if (attempt < 2) {
+                    setTimeout(() => loadCompatibility(attempt + 1), 1500);
+                    return;
+                }
+                const section = document.getElementById('compatSection');
+                section.innerHTML = `<div class="panel compat-pending">
+                    <div class="empty-icon">${app.icon('alert')}</div>
+                    <div>
+                        <h2 id="compatHeading" class="panel-title" style="margin-bottom: 6px;">Zevk uyumu şu an yüklenemedi</h2>
+                        <p>Sayfayı birkaç saniye sonra yenileyip tekrar dene.</p>
+                    </div>
+                </div>`;
+                section.hidden = false;
             }
         }
 

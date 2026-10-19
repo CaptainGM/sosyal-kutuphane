@@ -65,7 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'is_read' => $row->is_read ?? false,
             'created_at' => $row->created_at->toDateTime()->format('Y-m-d H:i:s'),
             'username' => $actor->username ?? null,
-            'email' => $actor->email ?? null,
         ];
     }
 

@@ -8,6 +8,8 @@ if ($userId === null) {
 }
 
 $userData = $db->users->findOne(['_id' => $userId]);
+// E-posta özeldir: başkasının istatistiğini görenlere (giriş yapmamış olanlar dahil) hiç dönmez.
+$isSelf = isLoggedIn() && $userId === (int) getCurrentUserId();
 
 if (!$userData) {
     jsonResponse(['success' => false, 'message' => 'Kullanıcı bulunamadı'], 404);
@@ -105,7 +107,7 @@ $stats['rating_distribution'] = $histogram;
 jsonResponse([
     'success' => true,
     'username' => $userData->username,
-    'email' => $userData->email,
+    'email' => $isSelf ? $userData->email : null,
     'stats' => $stats
 ]);
 ?>

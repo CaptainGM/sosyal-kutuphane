@@ -1,21 +1,7 @@
 <?php
-// .env yükleyici (basit satır parser, harici paket yok)
-$envPath = __DIR__ . '/../.env';
-if (file_exists($envPath)) {
-    foreach (file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
-        $line = trim($line);
-        if ($line === '' || str_starts_with($line, '#')) {
-            continue;
-        }
-        [$key, $value] = array_pad(explode('=', $line, 2), 2, '');
-        $key = trim($key);
-        $value = trim($value);
-        if ($key !== '' && getenv($key) === false) {
-            putenv("$key=$value");
-            $_ENV[$key] = $value;
-        }
-    }
-}
+// .env yükleyici (ortamda tanımlı değişkenlere dokunmaz): bkz. lib/env.php
+require_once __DIR__ . '/lib/env.php';
+loadDotEnv(__DIR__ . '/../.env');
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -147,6 +133,16 @@ function csrfToken() {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
     return $_SESSION['csrf_token'];
+}
+
+// Oturum açılırken (giriş, 2FA doğrulaması, kayıt doğrulaması) çağrılır: oturum kimliği yenilenir ve CSRF belirteci tazelenir.
+// Böylece girişten önce bilinen bir oturum kimliği (oturum sabitleme) giriş sonrasında işe yaramaz.
+function startAuthenticatedSession($userId, string $username, string $email): void {
+    session_regenerate_id(true);
+    unset($_SESSION['csrf_token'], $_SESSION['pending_2fa_user_id']);
+    $_SESSION['user_id'] = $userId;
+    $_SESSION['username'] = $username;
+    $_SESSION['email'] = $email;
 }
 
 // POST/PUT/DELETE isteklerinde çağrılır.

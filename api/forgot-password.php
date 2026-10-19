@@ -1,6 +1,7 @@
 <?php
 require_once 'config.php';
 require_once 'mail-config.php';
+require_once __DIR__ . '/lib/rate-limit.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -23,7 +24,9 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 $user = $db->users->findOne(['email' => $email]);
 
 // Kullanıcı bulunamasa bile aynı mesajı dön (e-posta enumeration'a karşı).
-if ($user) {
+// Aynı adrese saatte en fazla 3 sıfırlama e-postası gider: başkasının kutusunu doldurmak ya da günlük e-posta kotasını
+// tüketmek için kullanılamasın. Sınır aşılınca da aynı başarılı yanıt döner.
+if ($user && !rateLimitHit($db, 'forgot-email:' . sha1(strtolower($email)), 3, 3600)) {
     $token = bin2hex(random_bytes(32));
     $expiresAt = new MongoDB\BSON\UTCDateTime((time() + 3600) * 1000);
 

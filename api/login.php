@@ -45,9 +45,7 @@ if ($user->totp_enabled ?? false) {
 if (!empty($user->is_demo)) {
     resetDemoAccount($db, (int) $user->_id);
 }
-$_SESSION['user_id'] = $user->_id;
-$_SESSION['username'] = $user->username;
-$_SESSION['email'] = $user->email;
+startAuthenticatedSession($user->_id, $user->username, $user->email);
 recordLogin($db, $user->_id);
 
 jsonResponse([

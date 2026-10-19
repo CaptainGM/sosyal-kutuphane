@@ -2,6 +2,7 @@
 require_once 'config.php';
 require_once __DIR__ . '/lib/password.php';
 require_once 'mail-config.php';
+require_once __DIR__ . '/lib/rate-limit.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -106,9 +107,7 @@ if ($action === 'verify') {
     ]);
     $db->pending_registrations->deleteOne(['email' => $email]);
 
-    $_SESSION['user_id'] = $newUserId;
-    $_SESSION['username'] = $pending->username;
-    $_SESSION['email'] = $pending->email;
+    startAuthenticatedSession($newUserId, $pending->username, $pending->email);
 
     jsonResponse([
         'success' => true,
@@ -125,6 +124,11 @@ if ($action === 'verify') {
     }
     if ($pending->created_at->toDateTime()->getTimestamp() > (time() - 60)) {
         jsonResponse(['success' => false, 'message' => 'Az önce bir kod gönderildi, lütfen biraz bekleyin'], 429);
+    }
+
+    // Dakikada bir sınırına ek olarak saatte 10 kod: başkasının kutusunu doldurmak için kullanılamasın.
+    if (rateLimitHit($db, 'register-resend:' . sha1(strtolower($email)), 10, 3600)) {
+        jsonResponse(['success' => false, 'message' => 'Bu adres için çok fazla kod istendi. Bir saat sonra tekrar dene.'], 429);
     }
 
     $code = generateRegCode();
@@ -173,6 +177,11 @@ if ($action === 'verify') {
     // Aynı kullanıcı adını başka bir e-postayla doğrulama bekleyen biri olabilir.
     if ($db->pending_registrations->findOne(['username' => $username, 'email' => ['$ne' => $email]])) {
         jsonResponse(['success' => false, 'message' => 'Bu kullanıcı adı için doğrulama bekleyen bir kayıt var, birkaç dakika sonra tekrar deneyin'], 400);
+    }
+
+    // Aynı adrese saatte en fazla 5 kayıt denemesi: başkasının kutusuna art arda doğrulama e-postası yağdırılamasın.
+    if (rateLimitHit($db, 'register-email:' . sha1(strtolower($email)), 5, 3600)) {
+        jsonResponse(['success' => false, 'message' => 'Bu e-posta adresi için çok fazla deneme yapıldı. Bir saat sonra tekrar dene.'], 429);
     }
 
     $code = generateRegCode();

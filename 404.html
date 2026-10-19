@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sayfa bulunamadı - Sosyal Kütüphane</title>
+    <meta name="robots" content="noindex">
+    <meta name="theme-color" content="#05060b">
+    <link rel="icon" type="image/svg+xml" href="/img/logo.svg">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/ui.css">
+    <script>
+        // Tema, beyaz flaş olmasın diye boyamadan önce uygulanır (js/app.js ile aynı mantık).
+        try {
+            var saved = localStorage.getItem('theme');
+            if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+        } catch (e) { }
+    </script>
+    <style>
+        /* Bu sayfa her adresten (ör. /a/b/c.html) açılabildiği için bütün bağlantılar köke göredir. */
+        .notfound {
+            display: grid;
+            justify-items: center;
+            align-content: center;
+            gap: 14px;
+            min-height: 100vh;
+            padding: 32px 20px;
+            text-align: center;
+        }
+
+        .notfound-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            color: var(--color-text);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            text-decoration: none;
+        }
+
+        .notfound-code {
+            font-size: clamp(88px, 22vw, 170px);
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -0.05em;
+            background: var(--color-accent-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .notfound h1 {
+            font-size: clamp(22px, 4vw, 30px);
+        }
+
+        .notfound p {
+            max-width: 46ch;
+            color: var(--color-text-muted);
+        }
+
+        .notfound-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <main id="main" class="notfound">
+        <a class="notfound-brand" href="/search.html">
+            <span class="logo-mark"><img src="/img/logo.svg" alt="" width="34" height="34"></span>
+            <span>Sosyal Kütüphane</span>
+        </a>
+        <p class="notfound-code" aria-hidden="true">404</p>
+        <h1>Aradığın sayfa bulunamadı</h1>
+        <p>Bağlantı eski olabilir ya da adres yanlış yazılmış olabilir. Film, dizi ve kitaplara göz atmaya devam edebilirsin.</p>
+        <div class="notfound-actions">
+            <a class="btn btn-primary" href="/search.html">Keşfet'e git</a>
+            <a class="btn btn-secondary" href="/index.html">Ana sayfa</a>
+        </div>
+    </main>
+</body>
+
+</html>
