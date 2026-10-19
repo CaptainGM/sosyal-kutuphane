@@ -2,7 +2,7 @@
 // Demo hesapla (ahmet@test.com) giriş yapılır; yönetim konsolu için testin kendi yönetici hesabı
 // (scripts/e2e-user.php) oluşturulur ve test bitince silinir. Giriş yaptığı için canlı duman testinde çalıştırılmaz.
 const { test, expect } = require('@playwright/test');
-const { createUser, deleteUsers, loginAs: loginUser } = require('./helpers');
+const { createUser, deleteUsers } = require('./helpers');
 const { expectNoSeriousViolations } = require('./a11y-helpers');
 
 let admin;
@@ -18,12 +18,11 @@ const userPages = [
     { name: 'yıllık özet', path: '/wrapped.html', ready: '#wrappedContent:not([hidden])' },
 ];
 
+// Giriş API'den yapılır: arayüzden girince açılan Keşfet sayfası onlarca TMDB isteği ve bir canlı akış başlatır. Bu testler yalnızca
+// hedef sayfayı denetler; o yük gereksizdir ve yavaş bir sunucuda sayfanın istekleri sıra bekleyip testi zaman aşımına düşürebiliyordu.
 async function loginAs(page, email, password) {
-    await page.goto('/index.html');
-    await page.fill('#loginEmail', email);
-    await page.fill('#loginPassword', password);
-    await page.click('#loginSubmitBtn');
-    await page.waitForURL('**/search.html');
+    const response = await page.request.post('/api/login.php', { data: { email, password } });
+    expect(response.ok()).toBeTruthy();
 }
 
 for (const scheme of ['light', 'dark']) {
@@ -41,12 +40,7 @@ for (const scheme of ['light', 'dark']) {
 
         test('başka bir kullanıcının profili (oturumlu): WCAG 2 AA ciddi ihlali yok', async ({ page }) => {
             await loginAs(page, 'ahmet@test.com', '123456');
-            const found = await page.evaluate(async () => {
-                await app.initPromise;
-                const response = await fetch('/api/search-users.php?q=ayse', { credentials: 'include' });
-                const data = await response.json();
-                return data.users && data.users[0] ? data.users[0].id : null;
-            });
+            const found = (await (await page.request.get('/api/search-users.php?q=ayse')).json()).users?.[0]?.id ?? null;
             test.skip(!found, 'Demo kullanıcı "ayse" bulunamadı');
             await page.goto(`/user-profile.html?id=${found}`);
             await expect(page.locator('#profileContent:not([hidden])')).toBeVisible({ timeout: 20000 });
@@ -56,7 +50,7 @@ for (const scheme of ['light', 'dark']) {
         });
 
         test('yönetim konsolu (yönetici): WCAG 2 AA ciddi ihlali yok', async ({ page }) => {
-            await loginUser(page, admin);
+            await loginAs(page, admin.email, admin.password);
             await page.goto('/admin.html');
             await expect(page.locator('.stat-grid--admin')).toBeVisible({ timeout: 15000 });
             await expectNoSeriousViolations(page);

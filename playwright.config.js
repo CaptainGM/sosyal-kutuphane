@@ -13,6 +13,9 @@ module.exports = defineConfig({
     // Tek süreçli geliştirme sunucusunda yavaş bir TMDB çağrısı diğer istekleri bekletebilir; beklemeler buna göre geniştir.
     expect: { timeout: 10000 },
     workers: 1,
+    // CI'daki ortak sunucu zaman zaman istekleri geciktirebiliyor; başarısız test bir kez yeniden denenir. Yeniden denemede geçen test
+    // raporda "flaky" olarak işaretlenir ve ilk denemenin izi (trace) saklanır, yani sorun gözden kaybolmaz.
+    retries: process.env.CI ? 1 : 0,
     outputDir: 'test-results',
     reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report' }]],
     use: {

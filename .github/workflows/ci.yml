@@ -45,8 +45,9 @@ jobs:
           MONGO_DB: social_library
         run: |
           # Canlı akış (SSE) açık ve çok süreçli sunucu: akış testi, sayfa isteklerinin bloklanmadığını doğrular.
-          # Her açık akış bir süreci tutar; sayfa istekleri için yeterli süreç kalsın diye 8 süreç kullanılır.
-          ENABLE_SSE=1 PHP_CLI_SERVER_WORKERS=8 php -S localhost:8000 router.php &
+          # Her açık akış bir süreci tutar; sayfa istekleri için yeterli süreç kalsın diye 16 süreç kullanılır (8 süreç, art arda açılan sayfaların akışlarıyla dolup istekleri bekletebiliyordu).
+          # Sunucu günlüğü server.log dosyasına yazılır; test kırılırsa rapor ile birlikte yüklenir.
+          ENABLE_SSE=1 PHP_CLI_SERVER_WORKERS=16 php -S localhost:8000 router.php > server.log 2>&1 &
           sleep 2
           php api/setup-db.php > /dev/null
 
@@ -75,10 +76,12 @@ jobs:
           MONGO_DB: social_library
         run: npx playwright test
 
-      - name: Playwright raporunu yükle
+      - name: Playwright raporunu ve sunucu günlüğünü yükle
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: playwright-report/
+          path: |
+            playwright-report/
+            server.log
           retention-days: 7
