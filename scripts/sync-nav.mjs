@@ -22,9 +22,27 @@ const PAGES = {
     'wrapped.html': 'profile',
     'messages.html': 'messages',
     'admin.html': 'admin',
+    'gizlilik.html': 'gizlilik',
 };
 
+// Altbilgi (gizlilik, kurallar, destek bağlantıları) menüsü olmayan sayfalara da yazılır. admin.html'de altbilgi yoktur.
+const FOOTER_ONLY = ['index.html', 'reset-password.html', 'shared-list.html'];
+
 const partial = readFileSync(join(root, 'partials/navbar.html'), 'utf8').replace(/\r\n/g, '\n').trimEnd();
+
+const footer = readFileSync(join(root, 'partials/footer.html'), 'utf8').replace(/\r\n/g, '\n').trimEnd();
+
+// Altbilgiyi ilk </main>'in hemen arkasına koyar; zaten varsa içeriğini günceller.
+function withFooter(html, page) {
+    const existing = /<footer class="site-footer"[\s\S]*?<\/footer>/;
+    if (existing.test(html)) {
+        return html.replace(existing, () => footer);
+    }
+    if (!html.includes('</main>')) {
+        throw new Error(`${page}: </main> bulunamadı, altbilgi eklenemedi`);
+    }
+    return html.replace('</main>', () => `</main>\n${footer}`);
+}
 
 function navFor(active) {
     return partial.replace(
@@ -58,7 +76,19 @@ for (const [page, active] of Object.entries(PAGES)) {
         );
     }
 
+    if (page !== 'admin.html') {
+        html = withFooter(html, page);
+    }
+
     writeFileSync(path, html.replace(/\n/g, eol));
+    updated++;
+}
+
+for (const page of FOOTER_ONLY) {
+    const path = join(root, page);
+    const raw = readFileSync(path, 'utf8');
+    const eol = raw.includes('\r\n') ? '\r\n' : '\n';
+    writeFileSync(path, withFooter(raw.replace(/\r\n/g, '\n'), page).replace(/\n/g, eol));
     updated++;
 }
 

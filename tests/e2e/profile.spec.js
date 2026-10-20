@@ -79,6 +79,61 @@ test.describe('profilim', () => {
         await expect(page.locator('.toast-error')).toContainText('Geçersiz resim');
     });
 
+    test('hesabı sil: yanlış şifre silmez, doğru şifre hesabı ve verileri siler', async ({ browser }) => {
+        const victim = createUser('silinecek');
+        try {
+            const context = await browser.newContext();
+            const page = await context.newPage();
+            const login = await page.request.post('/api/login.php', { data: { email: victim.email, password: victim.password } });
+            expect(login.ok()).toBeTruthy();
+            await page.goto('/profile.html#settings');
+            await expect(page.locator('#deleteAccountPanel')).toBeVisible();
+            await expect(page.locator('#deleteAccountPanel a[href="gizlilik.html#saklama"]')).toBeVisible();
+
+            // Onay kutusu işaretlenmeden gönderilmez
+            await page.click('#deleteAccountBtn');
+            await page.fill('.sk-dialog input[type=password]', 'Yanlis123!');
+            await page.click('.sk-dialog button[type=submit]');
+            await expect(page.locator('.sk-dialog-error')).toContainText('onay kutusunu');
+
+            // Yanlış şifre: hesap silinmez
+            await page.check('.sk-dialog input[type=checkbox]');
+            await page.click('.sk-dialog button[type=submit]');
+            await expect(page.locator('.toast-error')).toContainText('Şifre yanlış');
+            await expect(page).toHaveURL(/profile\.html/);
+            await page.reload();
+            await expect(page.locator('#profileUsername')).toHaveText(victim.username);
+
+            // Doğru şifre: hesap silinir, giriş sayfasına dönülür
+            await page.click('#deleteAccountBtn');
+            await page.fill('.sk-dialog input[type=password]', victim.password);
+            await page.check('.sk-dialog input[type=checkbox]');
+            await page.click('.sk-dialog button[type=submit]');
+            await page.waitForURL('**/index.html');
+            await expect(page.locator('.toast-success')).toContainText('silindi');
+            const again = await context.request.post('/api/login.php', { data: { email: victim.email, password: victim.password } });
+            expect(again.status()).toBe(401);
+            await context.close();
+        } finally {
+            deleteUsers(victim);
+        }
+    });
+
+    test('hesabı sil düğmesi yönetici hesabında kapalıdır ve nedeni yazar', async ({ browser }) => {
+        const boss = createUser('yonetici', { admin: true });
+        try {
+            const context = await browser.newContext();
+            const page = await context.newPage();
+            await page.request.post('/api/login.php', { data: { email: boss.email, password: boss.password } });
+            await page.goto('/profile.html#settings');
+            await expect(page.locator('#deleteAccountBtn')).toBeDisabled();
+            await expect(page.locator('#deleteAccountNote')).toContainText('Yönetici hesabı');
+            await context.close();
+        } finally {
+            deleteUsers(boss);
+        }
+    });
+
     test('sekmeler adres çubuğuna yazılır, #settings doğrudan açılır', async ({ page }) => {
         await loginAs(page, user);
         await page.goto('/profile.html');

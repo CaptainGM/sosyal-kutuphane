@@ -298,6 +298,19 @@
             pointer-events: none;
         }
 
+        .consent-note {
+            margin: -4px 0 14px;
+            color: var(--color-text-muted);
+            font-size: 12.5px;
+            line-height: 1.5;
+        }
+
+        .consent-note a {
+            color: var(--color-accent);
+            font-weight: 600;
+            text-underline-offset: 3px;
+        }
+
         .auth-brand {
             display: flex;
             align-items: center;
@@ -911,6 +924,8 @@
                             </div>
                         </div>
 
+                        <p class="consent-note">Hesap oluşturarak <a href="gizlilik.html">Gizlilik ve veri kullanımı</a> ile <a href="gizlilik.html#kurallar">kullanım kurallarını</a> okuduğunu kabul edersin.</p>
+
                         <button type="submit" class="btn btn-primary btn-block btn-submit">
                             <span>Hesap Oluştur</span>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
@@ -986,6 +1001,16 @@
             </div>
         </section>
     </main>
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <span class="site-footer-brand">Sosyal Kütüphane</span>
+        <nav aria-label="Alt bağlantılar">
+            <a href="gizlilik.html">Gizlilik ve veri kullanımı</a>
+            <a href="gizlilik.html#kurallar">Kullanım kuralları</a>
+            <a href="gizlilik.html#iletisim" data-support-open>Destek</a>
+        </nav>
+    </div>
+</footer>
 
     <script>
         function hideAllForms() {
@@ -1390,6 +1415,13 @@
     <script src="js/password-rules.js"></script>
     <script src="js/app.js"></script>
     <script src="js/scene.js"></script>
+    <script>
+        // Hesap silindikten sonra buraya yönlendirilir (profil.html: deleteAccount).
+        if (new URLSearchParams(location.search).get('silindi') === '1') {
+            app.initPromise.then(() => app.toast('Hesabın ve tüm verilerin silindi. Görüşmek üzere!', 'success', 6000));
+            history.replaceState(null, '', location.pathname);
+        }
+    </script>
 </body>
 
 </html>

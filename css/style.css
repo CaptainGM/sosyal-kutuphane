@@ -182,6 +182,65 @@ h3 {
     box-shadow: 0 18px 50px -24px rgba(0, 0, 0, 0.55);
 }
 
+/* --- Altbilgi (partials/footer.html): ince, cam görünümlü şerit --- */
+.site-footer {
+    margin-top: 56px;
+    padding: 0 16px 28px;
+}
+
+.site-footer-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 14px 22px;
+    border: 1px solid var(--navbar-border);
+    border-radius: var(--radius-pill);
+    background: var(--navbar-bg);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    font-size: 13.5px;
+}
+
+.site-footer-brand {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.site-footer nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+}
+
+.site-footer a {
+    color: var(--color-text-muted);
+    font-weight: 600;
+    text-decoration: none;
+    text-underline-offset: 3px;
+}
+
+.site-footer a:hover,
+.site-footer a:focus-visible {
+    color: var(--color-text);
+    text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+    .site-footer {
+        padding-bottom: 84px; /* sol alttaki destek düğmesi altbağlantıları örtmesin */
+    }
+
+    .site-footer-inner {
+        justify-content: center;
+        border-radius: var(--radius-lg);
+        text-align: center;
+    }
+}
+
 .logo {
     display: inline-flex;
     align-items: center;

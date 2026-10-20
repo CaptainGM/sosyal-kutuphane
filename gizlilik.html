@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#05060b">
+    <link rel="icon" type="image/svg+xml" href="img/logo.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <title>Gizlilik ve Veri Kullanımı - Sosyal Kütüphane</title>
+    <meta name="description" content="Sosyal Kütüphane hangi verileri tutar, kimlerle paylaşır, ne kadar saklar ve hesabını nasıl silersin: sade ve eksiksiz anlatım.">
+    <meta property="og:site_name" content="Sosyal Kütüphane">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="tr_TR">
+    <meta property="og:title" content="Gizlilik ve Veri Kullanımı - Sosyal Kütüphane">
+    <meta property="og:description" content="Hangi verileri tutuyoruz, kimlerle paylaşıyoruz, haklarını nasıl kullanırsın.">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/ui.css">
+    <script src="js/motion.js"></script>
+    <style>
+        /* Gizlilik sayfası: özet kartları, yapışkan içindekiler ve okunaklı bölümler. Renkler tema belirteçlerinden gelir. */
+        .legal-cards {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 26px;
+        }
+
+        .legal-card {
+            display: grid;
+            gap: 10px;
+            align-content: start;
+            padding: 20px;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            background: var(--glass-bg, var(--color-surface));
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            box-shadow: var(--shadow);
+        }
+
+        .legal-card-icon {
+            display: grid;
+            place-items: center;
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #6d28d9 0%, #a21caf 100%);
+            color: #ffffff;
+            box-shadow: 0 12px 26px -12px rgba(109, 40, 217, 0.9);
+        }
+
+        .legal-card-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .legal-card h2 {
+            font-size: 18px;
+            letter-spacing: -0.01em;
+        }
+
+        .legal-card p {
+            color: var(--color-text-muted);
+            font-size: 14.5px;
+        }
+
+        .legal-layout {
+            display: grid;
+            grid-template-columns: 250px minmax(0, 1fr);
+            gap: 24px;
+            align-items: start;
+        }
+
+        .legal-toc {
+            position: sticky;
+            top: 92px;
+        }
+
+        .legal-toc h2 {
+            margin-bottom: 10px;
+            font-size: 13px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--color-text-muted);
+        }
+
+        .legal-toc ol {
+            display: grid;
+            gap: 2px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            counter-reset: toc;
+        }
+
+        .legal-toc a {
+            display: block;
+            padding: 7px 10px;
+            border-radius: var(--radius-sm);
+            color: var(--color-text-muted);
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .legal-toc a:hover,
+        .legal-toc a:focus-visible {
+            background: rgba(var(--color-accent-rgb), 0.12);
+            color: var(--color-text);
+        }
+
+        .legal-body {
+            display: grid;
+            gap: 18px;
+            min-width: 0;
+        }
+
+        .legal-body section {
+            scroll-margin-top: 96px;
+        }
+
+        .legal-body h2 {
+            margin-bottom: 12px;
+            font-size: 22px;
+            letter-spacing: -0.02em;
+        }
+
+        .legal-body p,
+        .legal-body li,
+        .legal-body dd {
+            color: var(--color-text-muted);
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        .legal-body p + p {
+            margin-top: 10px;
+        }
+
+        .legal-body ul {
+            display: grid;
+            gap: 6px;
+            margin: 10px 0 0;
+            padding-left: 20px;
+        }
+
+        .legal-body a {
+            color: var(--color-accent);
+            font-weight: 600;
+            text-underline-offset: 3px;
+        }
+
+        .legal-body dl {
+            display: grid;
+            gap: 14px;
+            margin: 0;
+        }
+
+        .legal-body dt {
+            color: var(--color-text);
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .legal-body dd {
+            margin: 2px 0 0;
+        }
+
+        .legal-note {
+            padding: 14px 16px;
+            border: 1px solid rgba(var(--color-accent-rgb), 0.4);
+            border-radius: var(--radius);
+            background: rgba(var(--color-accent-rgb), 0.1);
+            color: var(--color-text);
+            font-size: 14.5px;
+        }
+
+        .legal-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .legal-updated {
+            color: var(--color-text-faint);
+            font-size: 13px;
+            text-align: center;
+        }
+
+        @media (max-width: 900px) {
+            .legal-cards {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .legal-layout {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .legal-toc {
+                position: static;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<a class="skip-link" href="#main">İçeriğe geç</a>
+<nav class="navbar" aria-label="Ana gezinme">
+    <div class="navbar-inner">
+        <a href="search.html" class="logo">
+            <span class="logo-mark"><img src="img/logo.svg" alt="" width="34" height="34"></span>
+            <span>Sosyal Kütüphane</span>
+        </a>
+        <button class="nav-icon-btn nav-toggle-btn" aria-label="Menüyü aç/kapat" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></button>
+        <div class="nav-links">
+            <a href="search.html" class="nav-link" data-nav="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>Keşfet</a>
+            <a href="tonight.html" class="nav-link" data-nav="tonight"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg>Ne izlesem?</a>
+            <a href="feed.html" class="nav-link" data-nav="feed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h6"/></svg>Akış</a>
+            <a href="social.html" class="nav-link" data-nav="social"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Sosyal</a>
+            <a href="profile.html" class="nav-link" data-nav="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profilim</a>
+            <a href="messages.html" class="nav-link" data-nav="messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Mesajlar</a>
+            <a href="admin.html" class="nav-link" data-nav="admin" id="navAdminLink" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>Yönetim</a>
+            <div class="nav-icon-wrap">
+                <button class="nav-icon-btn" id="notifBellBtn" aria-label="Bildirimler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="nav-badge" id="notifBadge"></span></button>
+                <div class="nav-panel" id="notifPanel">
+                    <div class="nav-panel-header">Bildirimler</div>
+                    <div class="nav-panel-empty">Yükleniyor...</div>
+                </div>
+            </div>
+            <button class="nav-icon-btn theme-toggle-btn" aria-label="Tema değiştir"><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
+            <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
+        </div>
+    </div>
+    <span id="userWelcome" style="display:none;"></span>
+</nav>
+    <main id="main" class="page">
+        <header class="page-head">
+            <div>
+                <span class="eyebrow"><span class="dot"></span>Şeffaflık</span>
+                <h1 class="page-title">Gizlilik ve <span class="gradient-text">veri kullanımı</span></h1>
+                <p class="page-sub">Sosyal Kütüphane'de hangi verilerin tutulduğunu, kimlerle paylaşıldığını ve haklarını burada okuyabilirsin. Bu metin sitenin gerçekte ne yaptığını anlatır; site bireysel bir öğrenci projesidir.</p>
+            </div>
+        </header>
+
+        <section class="legal-cards" aria-label="Kısaca">
+            <article class="legal-card">
+                <span class="legal-card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/></svg></span>
+                <h2>Az veri tutarız</h2>
+                <p>Kullanıcı adı, e-posta, şifrenin geri döndürülemez özeti, kütüphanen ve yazdıkların. Reklam, izleme ya da analitik çerezi yok.</p>
+            </article>
+            <article class="legal-card">
+                <span class="legal-card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg></span>
+                <h2>Satmayız, sınırlı paylaşırız</h2>
+                <p>Yalnızca sitenin çalışması için gereken hizmetler (barındırma, e-posta, içerik verisi, moderasyon) gerekli bilgiyi alır. Listesi aşağıda.</p>
+            </article>
+            <article class="legal-card">
+                <span class="legal-card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6M14 11v6"/></svg></span>
+                <h2>Silme sende</h2>
+                <p>Ayarlar sayfasındaki "Hesabı sil" ile her şey kalıcı olarak silinir. İstersen önce kütüphaneni JSON olarak indirebilirsin.</p>
+            </article>
+        </section>
+
+        <div class="legal-layout">
+            <nav class="panel legal-toc" aria-label="İçindekiler">
+                <h2>İçindekiler</h2>
+                <ol>
+                    <li><a href="#veriler">Hangi verileri tutuyoruz?</a></li>
+                    <li><a href="#paylasim">Kimlerle paylaşılır?</a></li>
+                    <li><a href="#gorunurluk">Kimler ne görür?</a></li>
+                    <li><a href="#saklama">Saklama ve silme</a></li>
+                    <li><a href="#haklar">Haklarını nasıl kullanırsın?</a></li>
+                    <li><a href="#cerezler">Çerezler ve tarayıcı depolaması</a></li>
+                    <li><a href="#kurallar">Kullanım kuralları</a></li>
+                    <li><a href="#iletisim">İletişim</a></li>
+                </ol>
+            </nav>
+
+            <div class="legal-body">
+                <section class="panel" id="veriler" aria-labelledby="h-veriler">
+                    <h2 id="h-veriler">Hangi verileri tutuyoruz?</h2>
+                    <dl>
+                        <div><dt>Hesap</dt><dd>Kullanıcı adı, e-posta adresi ve şifren (yalnızca geri döndürülemez, şifrelenmiş özet olarak; biz de okuyamayız). İki adımlı doğrulamayı açarsan doğrulama sırrın ve yedek kodlarının özetleri. Son giriş zamanın ve giriş sayın.</dd></div>
+                        <div><dt>Profil</dt><dd>Biyografin ve avatarın (emoji ya da yüklediğin fotoğraf).</dd></div>
+                        <div><dt>Kütüphane</dt><dd>İzlediğin, okuduğun ve izlemek istediğin içerikler, puanların, özel listelerin, günlüğün, bölüm ilerlemen ve vizyon hatırlatıcıların.</dd></div>
+                        <div><dt>Sosyal etkileşim</dt><dd>Takip ettiklerin ve seni takip edenler, engellediklerin, yorumların ve yanıtların, beğeni ve tepkilerin, şikâyetlerin, ortak okuma/izleme davetlerin ve özel mesajların.</dd></div>
+                        <div><dt>Bildirimler ve cihaz</dt><dd>Bildirimlerin. Tarayıcı bildirimine izin verirsen cihazının bildirim adresi.</dd></div>
+                        <div><dt>Güvenlik</dt><dd>Giriş zamanı ve tarayıcı bilgisi (ilk 160 karakter; 90 gün sonra silinir). Şifre denemelerini saymak için IP adresin ve e-postan 1 saat tutulur. Doğrulama kodları 10 dakika, şifre sıfırlama bağlantısı 1 saat geçerlidir.</dd></div>
+                        <div><dt>Destek</dt><dd>Destek talepların ve yanıtların. Giriş yapmadan yazarsan e-posta adresin.</dd></div>
+                        <div><dt>Moderasyon kaydı</dt><dd>Kuralları ihlal eden denemelerin (küfür, hakaret, IBAN, bağlantı, uygunsuz profil fotoğrafı) kaydı. Engellenen yorum ve biyografi metni yöneticiye görünür; reddedilen fotoğraflar saklanmaz, yalnızca kategorisi kaydedilir. Özel mesaj içerikleri bu kayda hiç girmez.</dd></div>
+                    </dl>
+                </section>
+
+                <section class="panel" id="paylasim" aria-labelledby="h-paylasim">
+                    <h2 id="h-paylasim">Kimlerle paylaşılır?</h2>
+                    <p>Verilerini satmaz, reklam için kimseye vermeyiz. Sitenin çalışması için şu hizmetleri kullanırız:</p>
+                    <ul>
+                        <li><strong>Render</strong>: sitenin çalıştığı barındırma hizmeti (sunucu günlükleri dahil).</li>
+                        <li><strong>MongoDB Atlas</strong>: verilerin tutulduğu veritabanı.</li>
+                        <li><strong>Brevo</strong>: e-posta gönderimi (doğrulama kodu, şifre sıfırlama, e-posta değişikliği, destek yanıtları). Alıcı adresi ve e-postanın içeriği Brevo'ya gider.</li>
+                        <li><strong>Google Gemini</strong>: uygunsuz içerik taraması için herkese açık yorum ve yanıt metinleri ile yüklediğin profil fotoğrafı gönderilebilir (bu ayar açıkken). Özel mesajlar asla gönderilmez. Fotoğraf, tarama için ayrıca saklanmaz.</li>
+                        <li><strong>TMDB ve Google Books</strong>: film, dizi ve kitap bilgisi. Aradığın başlıklar sunucumuz üzerinden onlara iletilir; hesabına ait bilgi gitmez. Afişleri tarayıcın doğrudan TMDB'den yükler, bu yüzden IP adresin onlara görünür.</li>
+                        <li><strong>Google Fonts</strong> (yazı tipi), <strong>jsDelivr</strong> (giriş sayfasındaki 3B animasyon betiği) ve <strong>YouTube</strong> (yalnızca fragman oynatırsan): tarayıcın bu servislere doğrudan bağlanır, IP adresin onlara görünür.</li>
+                    </ul>
+                </section>
+
+                <section class="panel" id="gorunurluk" aria-labelledby="h-gorunurluk">
+                    <h2 id="h-gorunurluk">Kimler ne görür?</h2>
+                    <ul>
+                        <li><strong>Herkes</strong> (giriş yapmadan da): profil sayfan, yani kullanıcı adın, avatarın, biyografin, istatistiklerin ve kütüphanendeki içerikler; yorumların yazdığın içeriğin altında görünür.</li>
+                        <li><strong>Giriş yapmış kullanıcılar</strong>: seni takip edebilir, sana mesaj gönderebilir (engellemediysen). E-posta adresin başka kullanıcılara gösterilmez.</li>
+                        <li><strong>Yöneticiler</strong>: hesap bilgini (e-posta dahil), yorumlarını, destek taleplerini ve moderasyon kaydını görebilir. Özel mesajlarını göremez.</li>
+                    </ul>
+                </section>
+
+                <section class="panel" id="saklama" aria-labelledby="h-saklama">
+                    <h2 id="h-saklama">Saklama ve silme</h2>
+                    <p>Verilerin hesabın açık olduğu sürece saklanır. Süreli kayıtlar kendiliğinden silinir: giriş geçmişi 90 gün, doğrulama kodu 10 dakika, şifre sıfırlama bağlantısı ve şifre deneme sayacı 1 saat sonra.</p>
+                    <p><strong>Ayarlar → Hesabı sil</strong> dediğinde hesabın ve ona bağlı her şey kalıcı olarak silinir:</p>
+                    <ul>
+                        <li>profilin, kütüphanen, listelerin, günlüğün, bildirimlerin, takip ve engel kayıtların;</li>
+                        <li>yorumların; bu yorumlara başkalarının yazdığı yanıtlar da (üst yorum kalmadığı için) silinir;</li>
+                        <li>özel mesajların: konuşma karşı tarafta da silinir;</li>
+                        <li>destek taleplerin ve yanıtların, profil fotoğrafın, bildirim adresin, giriş geçmişin;</li>
+                        <li>moderasyon kaydın ve seni hedef alan yönetici işlem kayıtları.</li>
+                    </ul>
+                    <p>Barındırma hizmetinin sunucu günlükleri o hizmette kısa süre kalabilir; bunları biz silemeyiz. Silme geri alınamaz, bu yüzden önce istersen kütüphaneni dışa aktar.</p>
+                </section>
+
+                <section class="panel" id="haklar" aria-labelledby="h-haklar">
+                    <h2 id="h-haklar">Haklarını nasıl kullanırsın?</h2>
+                    <p>Kişisel Verilerin Korunması Kanunu (KVKK) madde 11 kapsamındaki haklarını şöyle kullanabilirsin:</p>
+                    <ul>
+                        <li><strong>Verinin ne olduğunu öğrenme ve kopyasını alma:</strong> profilin ve Ayarlar → "Kütüphaneni Dışa Aktar" ile JSON olarak indirebilirsin.</li>
+                        <li><strong>Düzeltme:</strong> profil, biyografi, e-posta ve şifreni Ayarlar'dan değiştirebilirsin.</li>
+                        <li><strong>Silme:</strong> Ayarlar → "Hesabı sil".</li>
+                        <li><strong>Diğer başvuru ve itirazların:</strong> destek formundan yaz; giriş yapamıyorsan formu giriş yapmadan da kullanabilirsin.</li>
+                    </ul>
+                    <p class="legal-note">Bu site bireysel bir projedir; metin, sitenin gerçekte yaptıklarını bilgilendirmek içindir ve hukuki danışmanlık yerine geçmez.</p>
+                </section>
+
+                <section class="panel" id="cerezler" aria-labelledby="h-cerezler">
+                    <h2 id="h-cerezler">Çerezler ve tarayıcı depolaması</h2>
+                    <ul>
+                        <li><strong>Oturum çerezi:</strong> giriş yaptığını hatırlamak için; yalnızca bu siteye gider.</li>
+                        <li><strong>Tarayıcı depolaması:</strong> tema ve animasyon tercihin, yarım kalan destek yazın (sekmeyi kapatınca silinir) ve çevrimdışı açılış için sayfa dosyalarının önbelleği.</li>
+                        <li>Reklam, izleme ya da analitik çerezi kullanmayız.</li>
+                    </ul>
+                </section>
+
+                <section class="panel" id="kurallar" aria-labelledby="h-kurallar">
+                    <h2 id="h-kurallar">Kullanım kuralları</h2>
+                    <ul>
+                        <li>Saygılı bir dil kullan: küfür, hakaret, nefret söylemi ve tehdit yasaktır.</li>
+                        <li>IBAN, telefon, harici bağlantı ve benzeri iletişim bilgisi paylaşma.</li>
+                        <li>Filmin sürprizini bozan yorumları "spoiler" olarak işaretle.</li>
+                        <li>Cinsel içerik, şiddet ya da vahşet, terör içeren fotoğraf yükleme; bu tür fotoğraflar otomatik olarak reddedilir.</li>
+                        <li>Kurallar ihlal edilirse yorum silinebilir, hesap susturulabilir ya da askıya alınabilir. Kararları yöneticiler verir; itirazını destek formundan iletebilirsin.</li>
+                    </ul>
+                </section>
+
+                <section class="panel" id="iletisim" aria-labelledby="h-iletisim">
+                    <h2 id="h-iletisim">İletişim</h2>
+                    <p>Soruların, başvuruların ya da şikâyetlerin için destek formunu kullan. Giriş yapmadan da yazabilirsin; yanıt e-posta adresine gelir.</p>
+                    <div class="legal-actions">
+                        <button type="button" class="btn btn-primary" data-support-open>Destek formunu aç</button>
+                        <a class="btn btn-secondary" href="profile.html#settings">Ayarlar (dışa aktar, hesabı sil)</a>
+                    </div>
+                </section>
+
+                <p class="legal-updated">Son güncelleme: 20 Ekim 2026</p>
+            </div>
+        </div>
+    </main>
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <span class="site-footer-brand">Sosyal Kütüphane</span>
+        <nav aria-label="Alt bağlantılar">
+            <a href="gizlilik.html">Gizlilik ve veri kullanımı</a>
+            <a href="gizlilik.html#kurallar">Kullanım kuralları</a>
+            <a href="gizlilik.html#iletisim" data-support-open>Destek</a>
+        </nav>
+    </div>
+</footer>
+
+    <script src="js/escape-html.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

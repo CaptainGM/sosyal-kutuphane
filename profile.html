@@ -107,6 +107,14 @@
             font-size: 14px;
         }
 
+        .panel--danger {
+            border-color: rgba(var(--color-danger-rgb), 0.45);
+        }
+
+        .panel--danger h3 {
+            color: var(--color-danger);
+        }
+
         .avatar-settings {
             display: flex;
             flex-wrap: wrap;
@@ -485,9 +493,29 @@
                     <p>Engellediğin kullanıcılar seni takip edemez, sana mesaj gönderemez.</p>
                     <div id="blockedUsersList" class="faint" style="font-size: 14px;">Yükleniyor...</div>
                 </section>
+
+                <section class="panel panel--danger" id="deleteAccountPanel" aria-labelledby="deleteAccountTitle">
+                    <h3 id="deleteAccountTitle">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6M14 11v6"/></svg>
+                        Hesabı Sil
+                    </h3>
+                    <p>Hesabını ve tüm verilerini (kütüphane, listeler, yorumlar, mesajlar, destek talepleri, profil fotoğrafı) kalıcı olarak silersin. Bu işlem geri alınamaz. İstersen önce yukarıdan kütüphaneni dışa aktar. Ayrıntılar: <a href="gizlilik.html#saklama">Gizlilik ve veri kullanımı</a>.</p>
+                    <button type="button" class="btn btn-danger" id="deleteAccountBtn" onclick="deleteAccount()">Hesabımı sil...</button>
+                    <p id="deleteAccountNote" class="faint" style="margin-top: 10px; font-size: 13px;" hidden></p>
+                </section>
             </div>
         </div>
     </main>
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <span class="site-footer-brand">Sosyal Kütüphane</span>
+        <nav aria-label="Alt bağlantılar">
+            <a href="gizlilik.html">Gizlilik ve veri kullanımı</a>
+            <a href="gizlilik.html#kurallar">Kullanım kuralları</a>
+            <a href="gizlilik.html#iletisim" data-support-open>Destek</a>
+        </nav>
+    </div>
+</footer>
 
     <script src="js/escape-html.js"></script>
     <script src="js/app.js"></script>
@@ -722,6 +750,50 @@
             loadBlockedUsers();
             if (app.currentUser.is_admin) {
                 document.getElementById('adminLinkCard').style.display = 'block';
+            }
+            // Demo ve yönetici hesapları silinemez: düğme kapanır, nedeni yazılır.
+            const blockedReason = app.currentUser.is_demo
+                ? 'Demo hesaplar silinemez; kendi hesabını oluşturarak deneyebilirsin.'
+                : (app.currentUser.is_admin ? 'Yönetici hesabı buradan silinemez. Önce yöneticilikten çıkarılması gerekir.' : '');
+            if (blockedReason) {
+                document.getElementById('deleteAccountBtn').disabled = true;
+                const note = document.getElementById('deleteAccountNote');
+                note.textContent = blockedReason;
+                note.hidden = false;
+            }
+        }
+
+        // Hesabı kalıcı silme: şifre (ve iki adımlı doğrulama açıksa kod) yeniden istenir.
+        async function deleteAccount() {
+            const fields = [{ name: 'password', label: 'Şifren', type: 'password', required: true }];
+            if (app.currentUser.totp_enabled) {
+                fields.push({ name: 'code', label: 'İki adımlı doğrulama kodu', type: 'text', required: true, maxlength: 20, autocomplete: 'one-time-code', hint: 'Authenticator kodun ya da bir yedek kodun.' });
+            }
+            fields.push({ name: 'confirm', label: 'Hesabımın ve tüm verilerimin kalıcı olarak silineceğini, bunun geri alınamayacağını anlıyorum.', type: 'checkbox', required: true });
+            const values = await app.formDialog({
+                title: 'Hesabını kalıcı olarak sil',
+                description: 'Kütüphanen, listelerin, yorumların (altındaki yanıtlarla), mesajların ve destek taleplerin silinir. Bu işlem geri alınamaz.',
+                fields,
+                submitText: 'Hesabı sil',
+                danger: true
+            });
+            if (!values) return;
+            try {
+                const response = await fetch('/api/delete-account.php', {
+                    method: 'POST',
+                    headers: app.authHeaders(),
+                    credentials: 'include',
+                    body: JSON.stringify({ password: values.password, code: values.code || undefined, confirm: true })
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok || !data.success) {
+                    app.toast(data.message || 'Hesap silinemedi', 'error');
+                    return;
+                }
+                window.location.href = 'index.html?silindi=1';
+            } catch (error) {
+                console.error('Hesap silme hatası:', error);
+                app.toast('Bağlantı hatası', 'error');
             }
         }
 

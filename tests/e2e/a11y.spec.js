@@ -14,6 +14,8 @@ const publicPages = [
     { name: 'yeni çıkanlar', path: '/upcoming.html', ready: '#upcomingStatus' },
     { name: 'şifre sıfırlama', path: '/reset-password.html?token=deneme', ready: '#resetForm' },
     { name: 'çevrimdışı sayfası', path: '/offline.html', ready: '#retryBtn' },
+    { name: 'gizlilik ve veri kullanımı', path: '/gizlilik.html', ready: '#veriler' },
+    { name: '404 sayfası', path: '/yok-boyle-bir-sayfa.html', ready: '.notfound-code' },
     { name: 'paylaşılan liste (bulunamadı durumu)', path: '/shared-list.html?id=999999999', ready: '#listError:not([hidden])' },
 ];
 

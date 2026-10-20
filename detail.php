@@ -950,6 +950,16 @@ if ($type && $id && file_exists(__DIR__ . '/vendor/autoload.php')) {
             <div class="reco-scroll" id="similarScroll"></div>
         </section>
     </main>
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <span class="site-footer-brand">Sosyal Kütüphane</span>
+        <nav aria-label="Alt bağlantılar">
+            <a href="gizlilik.html">Gizlilik ve veri kullanımı</a>
+            <a href="gizlilik.html#kurallar">Kullanım kuralları</a>
+            <a href="gizlilik.html#iletisim" data-support-open>Destek</a>
+        </nav>
+    </div>
+</footer>
 
     <div id="customListModal" class="modal-overlay" onclick="closeCustomListModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
