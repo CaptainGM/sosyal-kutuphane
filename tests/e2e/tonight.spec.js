@@ -1,7 +1,32 @@
 // "Ne izlesem?" sayfası: süzgeç çipleri, adres çubuğu eşitlemesi, boş sahnedeki rastgele afişler, dar ekran.
 const { test, expect } = require('@playwright/test');
+const { createUser, deleteUsers } = require('./helpers');
+
+let user;
+test.beforeAll(() => { user = createUser('tonight'); });
+test.afterAll(() => { deleteUsers(user); });
+
+// Ne izlesem hesap gerektirir: ziyaretçi için ayrı test en altta.
+test.describe('ne izlesem (ziyaretçi)', () => {
+    test('giriş yapmamış ziyaretçi sayfaya giremez, menüde ve Keşfet sayfasında bağlantısı görünmez, API 401 verir', async ({ page }) => {
+        await page.goto('/search.html');
+        await page.evaluate(() => app.initPromise);
+        await expect(page.locator('a[href="tonight.html"]:visible')).toHaveCount(0);
+
+        await page.goto('/tonight.html');
+        await expect(page).toHaveURL(/index\.html/);
+
+        const response = await page.request.get('/api/evening-picker.php?kind=movie');
+        expect(response.status()).toBe(401);
+    });
+});
 
 test.describe('ne izlesem', () => {
+    test.beforeEach(async ({ page }) => {
+        const response = await page.request.post('/api/login.php', { data: { email: user.email, password: user.password } });
+        expect(response.ok()).toBeTruthy();
+    });
+
     test('varsayılan dönem "2000 ve sonrası"; Korece yok; seçimler adres çubuğuna yazılır ve geri yüklenir', async ({ page }) => {
         await page.goto('/tonight.html');
         await expect(page.locator('#eraGroup .chip[aria-pressed="true"]')).toHaveText('2000 ve sonrası');

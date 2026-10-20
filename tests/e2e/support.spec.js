@@ -29,7 +29,7 @@ const GUEST_EMAIL = `ziyaretci_${TOKEN}@ornek.com`;
 const GUEST_MESSAGE = `Doğrulama kodu e-postası gelmiyor (${TOKEN}), spam klasörüne de baktım.`;
 
 test('ziyaretçi destek formunu açıp talep gönderir; yönetim sayfasında düğme yoktur', async ({ page, browser }, testInfo) => {
-    await page.goto('/tonight.html');
+    await page.goto('/search.html');
     await page.evaluate(() => app.initPromise);
     const fab = page.locator('.support--guest .support-fab');
     await expect(fab).toBeVisible();
@@ -212,7 +212,7 @@ for (const scheme of ['light', 'dark']) {
             // Ziyaretçi formu
             const guestContext = await page.context().browser().newContext({ colorScheme: scheme });
             const guestPage = await guestContext.newPage();
-            await guestPage.goto('/tonight.html');
+            await guestPage.goto('/search.html');
             await guestPage.click('.support-fab');
             await expect(guestPage.locator('#supportEmail')).toBeVisible();
             await expectNoSeriousViolations(guestPage);

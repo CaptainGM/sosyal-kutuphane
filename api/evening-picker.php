@@ -1,10 +1,12 @@
 <?php
 // Akşam seçici: süre ve ruh haline göre tek bir film ya da dizi önerir.
 //   ?kind=movie|series&duration=short|medium|long|any&moods=gerilim,komedi&seed=123&exclude=1,2,3
-// Giriş yapmış kullanıcının kütüphanesindekiler önerilmez; "başka öner" istemcinin gönderdiği exclude listesiyle çalışır.
+// Yalnızca giriş yapmış kullanıcılar için: kütüphanesindekiler önerilmez; "başka öner" istemcinin gönderdiği exclude listesiyle çalışır.
 require_once 'config.php';
 require_once __DIR__ . '/lib/tmdb.php';
 require_once __DIR__ . '/lib/picker.php';
+
+requireLogin();
 
 $params = pickerNormalizeParams($_GET);
 if (tmdbApiKey() === null) {
@@ -38,15 +40,12 @@ function pickerLibraryTmdbIds($db, int $userId, string $kind, ?string $status = 
     return $tmdbIds;
 }
 
-$exclude = $params['exclude'];
-if (isLoggedIn()) {
-    $exclude = array_merge($exclude, pickerLibraryTmdbIds($db, (int)getCurrentUserId(), $params['kind']));
-}
+$exclude = array_merge($params['exclude'], pickerLibraryTmdbIds($db, (int)getCurrentUserId(), $params['kind']));
 
 $seed = $params['seed'] > 0 ? $params['seed'] : random_int(1, 2147483646);
 $choice = null;
-// İlk sayfa toplam sayfa sayısını verir (önbellekli); öneri, ilk 10 sayfadan (en çok 200 yapım) rastgele birinden seçilir.
-// Kısıtlar sıkıysa seçilen sayfadaki adaylar elenebilir; o zaman sayfa 1..3'e dönülür.
+// İlk sayfa toplam sayfa sayısını verir (önbellekli); öneri, ilk 50 sayfadan (en çok 1000 yapım) rastgele birinden seçilir.
+// Seçilen sayfadaki adaylar elenebilir (kütüphanede izlenmiş); o zaman karıştırılmış sıradaki sonraki sayfaya geçilir.
 $firstDiscover = pickerDiscoverQuery($params, 1);
 $first = tmdbGet($db, $firstDiscover['path'], $firstDiscover['query'], 21600);
 if ($first === null) {
@@ -117,7 +116,7 @@ $collectionId = (int)($detail['belongs_to_collection']['id'] ?? 0);
 if ($params['kind'] === 'movie' && $collectionId > 0) {
     $collection = tmdbGet($db, "collection/$collectionId", [], 86400);
     if ($collection !== null) {
-        $watched = isLoggedIn() ? pickerLibraryTmdbIds($db, (int)getCurrentUserId(), 'movie', 'watched') : [];
+        $watched = pickerLibraryTmdbIds($db, (int)getCurrentUserId(), 'movie', 'watched');
         $franchise = pickerFranchiseNote($collection, (int)$pick['id'], date('Y-m-d'), $watched);
         if ($franchise !== null) {
             $withPoster = static fn (array $part): array => $part + ['poster' => tmdbImageUrl($part['poster_path'] ?? null, 'w185')];

@@ -113,10 +113,18 @@ final class TasteApiTest extends TestCase
         $this->assertNotContains($bId, $ids());
     }
 
-    public function testEveningPickerRespondsOrReportsMissingTmdbKey(): void
+    public function testEveningPickerRequiresLogin(): void
     {
         $guest = new ApiClient(TEST_BASE_URL);
-        $res = $guest->get('/api/evening-picker.php?kind=movie&duration=short&moods=gerilim,komedi&seed=42');
+        $res = $guest->get('/api/evening-picker.php?kind=movie&duration=short&seed=42');
+        $this->assertSame(401, $res['status']);
+        $this->assertFalse($res['data']['success']);
+    }
+
+    public function testEveningPickerRespondsOrReportsMissingTmdbKey(): void
+    {
+        [$user] = $this->newUser('phpunit_picker');
+        $res = $user->get('/api/evening-picker.php?kind=movie&duration=short&moods=gerilim,komedi&seed=42');
 
         if ($res['status'] === 503) {
             $this->assertFalse($res['data']['success']);
@@ -133,14 +141,15 @@ final class TasteApiTest extends TestCase
         $this->assertIsString($res['data']['reason']);
         $this->assertLessThanOrEqual(2, count($res['data']['alternatives']));
         // Aynı tohum aynı öneriyi verir ("başka öner" için istemci yeni tohum gönderir).
-        $again = $guest->get('/api/evening-picker.php?kind=movie&duration=short&moods=gerilim,komedi&seed=42');
+        $again = $user->get('/api/evening-picker.php?kind=movie&duration=short&moods=gerilim,komedi&seed=42');
         $this->assertSame($res['data']['pick']['id'], $again['data']['pick']['id']);
+        $this->assertLessThanOrEqual(1000, $res['data']['pool']['reachable']);
     }
 
     public function testEveningPickerIgnoresUnknownParameters(): void
     {
-        $guest = new ApiClient(TEST_BASE_URL);
-        $res = $guest->get('/api/evening-picker.php?kind=podcast&duration=epic&moods=nope&exclude=abc,-1');
+        [$user] = $this->newUser('phpunit_picker_params');
+        $res = $user->get('/api/evening-picker.php?kind=podcast&duration=epic&moods=nope&exclude=abc,-1');
         $this->assertContains($res['status'], [200, 503], 'Bilinmeyen değerler hata değil, varsayılana düşer');
     }
 }

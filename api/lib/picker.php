@@ -39,9 +39,11 @@ const PICKER_DURATIONS = [
 ];
 
 // Adaylar popülerlik sırasına göre sayfalanır (sayfa başına 20). Öneri, kalite eşiğini geçen yapımların ilk PICKER_MAX_PAGES
-// sayfasından (en çok 200 yapım) rastgele bir sayfadan seçilir.
+// sayfasından (en çok 1000 yapım) rastgele bir sayfadan seçilir; sayfa sırası tohumla karıştırılır, aday kalmazsa en çok
+// PICKER_PAGE_TRIES sayfa denenir. En popüler 200 yapımın çoğu zaten izlenmiş olur, bu yüzden havuz derine kadar iner.
 const PICKER_PAGE_SIZE = 20;
-const PICKER_MAX_PAGES = 10;
+const PICKER_MAX_PAGES = 50;
+const PICKER_PAGE_TRIES = 5;
 
 // Çıkış dönemi: çok eski yapımları ayıklamak için. Varsayılan "2000 ve sonrası"dır; "classic" 2000 öncesini ister.
 const PICKER_ERAS = [
@@ -178,12 +180,12 @@ function pickerDiscoverQuery(array $params, int $page = 1, ?string $today = null
     return ['path' => $isSeries ? 'discover/tv' : 'discover/movie', 'query' => $query];
 }
 
-// Hangi sayfalara bakılacağı: tohumla seçilen rastgele sayfa, olmazsa (hepsi dışlanmış/afişsiz) ilk üç sayfa.
+// Hangi sayfalara bakılacağı: tohumla karıştırılmış sayfa sırası. İlk sayfa öneriyi verir; adayların hepsi dışlanmışsa
+// (kütüphanede izlenmiş, afişsiz) sıradaki sayfalara geçilir, böylece hep en popüler (en çok izlenmiş) sayfalara düşülmez.
 // Dar süzgeçlerde sayfa sayısı azdır (ör. kısa korku filmi: 8 sayfa); olmayan sayfaya gidilmez.
 function pickerPageOrder(int $seed, int $totalPages): array {
     $totalPages = max(1, min(PICKER_MAX_PAGES, $totalPages));
-    $pages = array_filter([1 + (abs($seed) % $totalPages), 1, 2, 3], static fn (int $page): bool => $page <= $totalPages);
-    return array_values(array_unique($pages));
+    return array_slice(pickerShuffle(range(1, $totalPages), $seed), 0, PICKER_PAGE_TRIES);
 }
 
 // Arayüzdeki "N yapım arasından seçildi" cümlesi için: süzgece uyan toplam yapım ve öneriye aday olabilecek havuz.

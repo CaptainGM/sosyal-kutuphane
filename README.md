@@ -29,7 +29,7 @@
 - Film, dizi ve kitap arama (TMDB, Google Books), yazım hatası olsa da bulur
 - İzledim / izlenecek listeleri, 1-10 puan, özel listeler
 - Yorum, yanıt, beğeni ve tepki; spoiler gizleme; küfür ve hakaret filtresi
-- "Ne izlesem?" önerisi, yeni çıkanlar takvimi, yayın platformuna göre filtre
+- "Ne izlesem?" önerisi (hesap gerektirir; süzgece uyan yapımların en popüler 1.000'i arasından seçer, kütüphanendekileri eler), Türkiye vizyon takvimi, yayın platformuna göre filtre
 - Takip, akış, zevk eşleşmesi, ortak okuma/izleme, yıllık özet, rozetler
 - Mesajlaşma, tarayıcı bildirimleri, IMDb/Letterboxd/Goodreads içe aktarma
 - Sol alttaki destek düğmesiyle talep oluşturma ve yöneticiyle yazışma: yönetici yanıtlar, "çözüldü / çözülmedi" işaretler, kullanıcıya bildirim gider; yeni talep ve kullanıcı yanıtı yöneticilere bildirim (ve e-posta yapılandırılmışsa e-posta) olarak ulaşır

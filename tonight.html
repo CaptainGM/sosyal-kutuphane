@@ -946,9 +946,12 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             await app.initPromise;
-            if (app.currentUser) {
-                document.getElementById('controlsNote').textContent = 'Kütüphanendeki filmler ve diziler otomatik olarak elenir.';
+            // Ne izlesem hesap gerektirir: giriş yapmamış ziyaretçiler yalnızca sitede gezinebilir (Akış, Sosyal gibi).
+            if (!app.currentUser) {
+                window.location.href = 'index.html';
+                return;
             }
+            document.getElementById('controlsNote').textContent = 'Kütüphanendeki filmler ve diziler otomatik olarak elenir.';
         });
 
     </script>

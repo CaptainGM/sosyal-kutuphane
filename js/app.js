@@ -1326,9 +1326,9 @@ document.addEventListener('DOMContentLoaded', () => {
     app.initMotionToggle();
 
     // Bazı sayfalar giriş yapmadan da gezilebiliyor — çıkış yapmamış birine
-    // hesap gerektiren nav ögelerini (Akış/Sosyal/Profilim/Mesajlar/bildirim)
-    // göstermenin anlamı yok, sadece Keşfet + tema + Giriş Yap kalsın.
-    const LOGIN_REQUIRED_NAV_HREFS = ['feed.html', 'social.html', 'profile.html', 'messages.html'];
+    // hesap gerektiren nav ögelerini (Ne izlesem/Akış/Sosyal/Profilim/Mesajlar/bildirim)
+    // göstermenin anlamı yok, sadece Keşfet + Yeni çıkanlar + tema + Giriş Yap kalsın.
+    const LOGIN_REQUIRED_NAV_HREFS = ['tonight.html', 'feed.html', 'social.html', 'profile.html', 'messages.html'];
     app.initPromise.then(() => {
         if (app.currentUser && app.currentUser.is_admin) {
             const adminLink = document.getElementById('navAdminLink');
@@ -1348,7 +1348,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         LOGIN_REQUIRED_NAV_HREFS.forEach(href => {
-            document.querySelectorAll(`.nav-link[href="${href}"]`).forEach(el => el.style.display = 'none');
+            document.querySelectorAll(`.nav-link[href="${href}"], .page-actions a[href="${href}"]`).forEach(el => el.style.display = 'none');
         });
         document.querySelectorAll('.nav-icon-wrap').forEach(el => el.style.display = 'none');
     });

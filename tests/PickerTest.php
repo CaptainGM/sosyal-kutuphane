@@ -20,29 +20,44 @@ final class PickerTest extends TestCase
         $this->assertSame([5, 7], $params['exclude']);
     }
 
-    public function testPageOrderPicksSeededPageWithinTotalAndFallsBackToFirstThree(): void
+    public function testPageOrderIsASeededShuffleOfDistinctPagesWithinTheFirstFifty(): void
     {
-        $this->assertSame([8, 1, 2, 3], pickerPageOrder(7, 10), 'tohum 7: 1 + 7 % 10 = sayfa 8');
-        $this->assertSame([1, 2, 3], pickerPageOrder(10, 10), 'tohum 10: 1 + 10 % 10 = sayfa 1, tekrar yok');
-        $this->assertSame([1], pickerPageOrder(123456, 1), 'tek sayfalık süzgeç');
-        $this->assertSame([2, 1, 3], pickerPageOrder(1, 3), 'üç sayfa varsa dördüncüye gidilmez');
-        $this->assertSame([10, 1, 2, 3], pickerPageOrder(999, 171), 'binlerce sayfa olsa da en çok 10 sayfa: 1 + 999 % 10 = 10');
-    }
+        $order = pickerPageOrder(7, 171);
+        $this->assertSame($order, pickerPageOrder(7, 171), 'aynı tohum aynı sırayı verir');
+        $this->assertCount(PICKER_PAGE_TRIES, $order);
+        $this->assertSame($order, array_values(array_unique($order)), 'sayfalar tekrar etmez');
 
-    public function testPageOrderNeverLeavesTheFirstTenPages(): void
-    {
-        for ($seed = 1; $seed < 400; $seed++) {
-            foreach (pickerPageOrder($seed, 171) as $page) {
+        $firstPages = [];
+        for ($seed = 1; $seed <= 300; $seed++) {
+            $pages = pickerPageOrder($seed, 171);
+            foreach ($pages as $page) {
                 $this->assertGreaterThanOrEqual(1, $page);
                 $this->assertLessThanOrEqual(PICKER_MAX_PAGES, $page);
             }
+            $firstPages[$pages[0]] = true;
         }
+        $this->assertGreaterThan(30, count($firstPages), '300 farklı tohum 50 sayfanın çoğuna dağılır (derin sayfalar da seçilir)');
         $this->assertSame(PICKER_MAX_PAGES, pickerDiscoverQuery(pickerNormalizeParams([]), 99)['query']['page']);
+    }
+
+    public function testPageOrderStaysInsideSmallResultSets(): void
+    {
+        $this->assertSame([1], pickerPageOrder(123456, 1));
+        $this->assertSame([1], pickerPageOrder(5, 0), 'sonuç yoksa yine ilk sayfa');
+        $three = pickerPageOrder(5, 3);
+        $this->assertCount(3, $three, 'üç sayfa varsa üç sayfa denenir');
+        sort($three);
+        $this->assertSame([1, 2, 3], $three, 'olmayan sayfaya gidilmez');
+        $this->assertCount(PICKER_PAGE_TRIES, pickerPageOrder(5, 8));
+        foreach (pickerPageOrder(5, 8) as $page) {
+            $this->assertLessThanOrEqual(8, $page);
+        }
     }
 
     public function testPoolReportsMatchingTotalAndReachableCandidates(): void
     {
-        $this->assertSame(['matching' => 3420, 'reachable' => 200], pickerPool(3420, 171));
+        $this->assertSame(['matching' => 3420, 'reachable' => 1000], pickerPool(3420, 171));
+        $this->assertSame(['matching' => 700, 'reachable' => 700], pickerPool(700, 35));
         $this->assertSame(['matching' => 149, 'reachable' => 149], pickerPool(149, 8));
         $this->assertSame(['matching' => 0, 'reachable' => 0], pickerPool(0, 0));
     }
