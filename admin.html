@@ -285,10 +285,24 @@
             text-align: center;
         }
 
+        :root {
+            --danger-soft-text: #be123c;
+        }
+
+        :root[data-theme="dark"] {
+            --danger-soft-text: var(--color-danger);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --danger-soft-text: var(--color-danger);
+            }
+        }
+
         .btn-sm.btn-danger-soft {
             border: 1px solid rgba(var(--color-danger-rgb), 0.45);
             background: rgba(var(--color-danger-rgb), 0.1);
-            color: var(--color-danger);
+            color: var(--danger-soft-text);
         }
 
         .btn-sm.btn-danger-soft:hover {
@@ -376,6 +390,42 @@
             display: grid;
             gap: 12px;
             padding: 18px 20px;
+        }
+
+        .ticket-thread {
+            display: grid;
+            gap: 8px;
+        }
+
+        .ticket-bubble {
+            max-width: min(640px, 100%);
+            padding: 10px 14px;
+            border-radius: var(--radius);
+            border: 1px solid var(--color-border);
+            background: var(--color-surface-2);
+            overflow-wrap: anywhere;
+        }
+
+        .ticket-bubble-text {
+            white-space: pre-wrap;
+        }
+
+        .ticket-bubble--admin {
+            justify-self: end;
+            border-color: rgba(var(--color-accent-rgb), 0.45);
+            background: rgba(var(--color-accent-rgb), 0.12);
+        }
+
+        .ticket-bubble-meta {
+            margin-bottom: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--color-text-muted);
+        }
+
+        .ticket-reply {
+            display: grid;
+            gap: 6px;
         }
 
         .report-card + .report-card {
@@ -502,6 +552,7 @@
             'user.mute': 'Kullanıcıyı susturdu',
             'user.unmute': 'Susturmayı kaldırdı',
             'ticket.resolve': 'Talebi çözüldü olarak işaretledi',
+            'ticket.reply': 'Talebi yanıtladı',
             'ticket.reopen': 'Talebi çözülmedi olarak işaretledi'
         };
 
@@ -1106,7 +1157,7 @@
         function renderTickets() {
             const s = state.tickets;
             const main = document.getElementById('adminMain');
-            main.innerHTML = head('Talepler', 'Kullanıcıların sol alttaki destek düğmesinden gönderdiği talepler. Çözüldü olarak işaretleyince kullanıcıya bildirim gider; istersen bir not da bırakabilirsin.') + `
+            main.innerHTML = head('Talepler', 'Sol alttaki destek düğmesinden gelen talepler; giriş yapmadan yazanlar da burada görünür. Yanıtın kullanıcıya bildirim olarak gider, e-posta bırakan ziyaretçilere ayrıca e-posta atılır.') + `
                 <div class="toolbar"><div class="chip-row" role="group" aria-label="Talep durumu">
                     ${[['open', 'Çözülmeyenler'], ['resolved', 'Çözülenler'], ['all', 'Hepsi']].map(([value, label]) => `<button type="button" class="chip" data-act="ticket-filter" data-value="${value}" aria-pressed="${s.status === value}">${label}</button>`).join('')}
                 </div></div>
@@ -1134,22 +1185,39 @@
                 }
                 area.innerHTML = data.tickets.map(ticket => {
                     const open = ticket.status === 'open';
+                    const adminReplied = ticket.replies.some(reply => reply.by === 'admin');
+                    const thread = ticket.replies.map(reply => `
+                        <div class="ticket-bubble ticket-bubble--${reply.by}">
+                            <div class="ticket-bubble-meta">${reply.by === 'admin' ? 'Yönetici' : 'Kullanıcı'} · ${esc(fmtDate(reply.at))}</div>
+                            <div class="ticket-bubble-text">${esc(reply.text)}</div>
+                        </div>`).join('');
+                    const sender = ticket.guest
+                        ? `<span class="chip chip--accent">Misafir</span><span class="muted">${esc(ticket.contact_email || '')}</span>`
+                        : userCell(ticket.user);
                     return `
-                    <article class="panel report-card">
+                    <article class="panel report-card" data-ticket="${Number(ticket.id)}">
                         <div class="report-head">
                             <div class="cluster cluster--tight">
                                 <span class="chip ${open ? 'chip--warm' : 'chip--success'}">${open ? 'Çözülmedi' : 'Çözüldü'}</span>
+                                ${open && ticket.awaiting_admin ? '<span class="chip chip--danger">Yanıt bekliyor</span>' : ''}
                                 <span class="chip">${esc(ticket.category_label)}</span>
                                 <span class="muted">${esc(fmtDate(ticket.created_at))}</span>
                             </div>
-                            ${userCell(ticket.user)}
+                            <div class="cluster cluster--tight">${sender}</div>
                         </div>
                         <div class="quote">${esc(ticket.message)}</div>
                         ${ticket.page ? `<div class="muted">Gönderildiği sayfa: <a href="${esc(ticket.page)}" target="_blank" rel="noopener">${esc(ticket.page)}</a></div>` : ''}
-                        ${ticket.admin_note ? `<div><strong>Yönetici notu:</strong> ${esc(ticket.admin_note)}</div>` : ''}
+                        ${thread ? `<div class="ticket-thread">${thread}</div>` : ''}
+                        ${ticket.admin_note && !adminReplied ? `<div><strong>Yönetici notu:</strong> ${esc(ticket.admin_note)}</div>` : ''}
+                        <div class="ticket-reply">
+                            <label class="field-label" for="reply-${Number(ticket.id)}">Yanıtın${ticket.guest ? ' (misafirin e-posta adresine gönderilir)' : ''}</label>
+                            <textarea id="reply-${Number(ticket.id)}" class="textarea" rows="2" maxlength="2000" placeholder="Kullanıcıya yazacağın yanıt"></textarea>
+                        </div>
                         <div class="cluster cluster--tight">
+                            <button type="button" class="btn btn-primary btn-sm" data-act="ticket-reply" data-id="${Number(ticket.id)}">Yanıtla</button>
                             ${open
-                                ? `<button type="button" class="btn btn-primary btn-sm" data-act="ticket-resolve" data-id="${Number(ticket.id)}">Çözüldü olarak işaretle</button>`
+                                ? `<button type="button" class="btn btn-secondary btn-sm" data-act="ticket-reply" data-resolve="1" data-id="${Number(ticket.id)}">Yanıtla ve çöz</button>
+                                   <button type="button" class="btn-glass btn-sm" data-act="ticket-resolve" data-id="${Number(ticket.id)}">Yanıtsız çözüldü işaretle</button>`
                                 : `<button type="button" class="btn btn-secondary btn-sm" data-act="ticket-reopen" data-id="${Number(ticket.id)}">Çözülmedi olarak işaretle</button><span class="muted">${ticket.resolved_by ? `${esc(ticket.resolved_by.username)} · ` : ''}${esc(fmtDate(ticket.resolved_at))}</span>`}
                             ${ticket.user ? `<button type="button" class="btn-glass btn-sm" data-act="open-user" data-id="${Number(ticket.user.id)}">Kullanıcıyı aç</button>` : ''}
                         </div>
@@ -1163,12 +1231,32 @@
         async function resolveTicket(ticketId) {
             const values = await app.formDialog({
                 title: 'Talebi çözüldü olarak işaretle',
-                description: 'Kullanıcıya bildirim gider. İstersen bir not bırak; kullanıcı bunu Taleplerim ekranında görür.',
+                description: 'Talep sahibine "çözüldü" bildirimi gider. İstersen bir not bırak; yanıt olarak konuşmaya eklenir (misafire e-postayla gider).',
                 fields: [{ name: 'note', label: 'Not (isteğe bağlı)', type: 'textarea', maxlength: 500 }],
                 submitText: 'Çözüldü'
             });
             if (!values) return;
             if (await run('Talep çözüldü olarak işaretlendi', () => adminPost({ action: 'resolve_ticket', ticket_id: ticketId, note: values.note }))) afterChange(false);
+        }
+
+        async function replyTicket(ticketId, resolve, button) {
+            const box = document.getElementById('reply-' + ticketId);
+            const message = box ? box.value.trim() : '';
+            if (!message) {
+                app.toast('Önce bir yanıt yaz.', 'error');
+                if (box) box.focus();
+                return;
+            }
+            button.disabled = true;
+            try {
+                const data = await adminPost({ action: 'reply_ticket', ticket_id: ticketId, message, resolve });
+                if (data.emailed === false) app.toast('Yanıt kaydedildi ama e-posta gönderilemedi (misafir adresi ya da e-posta ayarı).', 'info', 6000);
+                else app.toast(resolve ? 'Yanıt gönderildi, talep çözüldü' : 'Yanıt gönderildi', 'success');
+                afterChange(false);
+            } catch (error) {
+                app.toast(error.message, 'error');
+                button.disabled = false;
+            }
         }
 
         async function reopenTicket(ticketId) {
@@ -1338,6 +1426,7 @@
                 case 'report-filter': state.reports.status = el.dataset.value; state.reports.page = 1; loadReports(); break;
                 case 'ticket-filter': state.tickets.status = el.dataset.value; state.tickets.page = 1; loadTickets(); break;
                 case 'ticket-resolve': resolveTicket(id); break;
+                case 'ticket-reply': replyTicket(id, el.dataset.resolve === '1', el); break;
                 case 'ticket-reopen': reopenTicket(id); break;
                 case 'audit-filter': state.audit.target = el.dataset.value; state.audit.page = 1; loadAudit(); break;
                 case 'clear-user-filter': state.comments.userId = null; state.comments.userName = ''; state.comments.page = 1; renderComments(); break;

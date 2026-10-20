@@ -160,6 +160,168 @@ final class SupportTest extends TestCase
         $this->assertContains('ticket.reopen', $actions);
     }
 
+    public function testReplyAndGuestRulesArePure(): void
+    {
+        $this->assertArrayHasKey('error', supportCleanReply(null));
+        $this->assertArrayHasKey('error', supportCleanReply(' '));
+        $this->assertArrayHasKey('error', supportCleanReply(str_repeat('a', SUPPORT_MESSAGE_MAX + 1)));
+        $this->assertSame('Tamam, bakıyorum.', supportCleanReply("  Tamam, bakıyorum.\x07 ")['message']);
+
+        $secret = 'gizli';
+        $now = 1_800_000_000;
+        $this->assertNull(supportGuestTokenError($secret, supportGuestToken($secret, $now - 10), $now), 'Yeterince eski ve geçerli belirteç');
+        $this->assertStringContainsString('hızlı', supportGuestTokenError($secret, supportGuestToken($secret, $now - 1), $now), 'Form 3 saniyeden önce gönderilemez');
+        $this->assertNotNull(supportGuestTokenError($secret, supportGuestToken($secret, $now - SUPPORT_GUEST_TOKEN_MAX_AGE - 5), $now), 'Çok eski belirteç');
+        $this->assertNotNull(supportGuestTokenError('baska', supportGuestToken($secret, $now - 10), $now), 'Başka anahtarla imzalanmış belirteç');
+        $this->assertNotNull(supportGuestTokenError($secret, ($now - 10) . '.' . str_repeat('a', 64), $now), 'Sahte imza');
+        $this->assertNotNull(supportGuestTokenError($secret, null, $now));
+
+        $ok = supportCleanGuestTicket(['email' => ' Kisi@Ornek.COM ', 'category' => 'account', 'message' => 'Doğrulama kodu e-postam hiç gelmiyor.']);
+        $this->assertSame('kisi@ornek.com', $ok['email']);
+        $this->assertTrue(supportCleanGuestTicket(['website' => 'http://bot.example', 'email' => 'a@b.com', 'category' => 'bug', 'message' => 'x'])['spam'] ?? false, 'Bal küpü dolu: bot');
+        foreach (['', 'gecersiz', 'a@b', str_repeat('a', 130) . '@ornek.com'] as $bad) {
+            $this->assertArrayHasKey('error', supportCleanGuestTicket(['email' => $bad, 'category' => 'bug', 'message' => 'Yeterince uzun bir mesaj yazdım.']), "geçersiz e-posta: $bad");
+        }
+        $links = 'Bak http://a.example ve http://b.example ve https://c.example ve www.d.example lütfen';
+        $this->assertArrayHasKey('error', supportCleanGuestTicket(['email' => 'a@b.com', 'category' => 'bug', 'message' => $links]), 'Çok bağlantı reddedilir');
+    }
+
+    public function testNewTicketNotifiesEveryAdminAndAnAdminReplyNotifiesTheOwner(): void
+    {
+        [$user, $userId] = $this->newUser('phpunit_support');
+        [$adminA] = $this->newAdmin();
+        [$adminB] = $this->newAdmin();
+        $id = $user->post('/api/support-tickets.php', $this->ticket(['message' => 'Profil fotoğrafım yüklenmiyor, ne yapmalıyım?']))['data']['ticket']['id'];
+
+        foreach ([$adminA, $adminB] as $admin) {
+            $mine = array_values(array_filter($admin->get('/api/notifications.php')['data']['notifications'], static fn ($n) => $n['type'] === 'ticket_admin' && (int) $n['content_id'] === $id));
+            $this->assertCount(1, $mine, 'Her yönetici yeni talep bildirimi alır');
+            $this->assertStringStartsWith('Yeni talep:', $mine[0]['content_title']);
+        }
+
+        $reply = $adminA->post('/api/admin.php', ['action' => 'reply_ticket', 'ticket_id' => $id, 'message' => 'Hangi dosya türünü denedin?']);
+        $this->assertSame(200, $reply['status'], json_encode($reply['data']));
+
+        $ticket = $user->get('/api/support-tickets.php')['data']['tickets'][0];
+        $this->assertSame('open', $ticket['status'], 'Yanıt talebi çözmez');
+        $this->assertSame([['by' => 'admin', 'text' => 'Hangi dosya türünü denedin?']], array_map(static fn ($r) => ['by' => $r['by'], 'text' => $r['text']], $ticket['replies']));
+        $this->assertFalse($ticket['awaiting_admin'], 'Son söz yöneticide: kullanıcı bekleniyor');
+        $this->assertArrayNotHasKey('admin_id', $ticket['replies'][0], 'Hangi yöneticinin yazdığı kullanıcıya gösterilmez');
+        $replies = array_filter($user->get('/api/notifications.php')['data']['notifications'], static fn ($n) => $n['type'] === 'ticket_reply');
+        $this->assertCount(1, $replies);
+
+        // Yanıtla ve çöz: tek bildirim ("çözüldü"), yanıt metni konuşmada kalır
+        $adminA->post('/api/admin.php', ['action' => 'reply_ticket', 'ticket_id' => $id, 'message' => 'Sorun giderildi, tekrar dene.', 'resolve' => true]);
+        $ticket = $user->get('/api/support-tickets.php')['data']['tickets'][0];
+        $this->assertSame('resolved', $ticket['status']);
+        $this->assertCount(2, $ticket['replies']);
+        $resolved = array_filter($user->get('/api/notifications.php')['data']['notifications'], static fn ($n) => $n['type'] === 'ticket');
+        $this->assertCount(1, $resolved);
+
+        $this->assertSame(422, $adminA->post('/api/admin.php', ['action' => 'reply_ticket', 'ticket_id' => $id, 'message' => ' '])['status']);
+        $this->assertSame(404, $adminA->post('/api/admin.php', ['action' => 'reply_ticket', 'ticket_id' => 999999999, 'message' => 'merhaba'])['status']);
+    }
+
+    public function testUserReplyReopensAResolvedTicketAndAlertsTheAdmins(): void
+    {
+        [$user] = $this->newUser('phpunit_support');
+        [$other] = $this->newUser('phpunit_support');
+        [$admin] = $this->newAdmin();
+        $id = $user->post('/api/support-tickets.php', $this->ticket())['data']['ticket']['id'];
+        $admin->post('/api/admin.php', ['action' => 'resolve_ticket', 'ticket_id' => $id, 'note' => 'Düzeltildi.']);
+
+        $reply = $user->post('/api/support-tickets.php', ['action' => 'reply', 'ticket_id' => $id, 'message' => 'Hâlâ aynı sorun var, tekrar bakar mısınız?']);
+        $this->assertSame(200, $reply['status'], json_encode($reply['data']));
+        $this->assertSame('open', $reply['data']['ticket']['status'], 'Kullanıcı yazınca çözülmüş talep yeniden açılır');
+        $this->assertNull($reply['data']['ticket']['resolved_at']);
+        $this->assertTrue($reply['data']['ticket']['awaiting_admin']);
+
+        $mine = array_values(array_filter($admin->get('/api/notifications.php')['data']['notifications'], static fn ($n) => $n['type'] === 'ticket_admin' && str_starts_with($n['content_title'], 'Yanıt:')));
+        $this->assertNotEmpty($mine, 'Yöneticiye "yanıt geldi" bildirimi gider');
+
+        $this->assertSame(404, $other->post('/api/support-tickets.php', ['action' => 'reply', 'ticket_id' => $id, 'message' => 'Başkasının talebi'])['status'], 'Yalnızca kendi talebine yazılır');
+        $this->assertSame(422, $user->post('/api/support-tickets.php', ['action' => 'reply', 'ticket_id' => $id, 'message' => ''])['status']);
+    }
+
+    private function guestToken(ApiClient $client): array
+    {
+        $res = $client->get('/api/support-guest.php');
+        $this->assertSame(200, $res['status']);
+        $this->assertArrayNotHasKey('csrf_token', $res['data']);
+        // Form en az 3 sn açık kalmış gibi: imza anahtarı veritabanından okunup geçmiş bir zamanla imzalanır.
+        $secret = (string) $this->mongo()->settings->findOne(['_id' => 'support_guest_secret'])['value'];
+        return [supportGuestToken($secret, time() - 10), $res['data']];
+    }
+
+    public function testGuestCanOpenATicketAndAdminSeesTheEmail(): void
+    {
+        [$admin] = $this->newAdmin(); // bildirim, talep açıldığı anda var olan yöneticilere gider
+        $guest = new ApiClient(TEST_BASE_URL);
+        [$token] = $this->guestToken($guest);
+        $email = 'misafir_' . $this->suffix() . '@ornek.com';
+        $message = 'Doğrulama kodu e-postası gelmiyor, spam klasörüne de baktım (' . $this->suffix() . ').';
+
+        $res = $guest->post('/api/support-guest.php', ['email' => $email, 'category' => 'account', 'message' => $message, 'token' => $token]);
+        $this->assertSame(201, $res['status'], json_encode($res['data']));
+
+        $stored = $this->mongo()->support_tickets->findOne(['contact_email' => $email]);
+        $this->assertNotNull($stored);
+        $this->assertNull($stored['user_id'], 'Misafir talebinin kullanıcısı yoktur');
+
+        $queue = $admin->get('/api/admin.php?action=tickets&status=open&per_page=50')['data']['tickets'];
+        $mine = array_values(array_filter($queue, static fn ($t) => $t['contact_email'] === $email));
+        $this->assertCount(1, $mine);
+        $this->assertTrue($mine[0]['guest']);
+        $this->assertNull($mine[0]['user']);
+        $this->assertTrue($mine[0]['awaiting_admin']);
+
+        $notified = array_filter($admin->get('/api/notifications.php')['data']['notifications'], static fn ($n) => $n['type'] === 'ticket_admin' && (int) $n['content_id'] === $mine[0]['id']);
+        $this->assertCount(1, $notified, 'Misafir talebi de yöneticiye bildirilir');
+
+        // Yönetici yanıtı kaydedilir; e-posta ayarlı olmayan ortamda gönderilemez (emailed=false) ama işlem başarılıdır.
+        $reply = $admin->post('/api/admin.php', ['action' => 'reply_ticket', 'ticket_id' => $mine[0]['id'], 'message' => 'Spam klasörüne baktınız mı? Bir kod daha gönderdik.', 'resolve' => true]);
+        $this->assertSame(200, $reply['status'], json_encode($reply['data']));
+        $this->assertFalse($reply['data']['emailed']);
+        $after = $this->mongo()->support_tickets->findOne(['_id' => $mine[0]['id']]);
+        $this->assertSame('resolved', $after['status']);
+        $this->assertCount(1, $after['replies']);
+    }
+
+    public function testGuestFormRejectsBotsFastSubmissionsAndAbuse(): void
+    {
+        $guest = new ApiClient(TEST_BASE_URL);
+        [$token] = $this->guestToken($guest);
+        $base = ['category' => 'bug', 'message' => 'Sayfa yüklenirken beyaz ekran görüyorum, ne yapmalıyım?', 'token' => $token];
+        $count = fn (string $email) => $this->mongo()->support_tickets->countDocuments(['contact_email' => $email]);
+
+        // Bal küpü: başarılı gibi görünür ama kaydedilmez
+        $botEmail = 'bot_' . $this->suffix() . '@ornek.com';
+        $this->assertSame(201, $guest->post('/api/support-guest.php', $base + ['email' => $botEmail, 'website' => 'http://spam.example'])['status']);
+        $this->assertSame(0, $count($botEmail));
+
+        // Belirteç yok / sahte / çok taze
+        $email = 'misafir_' . $this->suffix() . '@ornek.com';
+        $this->assertSame(422, $guest->post('/api/support-guest.php', ['email' => $email] + array_diff_key($base, ['token' => 1]))['status']);
+        $this->assertSame(422, $guest->post('/api/support-guest.php', ['email' => $email, 'token' => '1800000000.' . str_repeat('0', 64)] + $base)['status']);
+        $fresh = (string) $guest->get('/api/support-guest.php')['data']['token'];
+        $tooFast = $guest->post('/api/support-guest.php', ['email' => $email, 'token' => $fresh] + $base);
+        $this->assertSame(422, $tooFast['status']);
+        $this->assertStringContainsString('hızlı', $tooFast['data']['message']);
+        $this->assertSame(0, $count($email));
+
+        // Geçersiz e-posta, çok bağlantı
+        $this->assertSame(422, $guest->post('/api/support-guest.php', ['email' => 'gecersiz'] + $base)['status']);
+        $this->assertSame(422, $guest->post('/api/support-guest.php', ['email' => $email, 'message' => 'a http://1.example b http://2.example c http://3.example d http://4.example'] + $base)['status']);
+
+        // Aynı adresten günde 3 talep
+        for ($i = 1; $i <= SUPPORT_GUEST_EMAIL_DAILY_LIMIT; $i++) {
+            $this->assertSame(201, $guest->post('/api/support-guest.php', ['email' => $email] + $base)['status'], "$i. talep geçmeli");
+        }
+        $limited = $guest->post('/api/support-guest.php', ['email' => $email] + $base);
+        $this->assertSame(429, $limited['status']);
+        $this->assertSame(SUPPORT_GUEST_EMAIL_DAILY_LIMIT, $count($email));
+    }
+
     public function testStatusFilterAndAdminOnlyAccess(): void
     {
         [$user] = $this->newUser('phpunit_support');

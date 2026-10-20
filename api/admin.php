@@ -3,14 +3,14 @@
 //   Okuma (GET):  overview, users, user, comments, comment, deleted, reports, audit, moderation, tickets
 //   Yazma (POST, CSRF + yönetici): delete_comment, restore_comment, resolve_report,
 //                                  suspend_user, unsuspend_user, mute_user, unmute_user,
-//                                  resolve_ticket, reopen_ticket
+//                                  resolve_ticket, reopen_ticket, reply_ticket
 // Her yazma işlemi audit_log'a kaydedilir. Silinen yorumlar kalıcı yok olmaz (deleted_comments arşivi),
 // düzenlemeler comment_revisions'ta saklanır. Özel mesajların içeriği bilinçli olarak kapsam dışıdır (gizlilik).
 require_once 'config.php';
 require_once __DIR__ . '/lib/audit.php';
 require_once __DIR__ . '/lib/moderation-log.php';
 require_once __DIR__ . '/lib/support.php';
-require_once __DIR__ . '/lib/push.php';
+require_once __DIR__ . '/lib/support-notify.php';
 
 requireAdmin($db);
 $adminId = (int)getCurrentUserId();
@@ -550,15 +550,15 @@ function adminTickets($db): void {
 
     $userIds = [];
     foreach ($tickets as $ticket) {
-        $userIds[] = $ticket['user_id'];
+        $userIds[] = $ticket['user_id'] ?? null;
         $userIds[] = $ticket['resolved_by'] ?? null;
     }
     $users = adminUsersById($db, $userIds);
 
     jsonResponse([
         'success' => true,
-        'tickets' => array_map(static fn ($ticket) => supportTicketRow($ticket) + [
-            'user' => adminUserBrief($users[$ticket['user_id']] ?? null),
+        'tickets' => array_map(static fn ($ticket) => supportTicketRow($ticket, true) + [
+            'user' => adminUserBrief($users[$ticket['user_id'] ?? 0] ?? null),
             'resolved_by' => adminUserBrief($users[$ticket['resolved_by'] ?? 0] ?? null),
         ], $tickets),
         'counts' => [
@@ -571,21 +571,36 @@ function adminTickets($db): void {
     ]);
 }
 
-// Talep çözülünce sahibine bildirim (ve izin verdiyse tarayıcı bildirimi) gider.
-function adminNotifyTicketResolved($db, $ticket): void {
-    $title = mb_substr((string) preg_replace('/\s+/u', ' ', $ticket['message']), 0, 60, 'UTF-8');
-    $db->notifications->insertOne([
-        '_id' => nextSequence($db, 'notifications'),
-        'user_id' => (int) $ticket['user_id'],
-        'actor_id' => null,
-        'type' => 'ticket',
-        'content_type' => 'ticket',
-        'content_id' => (int) $ticket['_id'],
-        'content_title' => $title,
-        'is_read' => false,
-        'created_at' => new MongoDB\BSON\UTCDateTime(),
-    ]);
-    pushNotifyUser($db, (int) $ticket['user_id'], 'Destek talebin çözüldü', 'profile.html#destek');
+// Yöneticinin bir talebe yanıtı ve/veya çözümü. $text null ise yalnızca durum değişir.
+// Talep sahibine zil bildirimi gider (çözüldüyse "çözüldü", değilse "yanıt"); misafir talebinde yanıt e-postayla iletilir.
+// Dönüş: ['emailed' => bool|null] (null: e-posta gerekmiyordu).
+function adminApplyTicketReply($db, int $adminId, $ticket, ?string $text, bool $resolve, $now): array {
+    $ticketId = (int) $ticket['_id'];
+    $wasResolved = ($ticket['status'] ?? 'open') === 'resolved';
+    $set = ['updated_at' => $now];
+    if ($resolve) {
+        $set += ['status' => 'resolved', 'resolved_by' => $adminId, 'resolved_at' => $now];
+    }
+    $update = [];
+    if ($text !== null) {
+        $set['admin_note'] = $text; // eski kayıtlar ve eski arayüz için son yönetici metni
+        $update['$push'] = ['replies' => ['by' => 'admin', 'text' => $text, 'at' => $now, 'admin_id' => $adminId]];
+    }
+    $update['$set'] = $set;
+    $db->support_tickets->updateOne(['_id' => $ticketId], $update);
+
+    $fresh = $db->support_tickets->findOne(['_id' => $ticketId]);
+    $emailed = null;
+    if (($ticket['user_id'] ?? null) === null) {
+        if ($text !== null) {
+            $emailed = supportEmailGuest($fresh, $text);
+        }
+    } elseif ($resolve && !$wasResolved) {
+        supportNotifyOwner($db, $fresh, 'resolved');
+    } elseif ($text !== null) {
+        supportNotifyOwner($db, $fresh, 'reply');
+    }
+    return ['emailed' => $emailed];
 }
 
 // Engellenen denemeler: kim, neyi (mesaj içeriği hariç), neden, ne zaman. Karar yönetici işlemleriyle verilir.
@@ -754,6 +769,7 @@ switch ($input['action'] ?? '') {
 
     case 'resolve_ticket':
     case 'reopen_ticket':
+    case 'reply_ticket':
         $ticketId = filter_var($input['ticket_id'] ?? null, FILTER_VALIDATE_INT);
         $ticket = $ticketId ? $db->support_tickets->findOne(['_id' => $ticketId]) : null;
         if (!$ticket) {
@@ -764,17 +780,23 @@ switch ($input['action'] ?? '') {
             auditLog($db, $adminId, 'ticket.reopen', 'ticket', $ticketId);
             jsonResponse(['success' => true]);
         }
+        if ($input['action'] === 'reply_ticket') {
+            $reply = supportCleanReply($input['message'] ?? null);
+            if (isset($reply['error'])) {
+                jsonResponse(['success' => false, 'message' => $reply['error']], 422);
+            }
+            if (count((array) ($ticket['replies'] ?? [])) >= SUPPORT_REPLY_MAX_PER_TICKET) {
+                jsonResponse(['success' => false, 'message' => 'Bu talepte yanıt sınırına ulaşıldı'], 429);
+            }
+            $resolve = !empty($input['resolve']);
+            $result = adminApplyTicketReply($db, $adminId, $ticket, $reply['message'], $resolve, $now);
+            auditLog($db, $adminId, 'ticket.reply', 'ticket', $ticketId, ['resolve' => $resolve]);
+            jsonResponse(['success' => true, 'emailed' => $result['emailed']]);
+        }
         $note = supportCleanNote($input['note'] ?? null);
-        $set = ['status' => 'resolved', 'resolved_by' => $adminId, 'resolved_at' => $now, 'updated_at' => $now];
-        if ($note !== null) {
-            $set['admin_note'] = $note;
-        }
-        $db->support_tickets->updateOne(['_id' => $ticketId], ['$set' => $set]);
+        $result = adminApplyTicketReply($db, $adminId, $ticket, $note, true, $now);
         auditLog($db, $adminId, 'ticket.resolve', 'ticket', $ticketId, $note !== null ? ['note' => $note] : []);
-        if (($ticket['status'] ?? 'open') !== 'resolved') {
-            adminNotifyTicketResolved($db, $ticket);
-        }
-        jsonResponse(['success' => true]);
+        jsonResponse(['success' => true, 'emailed' => $result['emailed']]);
 
     default:
         jsonResponse(['success' => false, 'message' => 'Bilinmeyen işlem'], 400);

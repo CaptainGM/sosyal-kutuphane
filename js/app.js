@@ -257,7 +257,9 @@ class SocialLibraryApp {
                 if (field.type === 'textarea') {
                     return `<div class="field"><label for="${id}">${label}</label><textarea id="${id}" name="${this.escapeHtml(field.name)}" class="textarea"${required}${max}${placeholder}>${this.escapeHtml(value)}</textarea>${hint}</div>`;
                 }
-                return `<div class="field"><label for="${id}">${label}</label><input id="${id}" name="${this.escapeHtml(field.name)}" type="text" class="input" value="${this.escapeHtml(value)}"${required}${max}${placeholder}>${hint}</div>`;
+                const inputType = field.type === 'password' ? 'password' : 'text';
+                const autocomplete = field.type === 'password' ? ' autocomplete="current-password"' : (field.autocomplete ? ` autocomplete="${this.escapeHtml(field.autocomplete)}"` : '');
+                return `<div class="field"><label for="${id}">${label}</label><input id="${id}" name="${this.escapeHtml(field.name)}" type="${inputType}" class="input" value="${this.escapeHtml(value)}"${required}${max}${placeholder}${autocomplete}>${hint}</div>`;
             }).join('');
 
             form.innerHTML = `
@@ -291,9 +293,9 @@ class SocialLibraryApp {
                 for (let i = 0; i < fields.length; i++) {
                     const field = fields[i];
                     const el = form.querySelector('#skDialogField' + i);
-                    const value = field.type === 'checkbox' ? el.checked : el.value.trim();
+                    const value = field.type === 'checkbox' ? el.checked : (field.type === 'password' ? el.value : el.value.trim());
                     if (field.required && !value) {
-                        errorBox.textContent = `"${field.label}" alanı boş bırakılamaz.`;
+                        errorBox.textContent = field.type === 'checkbox' ? 'Devam etmek için onay kutusunu işaretlemelisin.' : `"${field.label}" alanı boş bırakılamaz.`;
                         errorBox.hidden = false;
                         el.focus();
                         return;
@@ -616,6 +618,10 @@ class SocialLibraryApp {
                 return `<strong>${this.escapeHtml(n.content_title || 'Ortak okuma')}</strong>`;
             case 'ticket':
                 return `<strong>Destek talebin</strong> çözüldü: ${this.escapeHtml(n.content_title || '')}`;
+            case 'ticket_reply':
+                return `<strong>Destek talebine yanıt geldi:</strong> ${this.escapeHtml(n.content_title || '')}`;
+            case 'ticket_admin':
+                return `<strong>Destek</strong> · ${this.escapeHtml(n.content_title || '')}`;
             default:
                 return `<strong>${username}</strong> bir bildirim gönderdi`;
         }
@@ -658,9 +664,11 @@ class SocialLibraryApp {
                     window.location.href = 'profile.html#buddyCard';
                 } else if (type === 'episode' && contentId) {
                     window.location.href = `detail.php?type=series&id=${contentId}&tab=season`;
-                } else if (type === 'ticket') {
+                } else if (type === 'ticket' || type === 'ticket_reply') {
                     panel.classList.remove('open');
                     this.openSupport('list');
+                } else if (type === 'ticket_admin') {
+                    window.location.href = 'admin.html#tickets';
                 }
             });
         });
@@ -1295,6 +1303,14 @@ function wireReveal() {
     items.forEach(el => observer.observe(el));
 }
 
+// Sayfalardaki "Destek" bağlantıları ve düğmeleri ([data-support-open]) destek panelini açar; betik yoksa bağlantı kendi adresine gider.
+document.addEventListener('click', (event) => {
+    const opener = event.target.closest('[data-support-open]');
+    if (!opener) return;
+    event.preventDefault();
+    app.openSupport('new');
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     app.wireAllPasswordToggles();
     document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
@@ -1318,8 +1334,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const adminLink = document.getElementById('navAdminLink');
             if (adminLink) adminLink.hidden = false;
         }
-        // Sol alttaki destek düğmesi: giriş yapmış, demo olmayan kullanıcılara; yönetim sayfasında yönetici zaten talepleri görür.
-        if (app.currentUser && !app.currentUser.is_demo && !/\/admin\.html$/.test(location.pathname)) {
+        // Sol alttaki destek düğmesi: giriş yapmış kullanıcıya talep + konuşma, ziyaretçiye (ör. kodu gelmeyen) e-postalı form.
+        // Demo hesaplarda ve yönetim sayfasında yoktur (yönetici talepleri zaten orada görür).
+        if (!(app.currentUser && app.currentUser.is_demo) && !/\/admin\.html$/.test(location.pathname)) {
             app.loadSupportWidget().catch(() => { });
         }
         if (app.currentUser) return;

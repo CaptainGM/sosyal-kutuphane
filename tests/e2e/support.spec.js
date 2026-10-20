@@ -1,4 +1,4 @@
-// Destek düğmesi (sol alt): talep oluşturma, Taleplerim, yönetici çözümü, bildirim ve erişilebilirlik.
+// Destek düğmesi (sol alt): talep, yönetici ile yazışma, misafir formu, bildirimler ve erişilebilirlik.
 // Testin kendi geçici kullanıcılarıyla (kullanıcı, yönetici) çalışır; veri testler arasında paylaşılır (serial).
 const { test, expect } = require('@playwright/test');
 const { createUser, deleteUsers } = require('./helpers');
@@ -25,11 +25,31 @@ async function login(page, account, path = '/profile.html') {
 // Her çalıştırmada benzersiz metin: aynı veritabanında önceki çalıştırmalarla karışmaz.
 const TOKEN = Math.random().toString(36).slice(2, 8);
 const MESSAGE = `Detay sayfasında afiş yüklenmiyor (${TOKEN}), sayfayı yenilemek de işe yaramadı.`;
+const GUEST_EMAIL = `ziyaretci_${TOKEN}@ornek.com`;
+const GUEST_MESSAGE = `Doğrulama kodu e-postası gelmiyor (${TOKEN}), spam klasörüne de baktım.`;
 
-test('ziyaretçide ve yönetim sayfasında destek düğmesi yoktur', async ({ page, browser }, testInfo) => {
+test('ziyaretçi destek formunu açıp talep gönderir; yönetim sayfasında düğme yoktur', async ({ page, browser }, testInfo) => {
     await page.goto('/tonight.html');
     await page.evaluate(() => app.initPromise);
-    await expect(page.locator('.support-fab')).toHaveCount(0);
+    const fab = page.locator('.support--guest .support-fab');
+    await expect(fab).toBeVisible();
+    await fab.click();
+    await expect(page.locator('.support-panel')).toBeVisible();
+    await expect(page.locator('#supportEmail')).toBeVisible();
+    await expect(page.locator('.support-tabs')).toBeHidden(); // "Taleplerim" yalnızca üyeler için
+    await expect(page.locator('.support-hp')).not.toBeInViewport(); // bal küpü insana görünmez
+    await expect(page.locator('.support-privacy a')).toHaveAttribute('href', 'gizlilik.html');
+
+    await page.click('.support-submit');
+    await expect(page.locator('.support-error')).toContainText('e-posta');
+    await page.fill('#supportEmail', GUEST_EMAIL);
+    await page.click('.support-topic:has-text("Hesap veya giriş sorunu")');
+    await page.fill('#supportMessage', GUEST_MESSAGE);
+    // Sunucu formun en az 3 sn açık kalmasını ister (botları yavaşlatır).
+    await page.waitForTimeout(3300);
+    await page.click('.support-submit');
+    await expect(page.locator('.support-done')).toBeVisible();
+    await expect(page.locator('.support-done')).toContainText('e-posta');
 
     test.skip(testInfo.project.name !== 'chromium', 'Yönetici kısmı yalnızca varsayılan projede çalışır');
     const adminPage = await (await browser.newContext({ viewport: { width: 1290, height: 900 } })).newPage();
@@ -54,6 +74,7 @@ test('kullanıcı sol alttaki düğmeden talep oluşturur ve Taleplerim sekmesin
     await fab.click();
     await expect(page.locator('.support-panel')).toBeVisible();
     await expect(fab).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.locator('#supportEmail')).toHaveCount(0); // üyede e-posta alanı yok
 
     // Çok kısa mesaj gönderilmez
     await page.fill('#supportMessage', 'kısa');
@@ -89,48 +110,85 @@ test('yazılan taslak sayfa değişince kaybolmaz', async ({ page }) => {
     await page.fill('#supportMessage', '');
 });
 
-test('yönetici talebi çözüldü olarak işaretler; kullanıcı durumu, notu ve bildirimi görür', async ({ browser }, testInfo) => {
+test('yönetici ile kullanıcı yazışır; çözülünce kullanıcı bildirimi görür; misafir talebine e-posta ile yanıt verilir', async ({ browser }, testInfo) => {
     test.skip(testInfo.project.name !== 'chromium', 'Yalnızca varsayılan projede çalışır');
 
     const adminPage = await (await browser.newContext({ viewport: { width: 1290, height: 900 } })).newPage();
     await login(adminPage, admin);
     await adminPage.goto('/admin.html#tickets');
-    const card = adminPage.locator('.report-card', { hasText: TOKEN });
+    const card = adminPage.locator('.report-card', { hasText: TOKEN }).filter({ hasText: 'Hesap veya giriş sorunu' }).filter({ hasNotText: GUEST_EMAIL });
     await expect(card).toContainText('Çözülmedi');
-    await expect(card).toContainText('Hesap veya giriş sorunu');
+    await expect(card).toContainText('Yanıt bekliyor'); // henüz kimse yanıtlamadı
     await expect(adminPage.locator('#count-tickets')).not.toHaveText('');
 
-    await card.locator('[data-act="ticket-resolve"]').click();
-    await adminPage.fill('.sk-dialog textarea', `Düzeltildi ${TOKEN}`);
-    await adminPage.click('.sk-dialog button[type=submit]');
-    await expect(adminPage.locator('.toast-success', { hasText: 'çözüldü olarak işaretlendi' })).toBeVisible();
-    await expect(adminPage.locator('.report-card', { hasText: TOKEN })).toHaveCount(0); // "Çözülmeyenler" listesinden düştü
+    // Yönetici yanıtlar (talep açık kalır)
+    await card.locator('textarea').fill(`Hangi tarayıcıyı kullanıyorsun? ${TOKEN}`);
+    await card.getByRole('button', { name: 'Yanıtla', exact: true }).click();
+    await expect(adminPage.locator('.toast-success', { hasText: 'Yanıt gönderildi' })).toBeVisible();
+    await expect(card.locator('.ticket-bubble--admin')).toContainText('Hangi tarayıcıyı kullanıyorsun?');
+    await expect(card).not.toContainText('Yanıt bekliyor');
 
-    await adminPage.click('[data-act=ticket-filter][data-value=resolved]');
-    const resolved = adminPage.locator('.report-card', { hasText: TOKEN });
-    await expect(resolved).toContainText('Çözüldü');
-    await expect(resolved).toContainText(`Düzeltildi ${TOKEN}`);
-
-    // Kullanıcı: bildirim gelir, tıklayınca Taleplerim açılır, durum ve not görünür
+    // Kullanıcı: zilde "yanıt geldi", tıklayınca konuşma açılır, kullanıcı da yanıt yazar
     const userPage = await (await browser.newContext({ viewport: { width: 1290, height: 900 } })).newPage();
     await login(userPage, user);
     await expect(userPage.locator('#notifBadge')).toHaveClass(/visible/);
     await userPage.click('#notifBellBtn');
-    const notification = userPage.locator('.nav-panel-item[data-type="ticket"]').first();
-    await expect(notification).toContainText('Destek talebin');
-    await notification.click();
+    const replyNotice = userPage.locator('.nav-panel-item[data-type="ticket_reply"]').first();
+    await expect(replyNotice).toContainText('Destek talebine yanıt geldi');
+    await replyNotice.click();
     await expect(userPage.locator('.support-panel')).toBeVisible();
-    await expect(userPage.locator('#supportTabList')).toHaveAttribute('aria-selected', 'true');
     const mine = userPage.locator('.support-ticket', { hasText: TOKEN });
-    await expect(mine).toContainText('Çözüldü');
-    await expect(mine).toContainText(`Yönetici notu: Düzeltildi ${TOKEN}`);
+    await expect(mine.locator('.support-bubble--admin')).toContainText('Hangi tarayıcıyı kullanıyorsun?');
+    await mine.getByRole('button', { name: 'Yanıt yaz' }).click();
+    await mine.locator('.support-reply textarea').fill(`Edge kullanıyorum ${TOKEN}`);
+    await mine.getByRole('button', { name: 'Gönder' }).click();
+    await expect(mine.locator('.support-bubble--user')).toContainText('Edge kullanıyorum');
+
+    // Yönetici: yeni yanıt gelince "Yanıt bekliyor" geri gelir, "Yanıtla ve çöz" ile kapatır
+    await adminPage.reload();
+    const again = adminPage.locator('.report-card', { hasText: TOKEN }).filter({ hasText: 'Hesap veya giriş sorunu' }).filter({ hasNotText: GUEST_EMAIL });
+    await expect(again).toContainText('Yanıt bekliyor');
+    await expect(again.locator('.ticket-bubble--user')).toContainText('Edge kullanıyorum');
+    await again.locator('textarea').fill(`Sorun giderildi, tekrar dene ${TOKEN}`);
+    await again.getByRole('button', { name: 'Yanıtla ve çöz' }).click();
+    await expect(adminPage.locator('.toast-success', { hasText: 'talep çözüldü' })).toBeVisible();
+    await expect(adminPage.locator('.report-card', { hasText: TOKEN }).filter({ hasText: 'Hesap veya giriş sorunu' }).filter({ hasNotText: GUEST_EMAIL })).toHaveCount(0); // "Çözülmeyenler"den düştü
+
+    await adminPage.click('[data-act=ticket-filter][data-value=resolved]');
+    const resolved = adminPage.locator('.report-card', { hasText: TOKEN }).filter({ hasText: 'Hesap veya giriş sorunu' }).filter({ hasNotText: GUEST_EMAIL });
+    await expect(resolved).toContainText('Çözüldü');
+    await expect(resolved).toContainText(`Sorun giderildi, tekrar dene ${TOKEN}`);
+
+    // Kullanıcı: çözüldü bildirimi ve konuşma
+    await userPage.reload();
+    await userPage.click('#notifBellBtn');
+    const resolvedNotice = userPage.locator('.nav-panel-item[data-type="ticket"]').first();
+    await expect(resolvedNotice).toContainText('Destek talebin');
+    await resolvedNotice.click();
+    const mine2 = userPage.locator('.support-ticket', { hasText: TOKEN });
+    await expect(mine2).toContainText('Çözüldü');
+    await expect(mine2.locator('.support-bubble--admin').last()).toContainText('Sorun giderildi, tekrar dene');
     await expect(userPage.locator('.support-count')).toBeHidden(); // çözülmemiş talep kalmadı
 
-    // Yönetici tekrar "çözülmedi" yapar
-    await adminPage.locator('.report-card', { hasText: TOKEN }).locator('[data-act="ticket-reopen"]').click();
+    // Yönetici: yönetici bildirimi (zil) yeni talep ve yanıtlar için gelir
+    await adminPage.reload();
+    await adminPage.click('#notifBellBtn');
+    await expect(adminPage.locator('.nav-panel-item[data-type="ticket_admin"]').first()).toContainText('Destek');
+
+    // Misafir talebi: e-posta ve "Misafir" etiketi görünür; yanıt kaydedilir (e-posta ayarı olmayan ortamda gönderilemez)
+    await adminPage.goto('/admin.html#tickets');
+    const guestCard = adminPage.locator('.report-card', { hasText: GUEST_EMAIL });
+    await expect(guestCard).toContainText('Misafir');
+    await expect(guestCard).toContainText(GUEST_MESSAGE);
+    await guestCard.locator('textarea').fill('Spam klasörüne baktınız mı? Yeni kod gönderdik.');
+    await guestCard.getByRole('button', { name: 'Yanıtla', exact: true }).click();
+    await expect(adminPage.locator('.toast', { hasText: /Yanıt (gönderildi|kaydedildi)/ })).toBeVisible();
+    await expect(guestCard.locator('.ticket-bubble--admin')).toContainText('Spam klasörüne baktınız mı?');
+
+    // Yönetici talebi tekrar "çözülmedi" yapar
+    await adminPage.click('[data-act=ticket-filter][data-value=resolved]');
+    await adminPage.locator('.report-card', { hasText: TOKEN }).filter({ hasText: 'Hesap veya giriş sorunu' }).filter({ hasNotText: GUEST_EMAIL }).locator('[data-act="ticket-reopen"]').click();
     await expect(adminPage.locator('.toast-success', { hasText: 'çözülmedi olarak işaretlendi' })).toBeVisible();
-    await adminPage.click('[data-act=ticket-filter][data-value=open]');
-    await expect(adminPage.locator('.report-card', { hasText: TOKEN })).toContainText('Çözülmedi');
 
     await userPage.context().close();
     await adminPage.context().close();
@@ -140,7 +198,7 @@ for (const scheme of ['light', 'dark']) {
     test.describe(`${scheme} tema`, () => {
         test.use({ colorScheme: scheme });
 
-        test(`destek paneli (form ve liste): WCAG 2 AA ciddi ihlali yok (${scheme})`, async ({ page }) => {
+        test(`destek paneli (form, konuşma ve misafir formu): WCAG 2 AA ciddi ihlali yok (${scheme})`, async ({ page }) => {
             await login(page, user);
             await page.click('.support-fab');
             await expect(page.locator('.support-panel')).toBeVisible();
@@ -148,7 +206,17 @@ for (const scheme of ['light', 'dark']) {
 
             await page.click('#supportTabList');
             await expect(page.locator('.support-ticket').first()).toBeVisible();
+            await page.locator('.support-reply-toggle').first().click();
             await expectNoSeriousViolations(page);
+
+            // Ziyaretçi formu
+            const guestContext = await page.context().browser().newContext({ colorScheme: scheme });
+            const guestPage = await guestContext.newPage();
+            await guestPage.goto('/tonight.html');
+            await guestPage.click('.support-fab');
+            await expect(guestPage.locator('#supportEmail')).toBeVisible();
+            await expectNoSeriousViolations(guestPage);
+            await guestContext.close();
         });
     });
 }
