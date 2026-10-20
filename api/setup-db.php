@@ -9,6 +9,7 @@ if (PHP_SAPI !== 'cli' && getenv('ALLOW_WEB_SETUP') !== '1') {
 require_once 'config.php';
 require_once __DIR__ . '/lib/demo-seed.php';
 require_once __DIR__ . '/lib/demo.php';
+require_once __DIR__ . '/lib/admins.php';
 
 header('Content-Type: text/html; charset=utf-8');
 echo "<h2>📋 MongoDB İndeksleri Oluşturuluyor...</h2>";
@@ -209,6 +210,15 @@ foreach ($demoUsers as [$username, $email, $bio]) {
 
 // Önceki kurulumlardan kalan demo hesaplar da işaretlenir.
 $db->users->updateMany(['email' => ['$in' => DEMO_EMAILS]], ['$set' => ['is_demo' => true]]);
+
+// Yöneticiler ADMIN_EMAILS listesine eşitlenir (bkz. lib/admins.php): listedeki hesap yönetici olur, diğerlerinden yetki alınır.
+$adminSync = syncAdmins($db, adminEmailsFromEnv());
+if ($adminSync['status'] === 'ok') {
+    echo "🛡️ Yöneticiler eşitlendi: {$adminSync['promoted']} yeni yönetici, {$adminSync['demoted']} hesaptan yetki alındı<br>";
+} else {
+    echo "⚠️ Yönetici e-postası ile eşleşen kullanıcı yok; yönetici yetkilerine dokunulmadı<br>";
+    error_log('Yönetici eşitleme atlandı: ADMIN_EMAILS listesindeki e-postalarla eşleşen kullanıcı bulunamadı.');
+}
 
 $seeded = seedDemoLibraries($db);
 if ($seeded > 0) {

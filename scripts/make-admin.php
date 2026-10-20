@@ -2,6 +2,8 @@
 // Yönetici yetkisi vermek için yalnızca komut satırından çalışır:
 //   php scripts/make-admin.php kullanici@ornek.com
 // Web sunucusu üzerinden (php -S dahil) erişilirse 404 döner ve hiçbir şey yapmaz.
+// DİKKAT: api/setup-db.php her açılışta yöneticileri ADMIN_EMAILS listesine eşitler (bkz. api/lib/admins.php).
+// Burada verilen yetki, e-posta o listede değilse bir sonraki açılışta geri alınır; kalıcı yönetici için ADMIN_EMAILS'e ekle.
 if (PHP_SAPI !== 'cli') {
     http_response_code(404);
     exit;

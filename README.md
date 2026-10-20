@@ -63,7 +63,7 @@ Anahtarlar sadece `.env` ya da ortam değişkenlerinde durur, depoya girmez.
 
 Yüklenen profil fotoğrafları MongoDB'de de saklanır: Render gibi barındırıcılarda uygulamanın diski her dağıtımda silinir, fotoğraflar diskte yoksa veritabanından sunulur. Yapay zekâ taraması açıkken fotoğraf Google'a (Gemini) gönderilir, sunucuda tarama için ayrıca saklanmaz; hareketli GIF/WebP kabul edilmez ve kontrol edilemezse yükleme reddedilir.
 
-Yönetici yapmak için: `php scripts/make-admin.php kullanici@ornek.com`
+Yöneticiler `ADMIN_EMAILS` ortam değişkeniyle (virgülle ayrılmış e-postalar) belirlenir; boşsa `api/lib/admins.php`'deki varsayılan e-posta kullanılır. `php api/setup-db.php` her açılışta (Render'da her dağıtımda) yöneticileri bu listeye eşitler: listedeki hesap yönetici olur, diğerlerinden yetki alınır. Listedeki e-postayla kayıtlı kimse yoksa hiçbir şeye dokunulmaz, yani yönetici sayısı sıfıra düşmez. `php scripts/make-admin.php` ile verilen yetki, e-posta listede değilse bir sonraki açılışta geri alınır.
 
 ## Canlıya alma
 
