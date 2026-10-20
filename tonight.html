@@ -248,6 +248,12 @@
             color: #ffffff;
         }
 
+        .pick-pool {
+            margin: 0;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.86);
+        }
+
         .pick-overview {
             max-width: 62ch;
             color: rgba(255, 255, 255, 0.9);
@@ -782,6 +788,16 @@
                 </aside>`;
         }
 
+        // "Kaç yapım arasından seçiliyor?" sorusunun cevabı: süzgece uyan toplam ve en popüler kısmı olan havuz
+        function poolNote(pool) {
+            if (!pool || !pool.matching) return '';
+            const total = pool.matching.toLocaleString('tr-TR');
+            const reachable = pool.reachable.toLocaleString('tr-TR');
+            return pool.matching > pool.reachable
+                ? `<p class="pick-pool">Süzgecine uyan ${total} yapımın en popüler ${reachable} tanesi arasından seçildi.</p>`
+                : `<p class="pick-pool">Süzgecine uyan ${total} yapım arasından seçildi.</p>`;
+        }
+
         function showResult(data) {
             const pick = data.pick;
             state.history.push(pick);
@@ -804,6 +820,7 @@
                         <span class="eyebrow"><span class="dot"></span>Bu akşamın önerisi</span>
                         <h2 class="pick-title" id="pickTitle" tabindex="-1">${escapeHtml(pick.title)}${pick.year ? ` <small>(${escapeHtml(pick.year)})</small>` : ''}</h2>
                         <p class="pick-reason"><strong>Neden bu?</strong> ${escapeHtml(data.reason)}</p>
+                        ${poolNote(data.pool)}
                         ${data.franchise ? franchiseNoteHtml(data.franchise) : ''}
                         <div class="cluster cluster--tight">${pickChips(pick)}</div>
                         ${pick.overview ? `<p class="pick-overview">${escapeHtml(pick.overview)}${pick.overview.length >= 420 ? '…' : ''}</p>` : ''}

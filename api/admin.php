@@ -96,59 +96,97 @@ function adminCommentRow($comment, array $usersById, array $counts): array {
     ];
 }
 
-function adminDailyCounts($db, string $collection, string $field, int $days): array {
+// Genel bakış sayaçları koleksiyon başına tek sorguda ($facet) toplanır: uzak veritabanında (Atlas) her sorgu bir ağ
+// gidiş-dönüşü olduğundan yanıt süresini sorgu sayısı belirler (eskiden 24, şimdi 12).
+function adminFacetCount($facet, string $key): int {
+    foreach ($facet[$key] ?? [] as $row) {
+        return (int)$row['n'];
+    }
+    return 0;
+}
+
+function adminFacetMatchCount(array $match): array {
+    return [['$match' => $match], ['$count' => 'n']];
+}
+
+function adminFacetDaily(string $field, int $days): array {
     $since = new MongoDB\BSON\UTCDateTime((time() - $days * 86400) * 1000);
-    $cursor = $db->$collection->aggregate([
+    return [
         ['$match' => [$field => ['$gte' => $since]]],
         ['$group' => ['_id' => ['$dateToString' => ['format' => '%Y-%m-%d', 'date' => '$' . $field]], 'count' => ['$sum' => 1]]],
-    ]);
-    return adminCountMap($cursor);
+    ];
 }
 
 function adminOverview($db): void {
     $now = time();
     $day = new MongoDB\BSON\UTCDateTime(($now - 86400) * 1000);
     $week = new MongoDB\BSON\UTCDateTime(($now - 7 * 86400) * 1000);
+    $days = 14;
+
+    $users = $db->users->aggregate([['$facet' => [
+        'total' => [['$count' => 'n']],
+        'week' => adminFacetMatchCount(['created_at' => ['$gte' => $week]]),
+        'suspended' => adminFacetMatchCount(['status' => 'suspended']),
+        'daily' => adminFacetDaily('created_at', $days),
+    ]]])->toArray()[0];
+
+    $comments = $db->comments->aggregate([['$facet' => [
+        'top_level' => adminFacetMatchCount(['parent_comment_id' => null]),
+        'replies' => adminFacetMatchCount(['parent_comment_id' => ['$ne' => null]]),
+        'last_day' => adminFacetMatchCount(['created_at' => ['$gte' => $day]]),
+        'spoilers' => adminFacetMatchCount(['has_spoiler' => true]),
+        'episode' => adminFacetMatchCount(['episode_number' => ['$ne' => null]]),
+        'daily' => adminFacetDaily('created_at', $days),
+        'popular' => [
+            ['$group' => [
+                '_id' => ['type' => '$content_type', 'id' => '$content_id'],
+                'count' => ['$sum' => 1],
+                'title' => ['$first' => '$content_title'],
+                'poster' => ['$first' => '$content_poster'],
+            ]],
+            ['$sort' => ['count' => -1]],
+            ['$limit' => 6],
+        ],
+    ]]])->toArray()[0];
+
+    $logins = $db->login_history->aggregate([['$facet' => [
+        'last_day' => adminFacetMatchCount(['at' => ['$gte' => $day]]),
+        'daily' => adminFacetDaily('at', $days),
+    ]]])->toArray()[0];
+
+    $edited = 0;
+    foreach ($db->comment_revisions->aggregate([['$group' => ['_id' => '$comment_id']], ['$count' => 'n']]) as $row) {
+        $edited = (int)$row['n'];
+    }
 
     $totals = [
-        'users' => $db->users->countDocuments([]),
-        'users_7d' => $db->users->countDocuments(['created_at' => ['$gte' => $week]]),
-        'suspended' => $db->users->countDocuments(['status' => 'suspended']),
-        'comments' => $db->comments->countDocuments(['parent_comment_id' => null]),
-        'replies' => $db->comments->countDocuments(['parent_comment_id' => ['$ne' => null]]),
-        'comments_24h' => $db->comments->countDocuments(['created_at' => ['$gte' => $day]]),
-        'spoilers' => $db->comments->countDocuments(['has_spoiler' => true]),
-        'episode_comments' => $db->comments->countDocuments(['episode_number' => ['$ne' => null]]),
-        'edited' => count($db->comment_revisions->distinct('comment_id')),
+        'users' => adminFacetCount($users, 'total'),
+        'users_7d' => adminFacetCount($users, 'week'),
+        'suspended' => adminFacetCount($users, 'suspended'),
+        'comments' => adminFacetCount($comments, 'top_level'),
+        'replies' => adminFacetCount($comments, 'replies'),
+        'comments_24h' => adminFacetCount($comments, 'last_day'),
+        'spoilers' => adminFacetCount($comments, 'spoilers'),
+        'episode_comments' => adminFacetCount($comments, 'episode'),
+        'edited' => $edited,
         'reports_pending' => $db->comment_reports->countDocuments(['status' => 'pending']),
         'tickets_open' => $db->support_tickets->countDocuments(['status' => 'open']),
         'deleted' => $db->deleted_comments->countDocuments(['restored_at' => ['$exists' => false]]),
-        'logins_24h' => $db->login_history->countDocuments(['at' => ['$gte' => $day]]),
-        'library_items' => $db->user_movie_status->countDocuments([]) + $db->user_series_status->countDocuments([]) + $db->user_book_status->countDocuments([]),
+        'logins_24h' => adminFacetCount($logins, 'last_day'),
+        'library_items' => $db->user_movie_status->estimatedDocumentCount() + $db->user_series_status->estimatedDocumentCount() + $db->user_book_status->estimatedDocumentCount(),
     ];
 
-    $days = 14;
-    $comments = adminDailyCounts($db, 'comments', 'created_at', $days);
-    $users = adminDailyCounts($db, 'users', 'created_at', $days);
-    $logins = adminDailyCounts($db, 'login_history', 'at', $days);
+    $commentsByDay = adminCountMap($comments['daily']);
+    $usersByDay = adminCountMap($users['daily']);
+    $loginsByDay = adminCountMap($logins['daily']);
     $daily = [];
     for ($i = $days - 1; $i >= 0; $i--) {
         $date = gmdate('Y-m-d', $now - $i * 86400);
-        $daily[] = ['date' => $date, 'comments' => $comments[$date] ?? 0, 'users' => $users[$date] ?? 0, 'logins' => $logins[$date] ?? 0];
+        $daily[] = ['date' => $date, 'comments' => $commentsByDay[$date] ?? 0, 'users' => $usersByDay[$date] ?? 0, 'logins' => $loginsByDay[$date] ?? 0];
     }
 
     $topContent = [];
-    $cursor = $db->comments->aggregate([
-        ['$group' => [
-            '_id' => ['type' => '$content_type', 'id' => '$content_id'],
-            'count' => ['$sum' => 1],
-            'title' => ['$first' => '$content_title'],
-            'poster' => ['$first' => '$content_poster'],
-        ]],
-        ['$sort' => ['count' => -1]],
-        ['$limit' => 6],
-    ]);
-    foreach ($cursor as $row) {
+    foreach ($comments['popular'] as $row) {
         $type = $row['_id']['type'];
         $id = $row['_id']['id'];
         $topContent[] = [
@@ -161,7 +199,7 @@ function adminOverview($db): void {
         ];
     }
 
-    jsonResponse(['success' => true, 'totals' => $totals, 'daily' => $daily, 'top_content' => $topContent, 'audit' => adminAuditRows($db, [], 0, 8)['rows']]);
+    jsonResponse(['success' => true, 'totals' => $totals, 'daily' => $daily, 'top_content' => $topContent, 'audit' => adminAuditRows($db, [], 0, 8, false)['rows']]);
 }
 
 function adminUsers($db): void {
@@ -488,7 +526,7 @@ function adminReports($db): void {
     jsonResponse(['success' => true, 'reports' => $rows, 'total' => $total, 'page' => $p['page'], 'per_page' => $p['per_page']]);
 }
 
-function adminAuditRows($db, array $filter, int $skip, int $limit): array {
+function adminAuditRows($db, array $filter, int $skip, int $limit, bool $withTotal = true): array {
     $entries = iterator_to_array($db->audit_log->find($filter, ['sort' => ['created_at' => -1], 'skip' => $skip, 'limit' => $limit]), false);
     $usersById = adminUsersById($db, array_map(static fn ($e) => $e['actor_id'], $entries));
     $rows = [];
@@ -503,7 +541,7 @@ function adminAuditRows($db, array $filter, int $skip, int $limit): array {
             'created_at' => adminIso($entry['created_at']),
         ];
     }
-    return ['rows' => $rows, 'total' => $db->audit_log->countDocuments($filter)];
+    return ['rows' => $rows, 'total' => $withTotal ? $db->audit_log->countDocuments($filter) : count($rows)];
 }
 
 function adminAudit($db): void {

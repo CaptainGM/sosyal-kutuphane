@@ -45,12 +45,23 @@ if (isLoggedIn()) {
 
 $seed = $params['seed'] > 0 ? $params['seed'] : random_int(1, 2147483646);
 $choice = null;
-// Kısıtlar sıkıysa ilk sayfa az sonuç verebilir; sayfa 1..3 arasında dönülür.
-foreach ([1 + ($seed % 3), 1, 2, 3] as $page) {
-    $discover = pickerDiscoverQuery($params, $page);
-    $data = tmdbGet($db, $discover['path'], $discover['query'], 21600);
-    if ($data === null) {
-        tmdbUnavailableResponse();
+// İlk sayfa toplam sayfa sayısını verir (önbellekli); öneri, ilk 10 sayfadan (en çok 200 yapım) rastgele birinden seçilir.
+// Kısıtlar sıkıysa seçilen sayfadaki adaylar elenebilir; o zaman sayfa 1..3'e dönülür.
+$firstDiscover = pickerDiscoverQuery($params, 1);
+$first = tmdbGet($db, $firstDiscover['path'], $firstDiscover['query'], 21600);
+if ($first === null) {
+    tmdbUnavailableResponse();
+}
+$pool = pickerPool((int)($first['total_results'] ?? 0), (int)($first['total_pages'] ?? 1));
+foreach (pickerPageOrder($seed, (int)($first['total_pages'] ?? 1)) as $page) {
+    if ($page === 1) {
+        $data = $first;
+    } else {
+        $discover = pickerDiscoverQuery($params, $page);
+        $data = tmdbGet($db, $discover['path'], $discover['query'], 21600);
+        if ($data === null) {
+            tmdbUnavailableResponse();
+        }
     }
     $choice = pickerChoose($data['results'] ?? [], $exclude, $seed);
     if ($choice['pick'] !== null) {
@@ -125,4 +136,5 @@ jsonResponse([
     'reason' => pickerReason($params, $pick, $runtime ? (int)$runtime : null),
     'seed' => $seed,
     'candidate_count' => $choice['candidate_count'],
+    'pool' => $pool,
 ]);

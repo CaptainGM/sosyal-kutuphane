@@ -38,6 +38,11 @@ const PICKER_DURATIONS = [
     'any' => ['label' => 'Fark etmez', 'movie' => [null, null], 'tv' => [null, null]],
 ];
 
+// Adaylar popülerlik sırasına göre sayfalanır (sayfa başına 20). Öneri, kalite eşiğini geçen yapımların ilk PICKER_MAX_PAGES
+// sayfasından (en çok 200 yapım) rastgele bir sayfadan seçilir.
+const PICKER_PAGE_SIZE = 20;
+const PICKER_MAX_PAGES = 10;
+
 // Çıkış dönemi: çok eski yapımları ayıklamak için. Varsayılan "2000 ve sonrası"dır; "classic" 2000 öncesini ister.
 const PICKER_ERAS = [
     'any' => 'Hepsi',
@@ -138,7 +143,7 @@ function pickerDiscoverQuery(array $params, int $page = 1, ?string $today = null
     $query = [
         'sort_by' => 'popularity.desc',
         'include_adult' => 'false',
-        'page' => max(1, min(5, $page)),
+        'page' => max(1, min(PICKER_MAX_PAGES, $page)),
         'vote_average.gte' => $isSeries ? 7.0 : 6.5,
         'vote_count.gte' => $isSeries ? 300 : 500,
     ];
@@ -171,6 +176,20 @@ function pickerDiscoverQuery(array $params, int $page = 1, ?string $today = null
     }
 
     return ['path' => $isSeries ? 'discover/tv' : 'discover/movie', 'query' => $query];
+}
+
+// Hangi sayfalara bakılacağı: tohumla seçilen rastgele sayfa, olmazsa (hepsi dışlanmış/afişsiz) ilk üç sayfa.
+// Dar süzgeçlerde sayfa sayısı azdır (ör. kısa korku filmi: 8 sayfa); olmayan sayfaya gidilmez.
+function pickerPageOrder(int $seed, int $totalPages): array {
+    $totalPages = max(1, min(PICKER_MAX_PAGES, $totalPages));
+    $pages = array_filter([1 + (abs($seed) % $totalPages), 1, 2, 3], static fn (int $page): bool => $page <= $totalPages);
+    return array_values(array_unique($pages));
+}
+
+// Arayüzdeki "N yapım arasından seçildi" cümlesi için: süzgece uyan toplam yapım ve öneriye aday olabilecek havuz.
+function pickerPool(int $matching, int $totalPages): array {
+    $pages = max(1, min(PICKER_MAX_PAGES, $totalPages));
+    return ['matching' => $matching, 'reachable' => min($matching, $pages * PICKER_PAGE_SIZE)];
 }
 
 // Aynı tohum aynı karışımı verir (testlerde ve "başka öner" akışında tekrarlanabilir).

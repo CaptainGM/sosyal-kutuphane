@@ -20,6 +20,33 @@ final class PickerTest extends TestCase
         $this->assertSame([5, 7], $params['exclude']);
     }
 
+    public function testPageOrderPicksSeededPageWithinTotalAndFallsBackToFirstThree(): void
+    {
+        $this->assertSame([8, 1, 2, 3], pickerPageOrder(7, 10), 'tohum 7: 1 + 7 % 10 = sayfa 8');
+        $this->assertSame([1, 2, 3], pickerPageOrder(10, 10), 'tohum 10: 1 + 10 % 10 = sayfa 1, tekrar yok');
+        $this->assertSame([1], pickerPageOrder(123456, 1), 'tek sayfalık süzgeç');
+        $this->assertSame([2, 1, 3], pickerPageOrder(1, 3), 'üç sayfa varsa dördüncüye gidilmez');
+        $this->assertSame([10, 1, 2, 3], pickerPageOrder(999, 171), 'binlerce sayfa olsa da en çok 10 sayfa: 1 + 999 % 10 = 10');
+    }
+
+    public function testPageOrderNeverLeavesTheFirstTenPages(): void
+    {
+        for ($seed = 1; $seed < 400; $seed++) {
+            foreach (pickerPageOrder($seed, 171) as $page) {
+                $this->assertGreaterThanOrEqual(1, $page);
+                $this->assertLessThanOrEqual(PICKER_MAX_PAGES, $page);
+            }
+        }
+        $this->assertSame(PICKER_MAX_PAGES, pickerDiscoverQuery(pickerNormalizeParams([]), 99)['query']['page']);
+    }
+
+    public function testPoolReportsMatchingTotalAndReachableCandidates(): void
+    {
+        $this->assertSame(['matching' => 3420, 'reachable' => 200], pickerPool(3420, 171));
+        $this->assertSame(['matching' => 149, 'reachable' => 149], pickerPool(149, 8));
+        $this->assertSame(['matching' => 0, 'reachable' => 0], pickerPool(0, 0));
+    }
+
     public function testDefaultsAreMovieAnyDuration(): void
     {
         $params = pickerNormalizeParams([]);
